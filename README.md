@@ -7,4 +7,4 @@ Relies on Protobuf files manually copied from main repo.
 Java Developer Kit (JDK) 8 or better but less then 13 as Gradle 5.x does not support it fully yet.
 
 ## Usage
-`./gradle run` un *NIX or `gradlew.bat run` on Windows. Make sure flow emulator is up and running
+`./gradlew run` un *NIX or `gradlew.bat run` on Windows. Make sure flow emulator is up and running
