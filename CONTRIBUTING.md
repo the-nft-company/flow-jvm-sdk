@@ -115,7 +115,8 @@ Before contributing, make sure to examine the project to get familiar with the p
 
 ### Kotlin Style Guide
 
-// TODO
+Please follow the [Kotlin coding conventions](https://kotlinlang.org/docs/coding-conventions.html)
+when contributing code to this repository.
 
 ## Additional Notes
 
