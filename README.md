@@ -1,8 +1,28 @@
-## Flow JVM SDK
+# Flow JVM SDK
 
-Flow Blockchain JVM SDK.
-Alpha release. This is a minimal proof-of-concept SDK for JVM languages.
-At the moment it supports communication over gRPC and signing transactions.
+![Maven Central](https://img.shields.io/maven-central/v/org.onflow/flow)
+
+> :warning: This is an alpha release; functionality may change.
+
+This is a minimal proof-of-concept SDK for JVM languages that provides
+utilities to interact with the Flow blockchain.
+
+At the moment, the SDK includes the following features:
+- Communication with the [Flow Access API](https://docs.onflow.org/access-api) over gRPC 
+- Transaction preparation and signing
+- _Events parsing (coming soon)_
+
+## Installation
+
+To add this SDK to your project using Maven, use the following:
+
+```xml
+<dependency>
+    <groupId>org.onflow</groupId>
+    <artifactId>flow</artifactId>
+    <version>0.20</version>
+</dependency>
+```
 
 ## Example Usage
 
