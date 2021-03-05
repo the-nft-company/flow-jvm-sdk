@@ -1,6 +1,6 @@
 # Flow JVM SDK
 
-![Maven Central](https://img.shields.io/maven-central/v/org.onflow/flow)
+[![Maven Central](https://img.shields.io/maven-central/v/org.onflow/flow)](https://search.maven.org/search?q=g:org.onflow%20AND%20a:flow)
 
 > :warning: This is an alpha release; functionality may change.
 
