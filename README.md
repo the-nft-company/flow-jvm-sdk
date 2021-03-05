@@ -8,9 +8,9 @@ This is a minimal proof-of-concept SDK for JVM languages that provides
 utilities to interact with the Flow blockchain.
 
 At the moment, the SDK includes the following features:
-- Communication with the [Flow Access API](https://docs.onflow.org/access-api) over gRPC 
-- Transaction preparation and signing
-- _Events parsing (coming soon)_
+- [x] Communication with the [Flow Access API](https://docs.onflow.org/access-api) over gRPC 
+- [x] Transaction preparation and signing
+- [ ] _Events parsing (coming soon)_
 
 ## Installation
 
