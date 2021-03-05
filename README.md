@@ -33,6 +33,8 @@ of how to use this SDK in a Java application.
 
 Project is in the very early phase, all contributions are welcomed.
 
+Read the [contributing guide](https://github.com/onflow/flow-jvm-sdk/blob/main/CONTRIBUTING.md) to get started.
+
 ## Dependencies
 
 Java Developer Kit (JDK) 8 or better
