@@ -2,6 +2,12 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="flow-jvm" target="11" />
+      <module name="flow-jvm-sdk" target="11" />
+      <module name="flow-jvm-sdk.main" target="11" />
+      <module name="flow-jvm-sdk.test" target="11" />
+      <module name="flow-jvm.main" target="11" />
+      <module name="flow-jvm.test" target="11" />
       <module name="flow-kotlin.main" target="11" />
       <module name="flow-kotlin.test" target="11" />
     </bytecodeTargetLevel>

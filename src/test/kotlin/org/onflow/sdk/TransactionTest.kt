@@ -52,10 +52,12 @@ class TransactionTest {
         val fooSignature = byteArrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)
         val barSignature = byteArrayOf(3, 3, 3)
 
-        val signedTx = tx.copy(payloadSignatures = listOf(
-            TransactionSignature(address, 0, 0, fooSignature),
-            TransactionSignature(address, 4, 5, barSignature)
-        ))
+        val signedTx = tx.copy(
+            payloadSignatures = listOf(
+                TransactionSignature(address, 0, 0, fooSignature),
+                TransactionSignature(address, 4, 5, barSignature)
+            )
+        )
 
 
         val envelopeCanonical = signedTx.envelopCanonicalForm()
@@ -70,10 +72,12 @@ class TransactionTest {
         val fooSignature = byteArrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)
         val barSignature = byteArrayOf(3, 3, 3)
 
-        val signedTx = tx.copy(payloadSignatures = listOf(
-            TransactionSignature(address, 0, 0, fooSignature),
-            TransactionSignature(address, 4, 5, barSignature)
-        ))
+        val signedTx = tx.copy(
+            payloadSignatures = listOf(
+                TransactionSignature(address, 0, 0, fooSignature),
+                TransactionSignature(address, 4, 5, barSignature)
+            )
+        )
 
         val d = BigInteger("749024acd97d0b72448f1baf600314cfc28d97a4e1816e0578f4ae3befcf4e26".hexToBytes())
 
@@ -95,7 +99,8 @@ class TransactionTest {
 
     @Test
     fun connectingToMainnet() {
-        val managedChannel = ManagedChannelBuilder.forAddress("access.mainnet.nodes.onflow.org", 9000).usePlaintext().build()
+        val managedChannel =
+            ManagedChannelBuilder.forAddress("access.mainnet.nodes.onflow.org", 9000).usePlaintext().build()
 
         val accessAPI = AccessAPIGrpc.newBlockingStub(managedChannel)
 

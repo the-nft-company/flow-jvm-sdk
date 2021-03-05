@@ -1,10 +1,12 @@
 ## Flow JVM SDK
 
-Flow blockchain JVM SDK stub. Currently limited to calling procedures over gRPC. 
-Relies on Protobuf files manually copied from main repo.
+Flow Blockchain JVM SDK.
+Alpha release. This is minimal proof-of-concept support for JVM languages.
+At the moment it supports communication over gRPC and signing transactions.
+
+## Contribution
+
+Project is in the very early phase, all contributions are welcomed.
 
 ## Dependencies
-Java Developer Kit (JDK) 8 or better but less then 13 as Gradle 5.x does not support it fully yet.
-
-## Usage
-`./gradlew run` un *NIX or `gradlew.bat run` on Windows. Make sure flow emulator is up and running
+Java Developer Kit (JDK) 8 or better

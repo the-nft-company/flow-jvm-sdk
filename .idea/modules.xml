@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/flow-kotlin.iml" filepath="$PROJECT_DIR$/.idea/flow-kotlin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flow-jvm-sdk.iml" filepath="$PROJECT_DIR$/.idea/modules/flow-jvm-sdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flow-jvm-sdk.main.iml" filepath="$PROJECT_DIR$/.idea/modules/flow-jvm-sdk.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flow-jvm-sdk.test.iml" filepath="$PROJECT_DIR$/.idea/modules/flow-jvm-sdk.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/flow-kotlin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/flow-kotlin.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/flow-kotlin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/flow-kotlin.test.iml" />
     </modules>

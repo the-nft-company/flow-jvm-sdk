@@ -3,7 +3,6 @@ package org.onflow.sdk
 import com.google.common.io.BaseEncoding
 import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
-import org.tdf.rlp.RLPDecoding
 
 abstract class ByteWrapper(bytes: ByteArray, size: Int) {
     val bytes: ByteArray

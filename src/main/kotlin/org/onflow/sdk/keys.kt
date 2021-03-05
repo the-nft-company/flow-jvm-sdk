@@ -39,7 +39,6 @@ private fun bitsToBytes(bits: Int): Int {
 }
 
 fun InitCrypto() {
-    println("LOL")
     Security.addProvider(BouncyCastleProvider())
 }
 
