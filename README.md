@@ -1,6 +1,6 @@
 # Flow JVM SDK
 
-[![Maven Central](https://img.shields.io/maven-central/v/org.onflow/flow)](https://search.maven.org/search?q=g:org.onflow%20AND%20a:flow)
+[![Maven Central](https://img.shields.io/maven-central/v/org.onflow/flow-jvm-sdk)](https://search.maven.org/search?q=g:org.onflow%20AND%20a:flow-jvm-sdk)
 
 > :warning: This is an alpha release; functionality may change.
 
@@ -19,8 +19,8 @@ To add this SDK to your project using Maven, use the following:
 ```xml
 <dependency>
     <groupId>org.onflow</groupId>
-    <artifactId>flow</artifactId>
-    <version>0.20</version>
+    <artifactId>flow-jvm-sdk</artifactId>
+    <version>0.1</version>
 </dependency>
 ```
 
