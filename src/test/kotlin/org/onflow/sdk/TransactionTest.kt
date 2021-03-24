@@ -79,7 +79,7 @@ class TransactionTest {
             )
         )
 
-        val d = BigInteger("749024acd97d0b72448f1baf600314cfc28d97a4e1816e0578f4ae3befcf4e26".hexToBytes())
+        val d= BigInteger("ceff2bd777f3b5c81d7edfd191c99239cb9c56fc64946741339a55fd094586c9", 16)
 
         val privateKey = ECDSAp256_SHA3_256PrivateKey(d)
 
