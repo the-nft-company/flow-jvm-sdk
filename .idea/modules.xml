@@ -7,6 +7,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/flow-jvm-sdk.test.iml" filepath="$PROJECT_DIR$/.idea/modules/flow-jvm-sdk.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/flow-kotlin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/flow-kotlin.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/flow-kotlin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/flow-kotlin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/org.onflow.flow-jvm-sdk.iml" filepath="$PROJECT_DIR$/.idea/modules/org.onflow.flow-jvm-sdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/org.onflow.flow-jvm-sdk.main.iml" filepath="$PROJECT_DIR$/.idea/modules/org.onflow.flow-jvm-sdk.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/org.onflow.flow-jvm-sdk.test.iml" filepath="$PROJECT_DIR$/.idea/modules/org.onflow.flow-jvm-sdk.test.iml" />
     </modules>
   </component>
 </project>

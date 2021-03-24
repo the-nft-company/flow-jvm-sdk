@@ -10,6 +10,9 @@
       <module name="flow-jvm.test" target="11" />
       <module name="flow-kotlin.main" target="11" />
       <module name="flow-kotlin.test" target="11" />
+      <module name="org.onflow.flow-jvm-sdk" target="11" />
+      <module name="org.onflow.flow-jvm-sdk.main" target="11" />
+      <module name="org.onflow.flow-jvm-sdk.test" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

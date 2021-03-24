@@ -12,7 +12,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
     api("com.github.TrustedDataFramework:java-rlp:1.1.20")
-    api("org.onflow:flow:0.20")
+    api("org.onflow:flow:0.21")
 
     testImplementation(platform("org.junit:junit-bom:5.7.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -80,7 +80,7 @@ java {
 group = "org.onflow"
 
 // TODO - grab version from Git
-version = "0.1"
+version = "0.1.1"
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
