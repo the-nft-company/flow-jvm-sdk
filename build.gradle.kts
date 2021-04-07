@@ -12,6 +12,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
     api("com.github.TrustedDataFramework:java-rlp:1.1.20")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
     api("org.onflow:flow:0.21")
 
     testImplementation(platform("org.junit:junit-bom:5.7.1"))
