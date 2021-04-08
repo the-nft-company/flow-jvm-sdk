@@ -20,9 +20,11 @@ interface FlowAccessApi {
 
     fun getCollectionById(id: FlowId): FlowCollection?
 
-    fun getTransactionById(id: FlowId): Transaction?
+    fun sendTransaction(transaction: FlowTransaction): FlowId
 
-    fun getTransactionResultById(id: FlowId): Transaction?
+    fun getTransactionById(id: FlowId): FlowTransaction?
+
+    fun getTransactionResultById(id: FlowId): FlowTransactionResult?
 
     @Deprecated(
         message = "Behaves identically to getAccountAtLatestBlock",
@@ -34,17 +36,17 @@ interface FlowAccessApi {
 
     fun getAccountByBlockHeight(addresss: FlowAddress, height: BigInteger): FLowAccount?
 
-    fun executeScriptAtLatestBlock(script: FlowScript): FlowScriptResponse?
+    fun executeScriptAtLatestBlock(script: FlowScript): FlowScriptResponse
 
-    fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): FlowScriptResponse?
+    fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): FlowScriptResponse
 
-    fun executeScriptAtBlockHeight(script: FlowScript, height: BigInteger): FlowScriptResponse?
+    fun executeScriptAtBlockHeight(script: FlowScript, height: BigInteger): FlowScriptResponse
 
     fun getEventsForHeightRange(type: String, range: ClosedRange<BigInteger>): List<FlowEventResult>
 
     fun getEventsForBlockIds(type: String, ids: Set<FlowId>): List<FlowEventResult>
 
-    fun getNetworkParameters(): ChainId
+    fun getNetworkParameters(): FlowChainId
 
     fun getLatestProtocolStateSnapshot(): FlowSnapshot
 }

@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture
 
 interface AsyncFlowAccessApi {
 
-    fun ping()
+    fun ping(): CompletableFuture<Unit>
 
     fun getLatestBlockHeader(): CompletableFuture<FlowBlockHeader>
 
@@ -21,9 +21,11 @@ interface AsyncFlowAccessApi {
 
     fun getCollectionById(id: FlowId): CompletableFuture<FlowCollection?>
 
-    fun getTransactionById(id: FlowId): CompletableFuture<Transaction?>
+    fun sendTransaction(transaction: FlowTransaction): CompletableFuture<FlowId>
 
-    fun getTransactionResultById(id: FlowId): CompletableFuture<Transaction?>
+    fun getTransactionById(id: FlowId): CompletableFuture<FlowTransaction?>
+
+    fun getTransactionResultById(id: FlowId): CompletableFuture<FlowTransactionResult?>
 
     @Deprecated(
         message = "Behaves identically to getAccountAtLatestBlock",
@@ -35,17 +37,17 @@ interface AsyncFlowAccessApi {
 
     fun getAccountByBlockHeight(addresss: FlowAddress, height: BigInteger): CompletableFuture<FLowAccount?>
 
-    fun executeScriptAtLatestBlock(script: FlowScript): CompletableFuture<FlowScriptResponse?>
+    fun executeScriptAtLatestBlock(script: FlowScript): CompletableFuture<FlowScriptResponse>
 
-    fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): CompletableFuture<FlowScriptResponse?>
+    fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): CompletableFuture<FlowScriptResponse>
 
-    fun executeScriptAtBlockHeight(script: FlowScript, height: BigInteger): CompletableFuture<FlowScriptResponse?>
+    fun executeScriptAtBlockHeight(script: FlowScript, height: BigInteger): CompletableFuture<FlowScriptResponse>
 
     fun getEventsForHeightRange(type: String, range: ClosedRange<BigInteger>): CompletableFuture<List<FlowEventResult>>
 
     fun getEventsForBlockIds(type: String, ids: Set<FlowId>): CompletableFuture<List<FlowEventResult>>
 
-    fun getNetworkParameters(): CompletableFuture<ChainId>
+    fun getNetworkParameters(): CompletableFuture<FlowChainId>
 
     fun getLatestProtocolStateSnapshot(): CompletableFuture<FlowSnapshot>
 }
