@@ -45,7 +45,7 @@ class AsyncFlowAccessApiImpl(
                     .build()
             )
         ).thenApply {
-            FlowBlockHeader.from(it.block)
+            FlowBlockHeader.of(it.block)
         }
     }
 
@@ -58,7 +58,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasBlock()) {
-                FlowBlockHeader.from(it.block)
+                FlowBlockHeader.of(it.block)
             } else {
                 null
             }
@@ -74,7 +74,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasBlock()) {
-                FlowBlockHeader.from(it.block)
+                FlowBlockHeader.of(it.block)
             } else {
                 null
             }
@@ -88,7 +88,7 @@ class AsyncFlowAccessApiImpl(
                     .build()
             )
         ).thenApply {
-            FlowBlock.from(it.block)
+            FlowBlock.of(it.block)
         }
     }
 
@@ -101,7 +101,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasBlock()) {
-                FlowBlock.from(it.block)
+                FlowBlock.of(it.block)
             } else {
                 null
             }
@@ -117,7 +117,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasBlock()) {
-                FlowBlock.from(it.block)
+                FlowBlock.of(it.block)
             } else {
                 null
             }
@@ -133,7 +133,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasCollection()) {
-                FlowCollection.from(it.collection)
+                FlowCollection.of(it.collection)
             } else {
                 null
             }
@@ -161,7 +161,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasTransaction()) {
-                FlowTransaction.from(it.transaction)
+                FlowTransaction.of(it.transaction)
             } else {
                 null
             }
@@ -176,7 +176,7 @@ class AsyncFlowAccessApiImpl(
                     .build()
             )
         ).thenApply {
-            FlowTransactionResult.from(it)
+            FlowTransactionResult.of(it)
         }
     }
 
@@ -189,7 +189,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasAccount()) {
-                FLowAccount.from(it.account)
+                FLowAccount.of(it.account)
             } else {
                 null
             }
@@ -205,7 +205,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasAccount()) {
-                FLowAccount.from(it.account)
+                FLowAccount.of(it.account)
             } else {
                 null
             }
@@ -222,7 +222,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasAccount()) {
-                FLowAccount.from(it.account)
+                FLowAccount.of(it.account)
             } else {
                 null
             }
@@ -282,7 +282,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             it.resultsList
-                .map { FlowEventResult.from(it) }
+                .map { FlowEventResult.of(it) }
         }
     }
 
@@ -296,7 +296,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             it.resultsList
-                .map { FlowEventResult.from(it) }
+                .map { FlowEventResult.of(it) }
         }
     }
 
@@ -307,7 +307,7 @@ class AsyncFlowAccessApiImpl(
                     .build()
             )
         ).thenApply {
-            FlowChainId.fromId(it.chainId)
+            FlowChainId.of(it.chainId)
         }
     }
 

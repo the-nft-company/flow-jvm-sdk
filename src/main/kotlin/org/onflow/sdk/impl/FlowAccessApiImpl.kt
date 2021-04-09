@@ -34,7 +34,7 @@ class FlowAccessApiImpl(
             Access.GetLatestBlockHeaderRequest.newBuilder()
                 .build()
         )
-        return FlowBlockHeader.from(ret.block)
+        return FlowBlockHeader.of(ret.block)
     }
 
     override fun getBlockHeaderById(id: FlowId): FlowBlockHeader? {
@@ -44,7 +44,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasBlock()) {
-            FlowBlockHeader.from(ret.block)
+            FlowBlockHeader.of(ret.block)
         } else {
             null
         }
@@ -57,7 +57,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasBlock()) {
-            FlowBlockHeader.from(ret.block)
+            FlowBlockHeader.of(ret.block)
         } else {
             null
         }
@@ -68,7 +68,7 @@ class FlowAccessApiImpl(
             Access.GetLatestBlockRequest.newBuilder()
                 .build()
         )
-        return FlowBlock.from(ret.block)
+        return FlowBlock.of(ret.block)
     }
 
     override fun getBlockById(id: FlowId): FlowBlock? {
@@ -78,7 +78,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasBlock()) {
-            FlowBlock.from(ret.block)
+            FlowBlock.of(ret.block)
         } else {
             null
         }
@@ -91,7 +91,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasBlock()) {
-            FlowBlock.from(ret.block)
+            FlowBlock.of(ret.block)
         } else {
             null
         }
@@ -104,7 +104,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasCollection()) {
-            FlowCollection.from(ret.collection)
+            FlowCollection.of(ret.collection)
         } else {
             null
         }
@@ -126,7 +126,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasTransaction()) {
-            FlowTransaction.from(ret.transaction)
+            FlowTransaction.of(ret.transaction)
         } else {
             null
         }
@@ -138,7 +138,7 @@ class FlowAccessApiImpl(
                 .setId(id.byteStringValue)
                 .build()
         )
-        return FlowTransactionResult.from(ret)
+        return FlowTransactionResult.of(ret)
     }
 
     override fun getAccountByAddress(addresss: FlowAddress): FLowAccount? {
@@ -148,7 +148,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasAccount()) {
-            FLowAccount.from(ret.account)
+            FLowAccount.of(ret.account)
         } else {
             null
         }
@@ -161,7 +161,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasAccount()) {
-            FLowAccount.from(ret.account)
+            FLowAccount.of(ret.account)
         } else {
             null
         }
@@ -175,7 +175,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasAccount()) {
-            FLowAccount.from(ret.account)
+            FLowAccount.of(ret.account)
         } else {
             null
         }
@@ -217,7 +217,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return ret.resultsList
-            .map { FlowEventResult.from(it) }
+            .map { FlowEventResult.of(it) }
     }
 
     override fun getEventsForBlockIds(type: String, ids: Set<FlowId>): List<FlowEventResult> {
@@ -228,7 +228,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return ret.resultsList
-            .map { FlowEventResult.from(it) }
+            .map { FlowEventResult.of(it) }
     }
 
     override fun getNetworkParameters(): FlowChainId {
@@ -236,7 +236,7 @@ class FlowAccessApiImpl(
             Access.GetNetworkParametersRequest.newBuilder()
                 .build()
         )
-        return FlowChainId.fromId(ret.chainId)
+        return FlowChainId.of(ret.chainId)
     }
 
     override fun getLatestProtocolStateSnapshot(): FlowSnapshot {

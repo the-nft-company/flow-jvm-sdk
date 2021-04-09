@@ -30,7 +30,7 @@ enum class FlowTransactionStatus(val num: Int) {
 
     companion object {
         @JvmStatic
-        fun fromNum(num: Int): FlowTransactionStatus = values()
+        fun of(num: Int): FlowTransactionStatus = values()
             .find { it.num == num }
             ?: throw IllegalArgumentException("Unknown TransactionStatus: $num")
     }
@@ -49,7 +49,7 @@ enum class FlowChainId(
 
     companion object {
         @JvmStatic
-        fun fromId(id: String): FlowChainId = values()
+        fun of(id: String): FlowChainId = values()
             .find { it.id == id }
             ?: UNKNOWN
     }
@@ -72,11 +72,11 @@ data class FLowAccount(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: AccountOuterClass.Account): FLowAccount = FLowAccount(
+        fun of(value: AccountOuterClass.Account): FLowAccount = FLowAccount(
             address = FlowAddress.of(value.address.toByteArray()),
             balance = value.balance,
             code = FlowCode(value.code.toByteArray()),
-            keys = value.keysList.map { FlowAccountKey.from(it) },
+            keys = value.keysList.map { FlowAccountKey.of(it) },
             contracts = value.contractsMap.mapValues { FlowCode(it.value.toByteArray()) }
         )
     }
@@ -103,7 +103,7 @@ data class FlowAccountKey(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: AccountOuterClass.AccountKey): FlowAccountKey = FlowAccountKey(
+        fun of(value: AccountOuterClass.AccountKey): FlowAccountKey = FlowAccountKey(
             id = value.index,
             publicKey = FlowPublicKey(value.publicKey.toByteArray()),
             signAlgo = value.index,
@@ -117,12 +117,12 @@ data class FlowAccountKey(
     @JvmOverloads
     fun builder(builder: AccountOuterClass.AccountKey.Builder = AccountOuterClass.AccountKey.newBuilder()): AccountOuterClass.AccountKey.Builder {
         return builder
-            .setIndex(id.toInt())
+            .setIndex(id)
             .setPublicKey(publicKey.byteStringValue)
-            .setSignAlgo(signAlgo.toInt())
-            .setHashAlgo(hashAlgo.toInt())
-            .setWeight(weight.toInt())
-            .setSequenceNumber(sequenceNumber.toInt())
+            .setSignAlgo(signAlgo)
+            .setHashAlgo(hashAlgo)
+            .setWeight(weight)
+            .setSequenceNumber(sequenceNumber)
             .setRevoked(revoked)
     }
 }
@@ -135,10 +135,10 @@ data class FlowEventResult(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: Access.EventsResponse.Result): FlowEventResult = FlowEventResult(
+        fun of(value: Access.EventsResponse.Result): FlowEventResult = FlowEventResult(
             blockId = FlowId.of(value.blockId.toByteArray()),
             blockHeight = value.blockHeight,
-            events = value.eventsList.map { FlowEvent.from(it) },
+            events = value.eventsList.map { FlowEvent.of(it) },
             blockTimestamp = value.blockTimestamp.asLocalDateTime()
         )
     }
@@ -162,7 +162,7 @@ data class FlowEvent(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: EventOuterClass.Event): FlowEvent = FlowEvent(
+        fun of(value: EventOuterClass.Event): FlowEvent = FlowEvent(
             type = value.type,
             transactionId = FlowId.of(value.transactionId.toByteArray()),
             transactionIndex = value.transactionIndex,
@@ -176,8 +176,8 @@ data class FlowEvent(
         return builder
             .setType(type)
             .setTransactionId(transactionId.byteStringValue)
-            .setTransactionIndex(transactionIndex.toInt())
-            .setEventIndex(eventIndex.toInt())
+            .setTransactionIndex(transactionIndex)
+            .setEventIndex(eventIndex)
             .setPayload(payload.byteStringValue)
     }
 }
@@ -190,11 +190,11 @@ data class FlowTransactionResult(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: Access.TransactionResultResponse): FlowTransactionResult = FlowTransactionResult(
-            status = FlowTransactionStatus.fromNum(value.statusValue),
+        fun of(value: Access.TransactionResultResponse): FlowTransactionResult = FlowTransactionResult(
+            status = FlowTransactionStatus.of(value.statusValue),
             statusCode = value.statusCode,
             errorMessage = value.errorMessage,
-            events = value.eventsList.map { FlowEvent.from(it) }
+            events = value.eventsList.map { FlowEvent.of(it) }
         )
     }
 
@@ -202,7 +202,7 @@ data class FlowTransactionResult(
     fun builder(builder: Access.TransactionResultResponse.Builder = Access.TransactionResultResponse.newBuilder()): Access.TransactionResultResponse.Builder {
         return builder
             .setStatus(TransactionOuterClass.TransactionStatus.valueOf(status.name))
-            .setStatusCode(statusCode.toInt())
+            .setStatusCode(statusCode)
             .setErrorMessage(errorMessage)
             .addAllEvents(events.map { it.builder().build() })
     }
@@ -273,16 +273,16 @@ data class FlowTransaction(
 
     companion object {
         @JvmStatic
-        fun from(value: TransactionOuterClass.Transaction): FlowTransaction = FlowTransaction(
+        fun of(value: TransactionOuterClass.Transaction): FlowTransaction = FlowTransaction(
             script = FlowScript(value.script.toByteArray()),
             arguments = value.argumentsList.map { FlowArgument(it.toByteArray()) },
             referenceBlockId = FlowId.of(value.referenceBlockId.toByteArray()),
             gasLimit = value.gasLimit,
-            proposalKey = FlowTransactionProposalKey.from(value.proposalKey),
+            proposalKey = FlowTransactionProposalKey.of(value.proposalKey),
             payerAddress = FlowAddress.of(value.toByteArray()),
             authorizers = value.authorizersList.map { FlowAddress.of(it.toByteArray()) },
-            payloadSignatures = value.payloadSignaturesList.map { FlowTransactionSignature.from(it) },
-            envelopeSignatures = value.envelopeSignaturesList.map { FlowTransactionSignature.from(it) }
+            payloadSignatures = value.payloadSignaturesList.map { FlowTransactionSignature.of(it) },
+            envelopeSignatures = value.envelopeSignaturesList.map { FlowTransactionSignature.of(it) }
         )
     }
 
@@ -307,7 +307,7 @@ data class FlowTransactionProposalKey(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: TransactionOuterClass.Transaction.ProposalKey): FlowTransactionProposalKey =
+        fun of(value: TransactionOuterClass.Transaction.ProposalKey): FlowTransactionProposalKey =
             FlowTransactionProposalKey(
                 address = FlowAddress.of(value.address.toByteArray()),
                 keyIndex = value.keyId,
@@ -319,7 +319,7 @@ data class FlowTransactionProposalKey(
     fun builder(builder: TransactionOuterClass.Transaction.ProposalKey.Builder = TransactionOuterClass.Transaction.ProposalKey.newBuilder()): TransactionOuterClass.Transaction.ProposalKey.Builder {
         return builder
             .setAddress(address.byteStringValue)
-            .setKeyId(keyIndex.toInt())
+            .setKeyId(keyIndex)
             .setSequenceNumber(sequenceNumber)
     }
 }
@@ -332,7 +332,7 @@ data class FlowTransactionSignature(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: TransactionOuterClass.Transaction.Signature): FlowTransactionSignature =
+        fun of(value: TransactionOuterClass.Transaction.Signature): FlowTransactionSignature =
             FlowTransactionSignature(
                 address = FlowAddress.of(value.address.toByteArray()),
                 signerIndex = value.keyId, // TODO: what is this vs. keyId
@@ -357,7 +357,7 @@ data class FlowBlockHeader(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: BlockHeaderOuterClass.BlockHeader): FlowBlockHeader = FlowBlockHeader(
+        fun of(value: BlockHeaderOuterClass.BlockHeader): FlowBlockHeader = FlowBlockHeader(
             id = FlowId.of(value.id.toByteArray()),
             parentId = FlowId.of(value.parentId.toByteArray()),
             height = value.height
@@ -384,13 +384,13 @@ data class FlowBlock(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: BlockOuterClass.Block) = FlowBlock(
+        fun of(value: BlockOuterClass.Block) = FlowBlock(
             id = FlowId.of(value.id.toByteArray()),
             parentId = FlowId.of(value.parentId.toByteArray()),
             height = value.height,
             timestamp = value.timestamp.asLocalDateTime(),
-            collectionGuarantees = value.collectionGuaranteesList.map { FlowCollectionGuarantee.from(it) },
-            blockSeals = value.blockSealsList.map { FlowBlockSeal.from(it) },
+            collectionGuarantees = value.collectionGuaranteesList.map { FlowCollectionGuarantee.of(it) },
+            blockSeals = value.blockSealsList.map { FlowBlockSeal.of(it) },
             signatures = value.signaturesList.map { FlowSignature(it.toByteArray()) },
         )
     }
@@ -414,7 +414,7 @@ data class FlowCollectionGuarantee(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: CollectionOuterClass.CollectionGuarantee) = FlowCollectionGuarantee(
+        fun of(value: CollectionOuterClass.CollectionGuarantee) = FlowCollectionGuarantee(
             id = FlowId.of(value.collectionId.toByteArray()),
             signatures = value.signaturesList.map { FlowSignature(it.toByteArray()) }
         )
@@ -436,7 +436,7 @@ data class FlowBlockSeal(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: BlockSealOuterClass.BlockSeal) = FlowBlockSeal(
+        fun of(value: BlockSealOuterClass.BlockSeal) = FlowBlockSeal(
             id = FlowId.of(value.blockId.toByteArray()),
             executionReceiptId = FlowId.of(value.executionReceiptId.toByteArray()),
             executionReceiptSignatures = value.executionReceiptSignaturesList.map { FlowSignature(it.toByteArray()) },
@@ -460,7 +460,7 @@ data class FlowCollection(
 ) {
     companion object {
         @JvmStatic
-        fun from(value: CollectionOuterClass.Collection) = FlowCollection(
+        fun of(value: CollectionOuterClass.Collection) = FlowCollection(
             id = FlowId.of(value.id.toByteArray()),
             transactionIds = value.transactionIdsList.map { FlowId.of(it.toByteArray()) }
         )
