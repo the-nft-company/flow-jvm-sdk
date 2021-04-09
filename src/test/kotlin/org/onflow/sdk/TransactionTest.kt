@@ -3,6 +3,7 @@ package org.onflow.sdk
 import com.google.common.io.BaseEncoding
 import com.google.protobuf.ByteString
 import io.grpc.ManagedChannelBuilder
+import io.grpc.stub.StreamObserver
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.onflow.protobuf.access.Access
