@@ -116,7 +116,7 @@ class FlowAccessApiImpl(
                 .setTransaction(transaction.builder().build())
                 .build()
         )
-        return FlowId(ret.id.toByteArray())
+        return FlowId.of(ret.id.toByteArray())
     }
 
     override fun getTransactionById(id: FlowId): FlowTransaction? {

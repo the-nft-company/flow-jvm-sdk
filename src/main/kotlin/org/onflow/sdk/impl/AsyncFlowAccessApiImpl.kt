@@ -148,7 +148,7 @@ class AsyncFlowAccessApiImpl(
                     .build()
             )
         ).thenApply {
-            FlowId(it.id.toByteArray())
+            FlowId.of(it.id.toByteArray())
         }
     }
 

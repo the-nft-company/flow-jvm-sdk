@@ -1,43 +1,58 @@
 package org.onflow.sdk
 
-import com.google.common.io.BaseEncoding
-import com.google.protobuf.ByteString
-import io.grpc.ManagedChannelBuilder
-import io.grpc.stub.StreamObserver
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.onflow.protobuf.access.Access
-import org.onflow.protobuf.access.AccessAPIGrpc
-import java.math.BigInteger
 
 class TransactionTest {
 
-    init {
-        InitCrypto()
-    }
-
-    fun String.hexToBytes(): ByteArray {
-        return this.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
-    }
-
-    fun ByteArray.toHex(): String {
-        return BaseEncoding.base16().lowerCase().encode(this)
-    }
-
-    val tx = Transaction(
-        script = "import 0xsomething \n {}".encodeToByteArray(),
-        arguments = listOf(byteArrayOf(2, 2, 3), byteArrayOf(3, 3, 3)),
-        authorizers = listOf(Address(byteArrayOf(9, 9, 9, 9, 9)), Address(byteArrayOf(8, 9, 9, 9, 9))),
-        proposalKey = ProposalKey(Address(byteArrayOf(4, 5, 4, 5, 4, 5)), 11, 7),
-        payer = Address(byteArrayOf(6, 5, 4, 3, 2)),
+    private val transaction = FlowTransaction(
+        script = FlowScript("import 0xsomething \n {}"),
+        arguments = listOf(FlowArgument(byteArrayOf(2, 2, 3)), FlowArgument(byteArrayOf(3, 3, 3))),
+        referenceBlockId = FlowId.of(byteArrayOf(3, 3, 3, 6, 6, 6)),
         gasLimit = 44,
-        referenceBlockID = Identifier(byteArrayOf(3, 3, 3, 6, 6, 6))
+        proposalKey = FlowTransactionProposalKey(
+            address = FlowAddress.of(byteArrayOf(4, 5, 4, 5, 4, 5)),
+            keyIndex = 11,
+            sequenceNumber = 7
+        ),
+        payerAddress = FlowAddress.of(byteArrayOf(6, 5, 4, 3, 2)),
+        authorizers = listOf(FlowAddress.of(byteArrayOf(9, 9, 9, 9, 9)), FlowAddress.of(byteArrayOf(8, 9, 9, 9, 9)))
     )
 
     @Test
-    fun testCanonicalForm() {
+    fun `Can sign transactions`() {
 
-        val payloadCanonical = tx.payloadCanonicalForm()
+        val address = FlowAddress("f8d6e0586b0a20c7")
+
+        val fooSignature = FlowSignature(byteArrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4))
+        val barSignature = FlowSignature(byteArrayOf(3, 3, 3))
+
+        val signedTx = transaction.copy(
+            payloadSignatures = listOf(
+                FlowTransactionSignature(address, 0, 0, fooSignature),
+                FlowTransactionSignature(address, 4, 5, barSignature)
+            )
+        )
+
+        val privateKey = Flow.loadPrivateKey("ceff2bd777f3b5c81d7edfd191c99239cb9c56fc64946741339a55fd094586c9")
+
+        val payloadCanonical = transaction.canonicalPayload
+        val payloadSignature = privateKey.sign(payloadCanonical)
+
+        println("Payload signature ${payloadSignature.bytesToHex()}")
+
+        val envelopeCanonical = signedTx.canonicalEnvelope
+        val envelopeSignature = privateKey.sign(envelopeCanonical)
+
+        println("Envelope signature ${envelopeSignature.bytesToHex()}")
+
+        // Signatures above can used in Flow Go implementation tests to check for correctness
+    }
+
+    @Test
+    fun `Canonical transaction form is accurate`() {
+
+        val payloadCanonical = transaction.canonicalPayload
 
         // those values were generated from Go implementation for the same transaction input data
         val payloadExpectedHex =
@@ -47,77 +62,32 @@ class TransactionTest {
 
         assertThat(payloadCanonical).isEqualTo(payloadExpectedHex.hexToBytes())
 
-
-        val address = Address("f8d6e0586b0a20c7")
+        val address = FlowAddress("f8d6e0586b0a20c7")
 
         val fooSignature = byteArrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)
         val barSignature = byteArrayOf(3, 3, 3)
 
-        val signedTx = tx.copy(
+        val signedTx = transaction.copy(
             payloadSignatures = listOf(
-                TransactionSignature(address, 0, 0, fooSignature),
-                TransactionSignature(address, 4, 5, barSignature)
+                FlowTransactionSignature(address, 0, 0, FlowSignature(fooSignature)),
+                FlowTransactionSignature(address, 4, 5, FlowSignature(barSignature))
             )
         )
 
-
-        val envelopeCanonical = signedTx.envelopCanonicalForm()
+        val envelopeCanonical = signedTx.canonicalEnvelope
         assertThat(envelopeCanonical).isEqualTo(envelopeExpectedHex.hexToBytes())
     }
 
     @Test
-    fun testHashAndSign() {
+    fun `Can connect to mainnet`() {
 
-        val address = Address("f8d6e0586b0a20c7")
+        val accessAPI = Flow.newAccessApi(FlowChainId.MAINNET)
+        accessAPI.ping()
 
-        val fooSignature = byteArrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)
-        val barSignature = byteArrayOf(3, 3, 3)
-
-        val signedTx = tx.copy(
-            payloadSignatures = listOf(
-                TransactionSignature(address, 0, 0, fooSignature),
-                TransactionSignature(address, 4, 5, barSignature)
-            )
-        )
-
-        val d= BigInteger("ceff2bd777f3b5c81d7edfd191c99239cb9c56fc64946741339a55fd094586c9", 16)
-
-        val privateKey = ECDSAp256_SHA3_256PrivateKey(d)
-
-        val payloadCanonical = tx.payloadCanonicalForm()
-        val payloadSignature = privateKey.Sign(payloadCanonical)
-
-        println("Payload signature ${payloadSignature.toHex()}")
-
-
-        val envelopeCanonical = signedTx.envelopCanonicalForm()
-        val envelopeSignature = privateKey.Sign(envelopeCanonical)
-
-        println("Envelope signature ${envelopeSignature.toHex()}")
-
-        // Signatures above can used in Flow Go implementation tests to check for correctness
+        val address = FlowAddress("e467b9dd11fa00df")
+        val account = accessAPI.getAccountAtLatestBlock(address)
+        assertThat(account).isNotNull
+        println(account!!)
+        assertThat(account.keys).isNotEmpty
     }
-
-    @Test
-    fun connectingToMainnet() {
-        val managedChannel =
-            ManagedChannelBuilder.forAddress("access.mainnet.nodes.onflow.org", 9000).usePlaintext().build()
-
-        val accessAPI = AccessAPIGrpc.newBlockingStub(managedChannel)
-
-        // Ping to make sure service is there
-        val pingResponse = accessAPI.ping(Access.PingRequest.newBuilder().build())
-
-        val grpcAddress = ByteString.copyFrom(BaseEncoding.base16().lowerCase().decode("e467b9dd11fa00df"))
-
-        val getAccountRequest = Access.GetAccountRequest.newBuilder().setAddress(grpcAddress).build()
-
-        val accountResponse = accessAPI.getAccount(getAccountRequest)
-
-        println(accountResponse.account)
-
-        // We can safely assume service account has some keys
-        assertThat(accountResponse.account.keysList).isNotEmpty
-    }
-
 }
