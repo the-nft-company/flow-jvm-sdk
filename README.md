@@ -10,7 +10,7 @@ utilities to interact with the Flow blockchain.
 At the moment, the SDK includes the following features:
 - [x] Communication with the [Flow Access API](https://docs.onflow.org/access-api) over gRPC 
 - [x] Transaction preparation and signing
-- [*] Events parsing 
+- [x] Events parsing 
 
 ## Installation
 
