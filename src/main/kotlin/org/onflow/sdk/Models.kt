@@ -317,11 +317,11 @@ data class FlowTransaction(
             .addAllPayloadSignatures(authorizationSignatures.map { it.builder().build() })
     }
 
-    fun signAsProposer(privateKey: String, address: FlowAddress, keyId: Int): FlowTransaction {
-        return signAsProposer(Crypto.loadPrivateKey(privateKey), address, keyId)
+    fun signAsProposer(privateKey: String, keyId: Int, address: FlowAddress = proposalKey.address): FlowTransaction {
+        return signAsProposer(Crypto.loadPrivateKey(privateKey), keyId, address)
     }
 
-    fun signAsProposer(privateKey: PrivateKey, address: FlowAddress, keyId: Int): FlowTransaction {
+    fun signAsProposer(privateKey: PrivateKey, keyId: Int, address: FlowAddress): FlowTransaction {
         if (paymentSignatures.isNotEmpty()) {
             throw IllegalStateException("Transaction already has payment signatures")
         } else if (authorizationSignatures.find { it.address == address } != null) {
@@ -338,11 +338,11 @@ data class FlowTransaction(
         )
     }
 
-    fun signAsAuthorizer(privateKey: String, address: FlowAddress, keyId: Int): FlowTransaction {
-        return signAsAuthorizer(Crypto.loadPrivateKey(privateKey), address, keyId)
+    fun signAsAuthorizer(privateKey: String, keyId: Int, address: FlowAddress): FlowTransaction {
+        return signAsAuthorizer(Crypto.loadPrivateKey(privateKey), keyId, address)
     }
 
-    fun signAsAuthorizer(privateKey: PrivateKey, address: FlowAddress, keyId: Int): FlowTransaction {
+    fun signAsAuthorizer(privateKey: PrivateKey, keyId: Int, address: FlowAddress): FlowTransaction {
         if (paymentSignatures.isNotEmpty()) {
             throw IllegalStateException("Transaction already has payment signatures")
         } else if (authorizationSignatures.find { it.address == address } != null) {
@@ -359,7 +359,7 @@ data class FlowTransaction(
         )
     }
 
-    fun signAsPayer(privateKey: PrivateKey, address: FlowAddress, keyId: Int): FlowTransaction {
+    fun signAsPayer(privateKey: PrivateKey, keyId: Int, address: FlowAddress): FlowTransaction {
         if (authorizationSignatures.size < 2) {
             throw IllegalStateException("Transaction doesn't have required authorization signatures")
         } else if (authorizationSignatures.find { it.address == proposalKey.address } == null) {
@@ -376,8 +376,8 @@ data class FlowTransaction(
         )
     }
 
-    fun signAsPayer(privateKey: String, address: FlowAddress, keyId: Int): FlowTransaction {
-        return signAsPayer(Crypto.loadPrivateKey(privateKey), address, keyId)
+    fun signAsPayer(privateKey: String, keyId: Int, address: FlowAddress): FlowTransaction {
+        return signAsPayer(Crypto.loadPrivateKey(privateKey), keyId, address)
     }
 }
 

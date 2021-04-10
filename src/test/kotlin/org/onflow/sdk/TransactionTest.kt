@@ -30,15 +30,15 @@ class TransactionTest {
         val authorizer = FlowAddress("012345678012345678")
         val payer = FlowAddress("ababababababababab")
 
-        transaction = transaction.signAsProposer(pk1, proposer, 3)
+        transaction = transaction.signAsProposer(pk1, 2)
         println("Authorization signature (proposer) ${transaction.authorizationSignatures[0].signature.base16Value}")
         println("Authorization envelope (proposer) ${transaction.authorizationEnvelope.bytesToHex()}")
 
-        transaction = transaction.signAsAuthorizer(pk2, authorizer, 3)
+        transaction = transaction.signAsAuthorizer(pk2, 3, authorizer)
         println("Authorization signature (authorizer) ${transaction.authorizationSignatures[0].signature.base16Value}")
         println("Authorization envelope (authorizer) ${transaction.authorizationEnvelope.bytesToHex()}")
 
-        transaction = transaction.signAsPayer(pk3, payer, 3)
+        transaction = transaction.signAsPayer(pk3, 5, payer)
         println("Payment signature (payer) ${transaction.paymentSignatures[0].signature.base16Value}")
         println("Payment envelope (payer) ${transaction.paymentEnvelope.bytesToHex()}")
     }
