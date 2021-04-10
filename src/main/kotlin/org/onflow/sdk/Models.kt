@@ -317,6 +317,27 @@ data class FlowTransaction(
             .addAllPayloadSignatures(authorizationSignatures.map { it.builder().build() })
     }
 
+    fun signAsProposer(privateKey: String, address: FlowAddress, keyId: Int): FlowTransaction {
+        return signAsProposer(Crypto.loadPrivateKey(privateKey), address, keyId)
+    }
+
+    fun signAsProposer(privateKey: PrivateKey, address: FlowAddress, keyId: Int): FlowTransaction {
+        if (paymentSignatures.isNotEmpty()) {
+            throw IllegalStateException("Transaction already has payment signatures")
+        } else if (authorizationSignatures.find { it.address == address } != null) {
+            throw IllegalStateException("Transaction has already been signed by the proposer")
+        }
+        val signature = FlowTransactionSignature(
+            address = address,
+            signerIndex = authorizationSignatures.size,
+            keyId = keyId,
+            signature = FlowSignature(privateKey.sign(payloadEnvelope))
+        )
+        return this.copy(
+            authorizationSignatures = authorizationSignatures + signature
+        )
+    }
+
     fun signAsAuthorizer(privateKey: String, address: FlowAddress, keyId: Int): FlowTransaction {
         return signAsAuthorizer(Crypto.loadPrivateKey(privateKey), address, keyId)
     }
@@ -324,6 +345,8 @@ data class FlowTransaction(
     fun signAsAuthorizer(privateKey: PrivateKey, address: FlowAddress, keyId: Int): FlowTransaction {
         if (paymentSignatures.isNotEmpty()) {
             throw IllegalStateException("Transaction already has payment signatures")
+        } else if (authorizationSignatures.find { it.address == address } != null) {
+            throw IllegalStateException("Transaction has already been signed by the authorizer")
         }
         val signature = FlowTransactionSignature(
             address = address,
@@ -337,12 +360,14 @@ data class FlowTransaction(
     }
 
     fun signAsPayer(privateKey: PrivateKey, address: FlowAddress, keyId: Int): FlowTransaction {
-        if (authorizationSignatures.isEmpty()) {
-            throw IllegalStateException("Transaction doesn't have authorization signatures")
+        if (authorizationSignatures.size < 2) {
+            throw IllegalStateException("Transaction doesn't have required authorization signatures")
+        } else if (authorizationSignatures.find { it.address == proposalKey.address } == null) {
+            throw IllegalStateException("Transaction has not yet been signed by the proposer")
         }
         val signature = FlowTransactionSignature(
             address = address,
-            signerIndex = authorizationSignatures.size,
+            signerIndex = paymentSignatures.size,
             keyId = keyId,
             signature = FlowSignature(privateKey.sign(authorizationEnvelope))
         )

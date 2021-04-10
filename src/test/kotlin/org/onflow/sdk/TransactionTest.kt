@@ -24,17 +24,23 @@ class TransactionTest {
 
         val pk1 = Crypto.generateKeyPair().privateKey
         val pk2 = Crypto.generateKeyPair().privateKey
+        val pk3 = Crypto.generateKeyPair().privateKey
 
-        val address1 = FlowAddress("f8d6e0586b0a20c7")
-        val address2 = FlowAddress("f8d6e0586b0a20c7")
+        val proposer = transaction.proposalKey.address
+        val authorizer = FlowAddress("012345678012345678")
+        val payer = FlowAddress("ababababababababab")
 
-        transaction = transaction.signAsAuthorizer(pk1, address1, 3)
-        println("Authorization signature ${transaction.authorizationSignatures[0].signature.base16Value}")
-        println("Authorization envelope ${transaction.authorizationEnvelope.bytesToHex()}")
+        transaction = transaction.signAsProposer(pk1, proposer, 3)
+        println("Authorization signature (proposer) ${transaction.authorizationSignatures[0].signature.base16Value}")
+        println("Authorization envelope (proposer) ${transaction.authorizationEnvelope.bytesToHex()}")
 
-        transaction = transaction.signAsPayer(pk2, address2, 3)
-        println("Payment signature ${transaction.paymentSignatures[0].signature.base16Value}")
-        println("Payment envelope ${transaction.paymentEnvelope.bytesToHex()}")
+        transaction = transaction.signAsAuthorizer(pk2, authorizer, 3)
+        println("Authorization signature (authorizer) ${transaction.authorizationSignatures[0].signature.base16Value}")
+        println("Authorization envelope (authorizer) ${transaction.authorizationEnvelope.bytesToHex()}")
+
+        transaction = transaction.signAsPayer(pk3, payer, 3)
+        println("Payment signature (payer) ${transaction.paymentSignatures[0].signature.base16Value}")
+        println("Payment envelope (payer) ${transaction.paymentEnvelope.bytesToHex()}")
     }
 
     @Test
