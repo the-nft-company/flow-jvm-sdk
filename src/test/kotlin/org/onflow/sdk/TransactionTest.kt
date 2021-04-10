@@ -108,6 +108,9 @@ class TransactionTest {
         assertThat("id" in results.events[3].event).isTrue
         assertThat("price" in results.events[3].event).isTrue
         assertThat("seller" in results.events[3].event).isTrue
+        assertThat("id" in results.events[3].event.value!!).isTrue
+        assertThat("price" in results.events[3].event.value!!).isTrue
+        assertThat("seller" in results.events[3].event.value!!).isTrue
 
         val block = accessApi.getBlockById(tx!!.referenceBlockId)
         assertThat(block).isNotNull

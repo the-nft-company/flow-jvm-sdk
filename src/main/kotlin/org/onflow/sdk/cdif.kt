@@ -84,11 +84,15 @@ open class CapabilityField(value: CapabilityValue) : Field<CapabilityValue>(TYPE
 
 open class CompositeField(type: String, value: CompositeValue) : Field<CompositeValue>(type, value) {
     val id: String? get() = value?.id
-    operator fun <T : Field<*>> get(name: String): T? = value?.fields?.find { it.name == name }?.value as T?
-    operator fun contains(name: String): Boolean = value?.fields?.find { it.name == name } != null
+    operator fun <T : Field<*>> get(name: String): T? = value?.getField(name)
+    operator fun contains(name: String): Boolean = value?.getField<Field<*>>(name) != null
 }
 open class CompositeAttribute(val name: String, val value: Field<*>)
-open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>)
+open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>)  {
+    fun <T : Field<*>> getField(name: String): T? = fields.find { it.name == name }?.value as T?
+    operator fun <T> get(name: String): T? = getField<Field<*>>(name)?.value as T?
+    operator fun contains(name: String): Boolean =fields.find { it.name == name } != null
+}
 open class StructField(value: CompositeValue) : CompositeField(TYPE_STRUCT, value)
 open class ResourceField(value: CompositeValue) : CompositeField(TYPE_RESOURCE, value)
 open class EventField(value: CompositeValue) : CompositeField(TYPE_EVENT, value)

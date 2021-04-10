@@ -176,7 +176,9 @@ data class FlowEvent(
     val id: String get() = event.id!!
     val event: EventField get() = payload.cdif as EventField
 
-    operator fun <T : Field<*>> get(name: String): T? = event[name]
+    fun <T : Field<*>> getField(name: String): T? = event[name]
+    @Suppress("UNCHECKED")
+    operator fun <T> get(name: String): T? = getField<Field<*>>(name) as T
     operator fun contains(name: String): Boolean = name in event
 
     @JvmOverloads
