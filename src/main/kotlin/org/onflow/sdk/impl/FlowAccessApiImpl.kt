@@ -16,7 +16,6 @@ import org.onflow.sdk.FlowScriptResponse
 import org.onflow.sdk.FlowSnapshot
 import org.onflow.sdk.FlowTransaction
 import org.onflow.sdk.FlowTransactionResult
-import java.math.BigInteger
 
 class FlowAccessApiImpl(
     private val api: AccessAPIGrpc.AccessAPIBlockingStub
@@ -50,10 +49,10 @@ class FlowAccessApiImpl(
         }
     }
 
-    override fun getBlockHeaderByHeight(height: BigInteger): FlowBlockHeader? {
+    override fun getBlockHeaderByHeight(height: Long): FlowBlockHeader? {
         val ret = api.getBlockHeaderByHeight(
             Access.GetBlockHeaderByHeightRequest.newBuilder()
-                .setHeight(height.toLong())
+                .setHeight(height)
                 .build()
         )
         return if (ret.hasBlock()) {
@@ -84,10 +83,10 @@ class FlowAccessApiImpl(
         }
     }
 
-    override fun getBlockByHeight(height: BigInteger): FlowBlock? {
+    override fun getBlockByHeight(height: Long): FlowBlock? {
         val ret = api.getBlockByHeight(
             Access.GetBlockByHeightRequest.newBuilder()
-                .setHeight(height.toLong())
+                .setHeight(height)
                 .build()
         )
         return if (ret.hasBlock()) {
@@ -167,11 +166,11 @@ class FlowAccessApiImpl(
         }
     }
 
-    override fun getAccountByBlockHeight(addresss: FlowAddress, height: BigInteger): FLowAccount? {
+    override fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): FLowAccount? {
         val ret = api.getAccountAtBlockHeight(
             Access.GetAccountAtBlockHeightRequest.newBuilder()
                 .setAddress(addresss.byteStringValue)
-                .setBlockHeight(height.toLong())
+                .setBlockHeight(height)
                 .build()
         )
         return if (ret.hasAccount()) {
@@ -199,7 +198,7 @@ class FlowAccessApiImpl(
         return FlowScriptResponse(ret.value.toByteArray())
     }
 
-    override fun executeScriptAtBlockHeight(script: FlowScript, height: BigInteger): FlowScriptResponse {
+    override fun executeScriptAtBlockHeight(script: FlowScript, height: Long): FlowScriptResponse {
         val ret = api.executeScriptAtBlockHeight(
             Access.ExecuteScriptAtBlockHeightRequest.newBuilder()
                 .setScript(script.byteStringValue)
@@ -208,12 +207,12 @@ class FlowAccessApiImpl(
         return FlowScriptResponse(ret.value.toByteArray())
     }
 
-    override fun getEventsForHeightRange(type: String, range: ClosedRange<BigInteger>): List<FlowEventResult> {
+    override fun getEventsForHeightRange(type: String, range: ClosedRange<Long>): List<FlowEventResult> {
         val ret = api.getEventsForHeightRange(
             Access.GetEventsForHeightRangeRequest.newBuilder()
                 .setType(type)
-                .setStartHeight(range.start.toLong())
-                .setEndHeight(range.endInclusive.toLong())
+                .setStartHeight(range.start)
+                .setEndHeight(range.endInclusive)
                 .build()
         )
         return ret.resultsList

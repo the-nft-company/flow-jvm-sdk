@@ -1,5 +1,8 @@
 package org.onflow.sdk
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import java.math.BigInteger
@@ -14,8 +17,13 @@ object Flow {
 
     const val DEFAULT_USER_AGENT = "Flow Java SDK"
 
+    var objectMapper: ObjectMapper
+
     init {
         Security.addProvider(BouncyCastleProvider())
+        objectMapper = ObjectMapper()
+        objectMapper.registerKotlinModule()
+        objectMapper.findAndRegisterModules()
     }
 
     fun newAccessApi(host: String, port: Int, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): FlowAccessApi {
@@ -57,4 +65,13 @@ object Flow {
             SignatureAlgorithm.ECDSA_SECP256K1_ECDSA_SECP256K1 -> throw IllegalArgumentException("ECDSA_SECP256K1_ECDSA_SECP256K1 isn't supported yet")
         }
     }
+
+    fun <T : Field<*>> decodeCDIFs(string: String): List<T> = decodeCDIFs(string.toByteArray(Charsets.UTF_8))
+    fun <T : Field<*>> decodeCDIFs(bytes: ByteArray): List<T> = objectMapper.readValue(bytes, object : TypeReference<List<T>>() {})
+
+    fun <T : Field<*>> decodeCDIF(string: String): T = decodeCDIF(string.toByteArray(Charsets.UTF_8))
+    fun <T : Field<*>> decodeCDIF(bytes: ByteArray): T = objectMapper.readValue(bytes, object : TypeReference<T>() {})
+
+    fun <T : Field<*>> encodeCDIFs(cdifs: Iterable<T>): ByteArray = objectMapper.writeValueAsBytes(cdifs)
+    fun <T : Field<*>> encodeCDIF(cdif: T): ByteArray = objectMapper.writeValueAsBytes(cdif)
 }

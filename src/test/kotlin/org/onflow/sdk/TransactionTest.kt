@@ -90,4 +90,32 @@ class TransactionTest {
         println(account!!)
         assertThat(account.keys).isNotEmpty
     }
+
+    @Test
+    fun `Can parse events`() {
+        val accessApi = Flow.newAccessApi(FlowChainId.MAINNET)
+
+        val tx = accessApi.getTransactionById(FlowId("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e"))
+        assertThat(tx).isNotNull
+
+        val results = accessApi.getTransactionResultById(FlowId("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e"))!!
+        assertThat(results.events).hasSize(4)
+        assertThat(results.events[0].event.id).isEqualTo("A.0b2a3299cc857e29.TopShot.Withdraw")
+        assertThat(results.events[1].event.id).isEqualTo("A.c1e4f4f4c4257510.Market.CutPercentageChanged")
+        assertThat(results.events[2].event.id).isEqualTo("A.0b2a3299cc857e29.TopShot.Deposit")
+
+        assertThat(results.events[3].event.id).isEqualTo("A.c1e4f4f4c4257510.Market.MomentListed")
+        assertThat("id" in results.events[3].event).isTrue
+        assertThat("price" in results.events[3].event).isTrue
+        assertThat("seller" in results.events[3].event).isTrue
+
+        val block = accessApi.getBlockById(tx!!.referenceBlockId)
+        assertThat(block).isNotNull
+
+        val events = accessApi.getEventsForBlockIds("A.0b2a3299cc857e29.TopShot.Withdraw", setOf(block!!.id))
+        assertThat(events).isNotNull
+    }
 }
+
+// {"type":"Event","value":{"id":"A.0b2a3299cc857e29.TopShot.Withdraw","fields":[{"name":"id","value":{"type":"UInt64","value":"855038"}},{"name":"from","value":{"type":"Optional","value":{"type":"Address","value":"0xd1b16e03b5558c03"}}}]}}
+

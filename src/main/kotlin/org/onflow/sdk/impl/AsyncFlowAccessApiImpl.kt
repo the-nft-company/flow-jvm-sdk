@@ -20,7 +20,6 @@ import org.onflow.sdk.FlowScriptResponse
 import org.onflow.sdk.FlowSnapshot
 import org.onflow.sdk.FlowTransaction
 import org.onflow.sdk.FlowTransactionResult
-import java.math.BigInteger
 import java.util.concurrent.CompletableFuture
 
 class AsyncFlowAccessApiImpl(
@@ -65,11 +64,11 @@ class AsyncFlowAccessApiImpl(
         }
     }
 
-    override fun getBlockHeaderByHeight(height: BigInteger): CompletableFuture<FlowBlockHeader?> {
+    override fun getBlockHeaderByHeight(height: Long): CompletableFuture<FlowBlockHeader?> {
         return completableFuture(
             api.getBlockHeaderByHeight(
                 Access.GetBlockHeaderByHeightRequest.newBuilder()
-                    .setHeight(height.toLong())
+                    .setHeight(height)
                     .build()
             )
         ).thenApply {
@@ -108,11 +107,11 @@ class AsyncFlowAccessApiImpl(
         }
     }
 
-    override fun getBlockByHeight(height: BigInteger): CompletableFuture<FlowBlock?> {
+    override fun getBlockByHeight(height: Long): CompletableFuture<FlowBlock?> {
         return completableFuture(
             api.getBlockByHeight(
                 Access.GetBlockByHeightRequest.newBuilder()
-                    .setHeight(height.toLong())
+                    .setHeight(height)
                     .build()
             )
         ).thenApply {
@@ -212,12 +211,12 @@ class AsyncFlowAccessApiImpl(
         }
     }
 
-    override fun getAccountByBlockHeight(addresss: FlowAddress, height: BigInteger): CompletableFuture<FLowAccount?> {
+    override fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): CompletableFuture<FLowAccount?> {
         return completableFuture(
             api.getAccountAtBlockHeight(
                 Access.GetAccountAtBlockHeightRequest.newBuilder()
                     .setAddress(addresss.byteStringValue)
-                    .setBlockHeight(height.toLong())
+                    .setBlockHeight(height)
                     .build()
             )
         ).thenApply {
@@ -255,7 +254,7 @@ class AsyncFlowAccessApiImpl(
 
     override fun executeScriptAtBlockHeight(
         script: FlowScript,
-        height: BigInteger
+        height: Long
     ): CompletableFuture<FlowScriptResponse> {
         return completableFuture(
             api.executeScriptAtBlockHeight(
@@ -270,14 +269,14 @@ class AsyncFlowAccessApiImpl(
 
     override fun getEventsForHeightRange(
         type: String,
-        range: ClosedRange<BigInteger>
+        range: ClosedRange<Long>
     ): CompletableFuture<List<FlowEventResult>> {
         return completableFuture(
             api.getEventsForHeightRange(
                 Access.GetEventsForHeightRangeRequest.newBuilder()
                     .setType(type)
-                    .setStartHeight(range.start.toLong())
-                    .setEndHeight(range.endInclusive.toLong())
+                    .setStartHeight(range.start)
+                    .setEndHeight(range.endInclusive)
                     .build()
             )
         ).thenApply {

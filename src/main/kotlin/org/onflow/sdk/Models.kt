@@ -2,6 +2,8 @@ package org.onflow.sdk
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.UnsafeByteOperations
+import java.math.BigInteger
+import java.time.LocalDateTime
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.entities.AccountOuterClass
 import org.onflow.protobuf.entities.BlockHeaderOuterClass
@@ -10,8 +12,6 @@ import org.onflow.protobuf.entities.BlockSealOuterClass
 import org.onflow.protobuf.entities.CollectionOuterClass
 import org.onflow.protobuf.entities.EventOuterClass
 import org.onflow.protobuf.entities.TransactionOuterClass
-import java.math.BigInteger
-import java.time.LocalDateTime
 import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
 
@@ -153,6 +153,8 @@ data class FlowEventResult(
     }
 }
 
+// https://github.com/onflow/flow-go-sdk/blob/878e5e586e0f060b88c6036cf4b0f6a7ab66d198/client/client.go#L515
+
 data class FlowEvent(
     val type: String,
     val transactionId: FlowId,
@@ -170,6 +172,12 @@ data class FlowEvent(
             payload = FlowEventPayload(value.payload.toByteArray())
         )
     }
+
+    val id: String get() = event.id!!
+    val event: EventField get() = payload.cdif as EventField
+
+    operator fun <T : Field<*>> get(name: String): T? = event[name]
+    operator fun contains(name: String): Boolean = name in event
 
     @JvmOverloads
     fun builder(builder: EventOuterClass.Event.Builder = EventOuterClass.Event.newBuilder()): EventOuterClass.Event.Builder {
@@ -279,7 +287,7 @@ data class FlowTransaction(
             referenceBlockId = FlowId.of(value.referenceBlockId.toByteArray()),
             gasLimit = value.gasLimit,
             proposalKey = FlowTransactionProposalKey.of(value.proposalKey),
-            payerAddress = FlowAddress.of(value.toByteArray()),
+            payerAddress = FlowAddress.of(value.payer.toByteArray()),
             authorizers = value.authorizersList.map { FlowAddress.of(it.toByteArray()) },
             payloadSignatures = value.payloadSignaturesList.map { FlowTransactionSignature.of(it) },
             envelopeSignatures = value.envelopeSignaturesList.map { FlowTransactionSignature.of(it) }
@@ -502,6 +510,17 @@ data class FlowAddress private constructor(override val bytes: ByteArray) : Byte
 }
 
 data class FlowArgument(override val bytes: ByteArray) : BytesHolder {
+
+    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+
+    private var _cdif: Field<*>? = null
+    val cdif: Field<*> get() {
+        if (_cdif == null) {
+            _cdif = Flow.decodeCDIF(bytes)
+        }
+        return _cdif!!
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -531,6 +550,17 @@ data class FlowScript(override val bytes: ByteArray) : BytesHolder {
 }
 
 data class FlowScriptResponse(override val bytes: ByteArray) : BytesHolder {
+
+    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+
+    private var _cdif: Field<*>? = null
+    val cdif: Field<*> get() {
+        if (_cdif == null) {
+            _cdif = Flow.decodeCDIF(bytes)
+        }
+        return _cdif!!
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -568,20 +598,6 @@ data class FlowId private constructor(override val bytes: ByteArray) : BytesHold
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         other as FlowId
-        if (!bytes.contentEquals(other.bytes)) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return bytes.contentHashCode()
-    }
-}
-
-data class FlowEventPayload(override val bytes: ByteArray) : BytesHolder {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as FlowEventPayload
         if (!bytes.contentEquals(other.bytes)) return false
         return true
     }
@@ -632,3 +648,32 @@ data class FlowSnapshot(override val bytes: ByteArray) : BytesHolder {
         return bytes.contentHashCode()
     }
 }
+
+data class FlowEventPayload(override val bytes: ByteArray) : BytesHolder {
+
+    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+
+    private var _cdif: Field<*>? = null
+    val cdif: Field<*> get() {
+        if (_cdif == null) {
+            _cdif = Flow.decodeCDIF(bytes)
+        }
+        return _cdif!!
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as FlowEventPayload
+        if (!bytes.contentEquals(other.bytes)) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return bytes.contentHashCode()
+    }
+}
+
+
+
+

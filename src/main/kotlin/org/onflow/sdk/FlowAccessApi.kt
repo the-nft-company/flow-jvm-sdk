@@ -1,7 +1,5 @@
 package org.onflow.sdk
 
-import java.math.BigInteger
-
 interface FlowAccessApi {
 
     fun ping()
@@ -10,13 +8,13 @@ interface FlowAccessApi {
 
     fun getBlockHeaderById(id: FlowId): FlowBlockHeader?
 
-    fun getBlockHeaderByHeight(height: BigInteger): FlowBlockHeader?
+    fun getBlockHeaderByHeight(height: Long): FlowBlockHeader?
 
     fun getLatestBlock(sealed: Boolean = true): FlowBlock
 
     fun getBlockById(id: FlowId): FlowBlock?
 
-    fun getBlockByHeight(height: BigInteger): FlowBlock?
+    fun getBlockByHeight(height: Long): FlowBlock?
 
     fun getCollectionById(id: FlowId): FlowCollection?
 
@@ -34,15 +32,15 @@ interface FlowAccessApi {
 
     fun getAccountAtLatestBlock(addresss: FlowAddress): FLowAccount?
 
-    fun getAccountByBlockHeight(addresss: FlowAddress, height: BigInteger): FLowAccount?
+    fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): FLowAccount?
 
     fun executeScriptAtLatestBlock(script: FlowScript): FlowScriptResponse
 
     fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): FlowScriptResponse
 
-    fun executeScriptAtBlockHeight(script: FlowScript, height: BigInteger): FlowScriptResponse
+    fun executeScriptAtBlockHeight(script: FlowScript, height: Long): FlowScriptResponse
 
-    fun getEventsForHeightRange(type: String, range: ClosedRange<BigInteger>): List<FlowEventResult>
+    fun getEventsForHeightRange(type: String, range: ClosedRange<Long>): List<FlowEventResult>
 
     fun getEventsForBlockIds(type: String, ids: Set<FlowId>): List<FlowEventResult>
 
