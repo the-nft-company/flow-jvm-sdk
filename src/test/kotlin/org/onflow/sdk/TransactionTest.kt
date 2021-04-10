@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 
 class TransactionTest {
 
-    private val transaction = FlowTransaction(
+    private var transaction = FlowTransaction(
         script = FlowScript("import 0xsomething \n {}"),
         arguments = listOf(FlowArgument(byteArrayOf(2, 2, 3)), FlowArgument(byteArrayOf(3, 3, 3))),
         referenceBlockId = FlowId.of(byteArrayOf(3, 3, 3, 6, 6, 6)),
@@ -22,37 +22,25 @@ class TransactionTest {
     @Test
     fun `Can sign transactions`() {
 
-        val address = FlowAddress("f8d6e0586b0a20c7")
+        val pk1 = Crypto.generateKeyPair().privateKey
+        val pk2 = Crypto.generateKeyPair().privateKey
 
-        val fooSignature = FlowSignature(byteArrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4))
-        val barSignature = FlowSignature(byteArrayOf(3, 3, 3))
+        val address1 = FlowAddress("f8d6e0586b0a20c7")
+        val address2 = FlowAddress("f8d6e0586b0a20c7")
 
-        val signedTx = transaction.copy(
-            payloadSignatures = listOf(
-                FlowTransactionSignature(address, 0, 0, fooSignature),
-                FlowTransactionSignature(address, 4, 5, barSignature)
-            )
-        )
+        transaction = transaction.signAsAuthorizer(pk1, address1, 3)
+        println("Authorization signature ${transaction.authorizationSignatures[0].signature.base16Value}")
+        println("Authorization envelope ${transaction.authorizationEnvelope.bytesToHex()}")
 
-        val privateKey = Flow.loadPrivateKey("ceff2bd777f3b5c81d7edfd191c99239cb9c56fc64946741339a55fd094586c9")
-
-        val payloadCanonical = transaction.canonicalPayload
-        val payloadSignature = privateKey.sign(payloadCanonical)
-
-        println("Payload signature ${payloadSignature.bytesToHex()}")
-
-        val envelopeCanonical = signedTx.canonicalEnvelope
-        val envelopeSignature = privateKey.sign(envelopeCanonical)
-
-        println("Envelope signature ${envelopeSignature.bytesToHex()}")
-
-        // Signatures above can used in Flow Go implementation tests to check for correctness
+        transaction = transaction.signAsPayer(pk2, address2, 3)
+        println("Payment signature ${transaction.paymentSignatures[0].signature.base16Value}")
+        println("Payment envelope ${transaction.paymentEnvelope.bytesToHex()}")
     }
 
     @Test
     fun `Canonical transaction form is accurate`() {
 
-        val payloadCanonical = transaction.canonicalPayload
+        val payloadEnvelope = transaction.payloadEnvelope
 
         // those values were generated from Go implementation for the same transaction input data
         val payloadExpectedHex =
@@ -60,7 +48,7 @@ class TransactionTest {
         val envelopeExpectedHex =
             "f883f86a97696d706f7274203078736f6d657468696e67200a207b7dc88302020383030303a000000000000000000000000000000000000000000000000000000303030606062c8800000405040504050b07880000000605040302d2880000000909090909880000000809090909d6ce80808b0404040404040404040404c6040583030303"
 
-        assertThat(payloadCanonical).isEqualTo(payloadExpectedHex.hexToBytes())
+        assertThat(payloadEnvelope).isEqualTo(payloadExpectedHex.hexToBytes())
 
         val address = FlowAddress("f8d6e0586b0a20c7")
 
@@ -68,14 +56,14 @@ class TransactionTest {
         val barSignature = byteArrayOf(3, 3, 3)
 
         val signedTx = transaction.copy(
-            payloadSignatures = listOf(
+            authorizationSignatures = listOf(
                 FlowTransactionSignature(address, 0, 0, FlowSignature(fooSignature)),
                 FlowTransactionSignature(address, 4, 5, FlowSignature(barSignature))
             )
         )
 
-        val envelopeCanonical = signedTx.canonicalEnvelope
-        assertThat(envelopeCanonical).isEqualTo(envelopeExpectedHex.hexToBytes())
+        val authorizationEnvelope = signedTx.authorizationEnvelope
+        assertThat(authorizationEnvelope).isEqualTo(envelopeExpectedHex.hexToBytes())
     }
 
     @Test

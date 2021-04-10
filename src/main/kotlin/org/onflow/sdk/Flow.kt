@@ -5,13 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
-import java.math.BigInteger
-import java.security.Security
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.onflow.protobuf.access.AccessAPIGrpc
 import org.onflow.sdk.impl.AsyncFlowAccessApiImpl
-import org.onflow.sdk.impl.ECDSAp256_SHA3_256PrivateKey
 import org.onflow.sdk.impl.FlowAccessApiImpl
+
 
 object Flow {
 
@@ -20,7 +17,6 @@ object Flow {
     var objectMapper: ObjectMapper
 
     init {
-        Security.addProvider(BouncyCastleProvider())
         objectMapper = ObjectMapper()
         objectMapper.registerKotlinModule()
         objectMapper.findAndRegisterModules()
@@ -56,14 +52,6 @@ object Flow {
         }
 
         return channelBuilder.build()
-    }
-
-    fun loadPrivateKey(hex: String, algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256_ECDSA_P256): PrivateKey {
-        val d = BigInteger(hex, 16)
-        return when (algo) {
-            SignatureAlgorithm.ECDSA_P256_ECDSA_P256 -> ECDSAp256_SHA3_256PrivateKey(d)
-            SignatureAlgorithm.ECDSA_SECP256K1_ECDSA_SECP256K1 -> throw IllegalArgumentException("ECDSA_SECP256K1_ECDSA_SECP256K1 isn't supported yet")
-        }
     }
 
     fun <T : Field<*>> decodeCDIFs(string: String): List<T> = decodeCDIFs(string.toByteArray(Charsets.UTF_8))
