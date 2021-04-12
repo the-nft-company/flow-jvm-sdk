@@ -119,16 +119,16 @@ data class FlowAccountKey(
 data class FlowEventResult(
     val blockId: FlowId,
     val blockHeight: Long,
-    val events: List<FlowEvent>,
-    val blockTimestamp: LocalDateTime
+    val blockTimestamp: LocalDateTime,
+    val events: List<FlowEvent>
 ) {
     companion object {
         @JvmStatic
         fun of(value: Access.EventsResponse.Result): FlowEventResult = FlowEventResult(
             blockId = FlowId.of(value.blockId.toByteArray()),
             blockHeight = value.blockHeight,
-            events = value.eventsList.map { FlowEvent.of(it) },
-            blockTimestamp = value.blockTimestamp.asLocalDateTime()
+            blockTimestamp = value.blockTimestamp.asLocalDateTime(),
+            events = value.eventsList.map { FlowEvent.of(it) }
         )
     }
 
@@ -137,8 +137,8 @@ data class FlowEventResult(
         return builder
             .setBlockId(blockId.byteStringValue)
             .setBlockHeight(blockHeight)
-            .addAllEvents(events.map { it.builder().build() })
             .setBlockTimestamp(blockTimestamp.asTimestamp())
+            .addAllEvents(events.map { it.builder().build() })
     }
 }
 
