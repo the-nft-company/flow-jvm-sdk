@@ -48,6 +48,42 @@ enum class FlowChainId(
     }
 }
 
+enum class SignatureAlgorithm(
+    val algorithm: String,
+    val curve: String,
+    val id: String,
+    val code: Int
+) {
+    UNKNOWN("unknown", "unknown", "unknown", -1),
+    ECDSA_P256("ECDSA", "P-256", "ECDSA_P256", 2),
+    ECDSA_SECP256k1("ECDSA", "secp256k1", "ECDSA_secp256k1", 3);
+    companion object {
+        @JvmStatic
+        fun fromCode(code: Int): SignatureAlgorithm = values()
+            .find { it.code == code } ?: UNKNOWN
+    }
+}
+
+enum class HashAlgorithm(
+    val algorithm: String,
+    val outputSize: Int,
+    val id: String,
+    val code: Int
+) {
+    UNKNOWN("unknown", -1, "unknown", -1),
+    SHA2_256("SHA-2", 256, "SHA256withECDSA", 1),
+    SHA3_256("SHA-3", 256, "SHA3-256withECDSA", 3);
+    companion object {
+        @JvmStatic
+        fun fromCode(code: Int): HashAlgorithm = values()
+            .find { it.code == code } ?: UNKNOWN
+    }
+}
+
+interface Signer {
+    fun sign(bytes: ByteArray): ByteArray
+}
+
 data class FlowAccount(
     val address: FlowAddress,
     val balance: Long,

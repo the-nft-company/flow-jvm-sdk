@@ -13,38 +13,6 @@ import org.bouncycastle.jce.interfaces.ECPublicKey
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECPrivateKeySpec
 
-enum class SignatureAlgorithm(
-    val algorithm: String,
-    val curve: String,
-    val id: String,
-    val code: Int
-) {
-    UNKNOWN("unknown", "unknown", "unknown", -1),
-    ECDSA_P256("ECDSA", "P-256", "ECDSA_P256", 2),
-    ECDSA_SECP256k1("ECDSA", "secp256k1", "ECDSA_secp256k1", 3);
-    companion object {
-        @JvmStatic
-        fun fromCode(code: Int): SignatureAlgorithm = values()
-            .find { it.code == code } ?: UNKNOWN
-    }
-}
-
-enum class HashAlgorithm(
-    val algorithm: String,
-    val outputSize: Int,
-    val id: String,
-    val code: Int
-) {
-    UNKNOWN("unknown", -1, "unknown", -1),
-    SHA2_256("SHA-2", 256, "SHA256withECDSA", 1),
-    SHA3_256("SHA-3", 256, "SHA3-256withECDSA", 3);
-    companion object {
-        @JvmStatic
-        fun fromCode(code: Int): HashAlgorithm = values()
-            .find { it.code == code } ?: UNKNOWN
-    }
-}
-
 data class KeyPair(
     val private: PrivateKey,
     val public: PublicKey
@@ -60,11 +28,6 @@ data class PublicKey(
     val key: java.security.PublicKey,
     val hex: String
 )
-
-interface Signer {
-    val hashAlgo: HashAlgorithm
-    fun sign(bytes: ByteArray): ByteArray
-}
 
 object Crypto {
 
@@ -130,7 +93,7 @@ object Crypto {
 
 internal class SignerImpl(
     private val privateKey: PrivateKey,
-    override val hashAlgo: HashAlgorithm
+    private val hashAlgo: HashAlgorithm
 ) : Signer {
 
     override fun sign(bytes: ByteArray): ByteArray {
