@@ -7,7 +7,7 @@ import com.google.common.util.concurrent.MoreExecutors
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.access.AccessAPIGrpc
 import org.onflow.sdk.AsyncFlowAccessApi
-import org.onflow.sdk.FLowAccount
+import org.onflow.sdk.FlowAccount
 import org.onflow.sdk.FlowAddress
 import org.onflow.sdk.FlowBlock
 import org.onflow.sdk.FlowBlockHeader
@@ -179,7 +179,7 @@ class AsyncFlowAccessApiImpl(
         }
     }
 
-    override fun getAccountByAddress(addresss: FlowAddress): CompletableFuture<FLowAccount?> {
+    override fun getAccountByAddress(addresss: FlowAddress): CompletableFuture<FlowAccount?> {
         return completableFuture(
             api.getAccount(
                 Access.GetAccountRequest.newBuilder()
@@ -188,14 +188,14 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasAccount()) {
-                FLowAccount.of(it.account)
+                FlowAccount.of(it.account)
             } else {
                 null
             }
         }
     }
 
-    override fun getAccountAtLatestBlock(addresss: FlowAddress): CompletableFuture<FLowAccount?> {
+    override fun getAccountAtLatestBlock(addresss: FlowAddress): CompletableFuture<FlowAccount?> {
         return completableFuture(
             api.getAccountAtLatestBlock(
                 Access.GetAccountAtLatestBlockRequest.newBuilder()
@@ -204,14 +204,14 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasAccount()) {
-                FLowAccount.of(it.account)
+                FlowAccount.of(it.account)
             } else {
                 null
             }
         }
     }
 
-    override fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): CompletableFuture<FLowAccount?> {
+    override fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): CompletableFuture<FlowAccount?> {
         return completableFuture(
             api.getAccountAtBlockHeight(
                 Access.GetAccountAtBlockHeightRequest.newBuilder()
@@ -221,7 +221,7 @@ class AsyncFlowAccessApiImpl(
             )
         ).thenApply {
             if (it.hasAccount()) {
-                FLowAccount.of(it.account)
+                FlowAccount.of(it.account)
             } else {
                 null
             }

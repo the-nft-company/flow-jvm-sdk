@@ -30,11 +30,11 @@ interface AsyncFlowAccessApi {
         message = "Behaves identically to getAccountAtLatestBlock",
         replaceWith = ReplaceWith("getAccountAtLatestBlock")
     )
-    fun getAccountByAddress(addresss: FlowAddress): CompletableFuture<FLowAccount?>
+    fun getAccountByAddress(addresss: FlowAddress): CompletableFuture<FlowAccount?>
 
-    fun getAccountAtLatestBlock(addresss: FlowAddress): CompletableFuture<FLowAccount?>
+    fun getAccountAtLatestBlock(addresss: FlowAddress): CompletableFuture<FlowAccount?>
 
-    fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): CompletableFuture<FLowAccount?>
+    fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): CompletableFuture<FlowAccount?>
 
     fun executeScriptAtLatestBlock(script: FlowScript): CompletableFuture<FlowScriptResponse>
 

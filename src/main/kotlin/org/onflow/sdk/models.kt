@@ -32,15 +32,13 @@ enum class FlowTransactionStatus(val num: Int) {
 }
 
 enum class FlowChainId(
-    val id: String,
-    val endpoint: String,
-    val poort: Int
+    val id: String
 ) {
-    UNKNOWN("unknown", "", -1),
-    MAINNET("flow-mainnet", "access.mainnet.nodes.onflow.org", 9000),
-    TESTNET("flow-testnet", "access.devnet.nodes.onflow.org", 9000),
-    CANARYNET("flow-canarynet", "access.canary.nodes.onflow.org", 9000),
-    EMULATOR("flow-emulator", "localhost", 3569);
+    UNKNOWN("unknown"),
+    MAINNET("flow-mainnet"),
+    TESTNET("flow-testnet"),
+    CANARYNET("flow-canarynet"),
+    EMULATOR("flow-emulator");
 
     companion object {
         @JvmStatic
@@ -50,7 +48,7 @@ enum class FlowChainId(
     }
 }
 
-data class FLowAccount(
+data class FlowAccount(
     val address: FlowAddress,
     val balance: Long,
     @Deprecated(
@@ -63,7 +61,7 @@ data class FLowAccount(
 ) {
     companion object {
         @JvmStatic
-        fun of(value: AccountOuterClass.Account): FLowAccount = FLowAccount(
+        fun of(value: AccountOuterClass.Account): FlowAccount = FlowAccount(
             address = FlowAddress.of(value.address.toByteArray()),
             balance = value.balance,
             code = FlowCode(value.code.toByteArray()),
@@ -86,8 +84,8 @@ data class FLowAccount(
 data class FlowAccountKey(
     val id: Int,
     val publicKey: FlowPublicKey,
-    val signAlgo: Int,
-    val hashAlgo: Int,
+    val signAlgo: SignatureAlgorithm,
+    val hashAlgo: HashAlgorithm,
     val weight: Int,
     val sequenceNumber: Int,
     val revoked: Boolean
@@ -97,10 +95,10 @@ data class FlowAccountKey(
         fun of(value: AccountOuterClass.AccountKey): FlowAccountKey = FlowAccountKey(
             id = value.index,
             publicKey = FlowPublicKey(value.publicKey.toByteArray()),
-            signAlgo = value.index,
-            hashAlgo = value.index,
-            weight = value.index,
-            sequenceNumber = value.index,
+            signAlgo = SignatureAlgorithm.fromCode(value.signAlgo),
+            hashAlgo = HashAlgorithm.fromCode(value.hashAlgo),
+            weight = value.weight,
+            sequenceNumber = value.sequenceNumber,
             revoked = value.revoked
         )
     }
@@ -110,8 +108,8 @@ data class FlowAccountKey(
         return builder
             .setIndex(id)
             .setPublicKey(publicKey.byteStringValue)
-            .setSignAlgo(signAlgo)
-            .setHashAlgo(hashAlgo)
+            .setSignAlgo(signAlgo.code)
+            .setHashAlgo(hashAlgo.code)
             .setWeight(weight)
             .setSequenceNumber(sequenceNumber)
             .setRevoked(revoked)
@@ -209,7 +207,7 @@ data class FlowTransactionResult(
     }
 }
 
-internal class PayloadEnvelope(
+internal class Payload(
     val script: ByteArray,
     val arguments: List<ByteArray>,
     val referenceBlockId: ByteArray,
@@ -221,18 +219,17 @@ internal class PayloadEnvelope(
     val authorizers: List<ByteArray>
 )
 
-internal class AuthorizationEnvelope(
-    @RLP(0) val payloadEnvelope: PayloadEnvelope,
-    @RLP(1) val signatures: List<CanonicalSignature>
+internal class PayloadEnvelope(
+    @RLP(0) val payload: Payload,
+    @RLP(1) val payloadSignatures: List<EnvelopeSignature>
 )
 
 internal class PaymentEnvelope(
     @RLP(0) val payloadEnvelope: PayloadEnvelope,
-    @RLP(1) val authorizationEnvelope: AuthorizationEnvelope,
-    @RLP(2) val signatures: List<CanonicalSignature>
+    @RLP(1) val envelopeSignatures: List<EnvelopeSignature>
 )
 
-internal class CanonicalSignature(
+internal class EnvelopeSignature(
     val signerIndex: Int,
     val keyIndex: Int,
     val signature: ByteArray
@@ -246,11 +243,11 @@ data class FlowTransaction(
     val proposalKey: FlowTransactionProposalKey,
     val payerAddress: FlowAddress,
     val authorizers: List<FlowAddress>,
-    val authorizationSignatures: List<FlowTransactionSignature> = emptyList(),
-    val paymentSignatures: List<FlowTransactionSignature> = emptyList()
+    val payloadSignatures: List<FlowTransactionSignature> = emptyList(),
+    val envelopeSignatures: List<FlowTransactionSignature> = emptyList()
 ) {
 
-    private val payload: PayloadEnvelope get() = PayloadEnvelope(
+    private val payload: Payload get() = Payload(
         script = script.bytes,
         arguments = arguments.map { it.bytes },
         referenceBlockId = referenceBlockId.bytes,
@@ -262,32 +259,53 @@ data class FlowTransaction(
         authorizers = authorizers.map { it.bytes }
     )
 
-    private val authorization: AuthorizationEnvelope get() = AuthorizationEnvelope(
-        payloadEnvelope = payload,
-        signatures = authorizationSignatures.map {
-            CanonicalSignature(
+    private val authorization: PayloadEnvelope get() = PayloadEnvelope(
+        payload = payload,
+        payloadSignatures = payloadSignatures.map {
+            EnvelopeSignature(
                 signerIndex = it.signerIndex,
-                keyIndex = it.keyId,
+                keyIndex = it.keyIndex,
                 signature = it.signature.bytes
             )
         }
     )
 
     private val payment: PaymentEnvelope get() = PaymentEnvelope(
-        payloadEnvelope = payload,
-        authorizationEnvelope = authorization,
-        signatures = paymentSignatures.map {
-            CanonicalSignature(
+        payloadEnvelope = authorization,
+        envelopeSignatures = envelopeSignatures.map {
+            EnvelopeSignature(
                 signerIndex = it.signerIndex,
-                keyIndex = it.keyId,
+                keyIndex = it.keyIndex,
                 signature = it.signature.bytes
             )
         }
     )
 
-    val payloadEnvelope: ByteArray get() = RLPCodec.encode(payload)
-    val authorizationEnvelope: ByteArray get() = RLPCodec.encode(authorization)
-    val paymentEnvelope: ByteArray get() = RLPCodec.encode(payment)
+    val canonicalPayload: ByteArray get() = RLPCodec.encode(payload)
+    val canonicalAuthorizationEnvelope: ByteArray get() = RLPCodec.encode(authorization)
+    val canonicalPaymentEnvelope: ByteArray get() = RLPCodec.encode(payment)
+
+    val signerList: List<FlowAddress> get() {
+        val ret = mutableListOf<FlowAddress>()
+        val seen = mutableSetOf<FlowAddress>()
+        val addSigner = fun(address: FlowAddress) {
+            if (address in seen) {
+                return
+            }
+            ret.add(address)
+            seen.add(address)
+        }
+        addSigner(proposalKey.address)
+        addSigner(payerAddress)
+        authorizers.forEach(addSigner)
+        return ret
+    }
+
+    val signerMap: Map<FlowAddress, Int> get() {
+        return signerList.withIndex()
+            .map { it.value to it.index }
+            .toMap()
+    }
 
     companion object {
         @JvmStatic
@@ -299,8 +317,8 @@ data class FlowTransaction(
             proposalKey = FlowTransactionProposalKey.of(value.proposalKey),
             payerAddress = FlowAddress.of(value.payer.toByteArray()),
             authorizers = value.authorizersList.map { FlowAddress.of(it.toByteArray()) },
-            authorizationSignatures = value.payloadSignaturesList.map { FlowTransactionSignature.of(it) },
-            paymentSignatures = value.envelopeSignaturesList.map { FlowTransactionSignature.of(it) }
+            payloadSignatures = value.payloadSignaturesList.map { FlowTransactionSignature.of(it) },
+            envelopeSignatures = value.envelopeSignaturesList.map { FlowTransactionSignature.of(it) }
         )
     }
 
@@ -314,70 +332,72 @@ data class FlowTransaction(
             .setProposalKey(proposalKey.builder().build())
             .setPayer(payerAddress.byteStringValue)
             .addAllAuthorizers(authorizers.map { it.byteStringValue })
-            .addAllPayloadSignatures(authorizationSignatures.map { it.builder().build() })
+            .addAllPayloadSignatures(payloadSignatures.map { it.builder().build() })
+            .addAllEnvelopeSignatures(envelopeSignatures.map { it.builder().build() })
     }
 
-    fun signAsProposer(privateKey: String, keyId: Int, address: FlowAddress = proposalKey.address): FlowTransaction {
-        return signAsProposer(Crypto.loadPrivateKey(privateKey), keyId, address)
+    fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signer: Signer): FlowTransaction {
+        return addPayloadSignature(address, keyIndex, FlowSignature(signer.sign(canonicalPayload)))
     }
 
-    fun signAsProposer(privateKey: PrivateKey, keyId: Int, address: FlowAddress): FlowTransaction {
-        if (paymentSignatures.isNotEmpty()) {
-            throw IllegalStateException("Transaction already has payment signatures")
-        } else if (authorizationSignatures.find { it.address == address } != null) {
-            throw IllegalStateException("Transaction has already been signed by the proposer")
-        }
-        val signature = FlowTransactionSignature(
-            address = address,
-            signerIndex = authorizationSignatures.size,
-            keyId = keyId,
-            signature = FlowSignature(privateKey.sign(payloadEnvelope))
+    fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature): FlowTransaction {
+        val payloadSignatures = this.payloadSignatures.toMutableList()
+        payloadSignatures.add(
+            FlowTransactionSignature(
+                address = address,
+                signerIndex = signerMap[address] ?: -1,
+                keyIndex = keyIndex,
+                signature = signature
+            )
         )
         return this.copy(
-            authorizationSignatures = authorizationSignatures + signature
-        )
+            payloadSignatures = payloadSignatures.sortedWith(compareBy<FlowTransactionSignature> { it.signerIndex }.thenBy { it.keyIndex })
+        ).updateSignerIndices()
     }
 
-    fun signAsAuthorizer(privateKey: String, keyId: Int, address: FlowAddress): FlowTransaction {
-        return signAsAuthorizer(Crypto.loadPrivateKey(privateKey), keyId, address)
+    fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signer: Signer): FlowTransaction {
+        return addEnvelopeSignature(address, keyIndex, FlowSignature(signer.sign(canonicalAuthorizationEnvelope)))
     }
 
-    fun signAsAuthorizer(privateKey: PrivateKey, keyId: Int, address: FlowAddress): FlowTransaction {
-        if (paymentSignatures.isNotEmpty()) {
-            throw IllegalStateException("Transaction already has payment signatures")
-        } else if (authorizationSignatures.find { it.address == address } != null) {
-            throw IllegalStateException("Transaction has already been signed by the authorizer")
-        }
-        val signature = FlowTransactionSignature(
-            address = address,
-            signerIndex = authorizationSignatures.size,
-            keyId = keyId,
-            signature = FlowSignature(privateKey.sign(payloadEnvelope))
+    fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature): FlowTransaction {
+        val envelopeSignatures = this.envelopeSignatures.toMutableList()
+        envelopeSignatures.add(
+            FlowTransactionSignature(
+                address = address,
+                signerIndex = signerMap[address] ?: -1,
+                keyIndex = keyIndex,
+                signature = signature
+            )
         )
         return this.copy(
-            authorizationSignatures = authorizationSignatures + signature
-        )
+            envelopeSignatures = envelopeSignatures.sortedWith(compareBy<FlowTransactionSignature> { it.signerIndex }.thenBy { it.keyIndex })
+        ).updateSignerIndices()
     }
 
-    fun signAsPayer(privateKey: PrivateKey, keyId: Int, address: FlowAddress): FlowTransaction {
-        if (authorizationSignatures.size < 2) {
-            throw IllegalStateException("Transaction doesn't have required authorization signatures")
-        } else if (authorizationSignatures.find { it.address == proposalKey.address } == null) {
-            throw IllegalStateException("Transaction has not yet been signed by the proposer")
+    fun updateSignerIndices(): FlowTransaction {
+        val map = signerMap
+        val payloadSignatures = this.payloadSignatures.toMutableList()
+        for ((i, sig) in payloadSignatures.withIndex()) {
+            if (map.containsKey(sig.address)) {
+                continue
+            }
+            payloadSignatures[i] = payloadSignatures[i].copy(
+                signerIndex = i
+            )
         }
-        val signature = FlowTransactionSignature(
-            address = address,
-            signerIndex = paymentSignatures.size,
-            keyId = keyId,
-            signature = FlowSignature(privateKey.sign(authorizationEnvelope))
-        )
+        val envelopeSignatures = this.envelopeSignatures.toMutableList()
+        for ((i, sig) in envelopeSignatures.withIndex()) {
+            if (map.containsKey(sig.address)) {
+                continue
+            }
+            envelopeSignatures[i] = envelopeSignatures[i].copy(
+                signerIndex = i
+            )
+        }
         return this.copy(
-            paymentSignatures = paymentSignatures + signature
+            payloadSignatures = payloadSignatures,
+            envelopeSignatures = envelopeSignatures
         )
-    }
-
-    fun signAsPayer(privateKey: String, keyId: Int, address: FlowAddress): FlowTransaction {
-        return signAsPayer(Crypto.loadPrivateKey(privateKey), keyId, address)
     }
 }
 
@@ -408,7 +428,7 @@ data class FlowTransactionProposalKey(
 data class FlowTransactionSignature(
     val address: FlowAddress,
     val signerIndex: Int,
-    val keyId: Int,
+    val keyIndex: Int,
     val signature: FlowSignature
 ) {
     companion object {
@@ -416,8 +436,8 @@ data class FlowTransactionSignature(
         fun of(value: TransactionOuterClass.Transaction.Signature): FlowTransactionSignature =
             FlowTransactionSignature(
                 address = FlowAddress.of(value.address.toByteArray()),
-                signerIndex = value.keyId, // TODO: what is this vs. keyId
-                keyId = value.keyId,
+                signerIndex = value.keyId,
+                keyIndex = value.keyId,
                 signature = FlowSignature(value.signature.toByteArray())
             )
     }
@@ -426,7 +446,7 @@ data class FlowTransactionSignature(
     fun builder(builder: TransactionOuterClass.Transaction.Signature.Builder = TransactionOuterClass.Transaction.Signature.newBuilder()): TransactionOuterClass.Transaction.Signature.Builder {
         return builder
             .setAddress(address.byteStringValue)
-            .setKeyId(keyId)
+            .setKeyId(keyIndex)
             .setSignature(signature.byteStringValue)
     }
 }
@@ -608,7 +628,7 @@ data class FlowArgument(override val bytes: ByteArray) : BytesHolder {
 }
 
 data class FlowScript(override val bytes: ByteArray) : BytesHolder {
-    constructor(scipt: String) : this(scipt.encodeToByteArray())
+    constructor(script: String) : this(script.encodeToByteArray())
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

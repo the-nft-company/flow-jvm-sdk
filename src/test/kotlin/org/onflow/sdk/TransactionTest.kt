@@ -3,6 +3,8 @@ package org.onflow.sdk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
+const val MAINNET_HOSTNAME = "access.mainnet.nodes.onflow.org"
+
 class TransactionTest {
 
     private var transaction = FlowTransaction(
@@ -22,31 +24,31 @@ class TransactionTest {
     @Test
     fun `Can sign transactions`() {
 
-        val pk1 = Crypto.generateKeyPair().privateKey
-        val pk2 = Crypto.generateKeyPair().privateKey
-        val pk3 = Crypto.generateKeyPair().privateKey
+        val pk1 = Crypto.getSigner(Crypto.generateKeyPair().private)
+        val pk2 = Crypto.getSigner(Crypto.generateKeyPair().private)
+        val pk3 = Crypto.getSigner(Crypto.generateKeyPair().private)
 
         val proposer = transaction.proposalKey.address
         val authorizer = FlowAddress("012345678012345678")
         val payer = FlowAddress("ababababababababab")
 
-        transaction = transaction.signAsProposer(pk1, 2)
-        println("Authorization signature (proposer) ${transaction.authorizationSignatures[0].signature.base16Value}")
-        println("Authorization envelope (proposer) ${transaction.authorizationEnvelope.bytesToHex()}")
+        transaction = transaction.addPayloadSignature(proposer, 2, pk1)
+        println("Authorization signature (proposer) ${transaction.payloadSignatures[0].signature.base16Value}")
+        println("Authorization envelope (proposer) ${transaction.canonicalAuthorizationEnvelope.bytesToHex()}")
 
-        transaction = transaction.signAsAuthorizer(pk2, 3, authorizer)
-        println("Authorization signature (authorizer) ${transaction.authorizationSignatures[0].signature.base16Value}")
-        println("Authorization envelope (authorizer) ${transaction.authorizationEnvelope.bytesToHex()}")
+        transaction = transaction.addPayloadSignature(authorizer, 3, pk2)
+        println("Authorization signature (authorizer) ${transaction.payloadSignatures[0].signature.base16Value}")
+        println("Authorization envelope (authorizer) ${transaction.canonicalAuthorizationEnvelope.bytesToHex()}")
 
-        transaction = transaction.signAsPayer(pk3, 5, payer)
-        println("Payment signature (payer) ${transaction.paymentSignatures[0].signature.base16Value}")
-        println("Payment envelope (payer) ${transaction.paymentEnvelope.bytesToHex()}")
+        transaction = transaction.addEnvelopeSignature(payer, 5, pk3)
+        println("Payment signature (payer) ${transaction.envelopeSignatures[0].signature.base16Value}")
+        println("Payment envelope (payer) ${transaction.canonicalPaymentEnvelope.bytesToHex()}")
     }
 
     @Test
     fun `Canonical transaction form is accurate`() {
 
-        val payloadEnvelope = transaction.payloadEnvelope
+        val payloadEnvelope = transaction.canonicalPayload
 
         // those values were generated from Go implementation for the same transaction input data
         val payloadExpectedHex =
@@ -62,20 +64,20 @@ class TransactionTest {
         val barSignature = byteArrayOf(3, 3, 3)
 
         val signedTx = transaction.copy(
-            authorizationSignatures = listOf(
+            payloadSignatures = listOf(
                 FlowTransactionSignature(address, 0, 0, FlowSignature(fooSignature)),
                 FlowTransactionSignature(address, 4, 5, FlowSignature(barSignature))
             )
         )
 
-        val authorizationEnvelope = signedTx.authorizationEnvelope
+        val authorizationEnvelope = signedTx.canonicalAuthorizationEnvelope
         assertThat(authorizationEnvelope).isEqualTo(envelopeExpectedHex.hexToBytes())
     }
 
     @Test
     fun `Can connect to mainnet`() {
 
-        val accessAPI = Flow.newAccessApi(FlowChainId.MAINNET)
+        val accessAPI = Flow.newAccessApi(MAINNET_HOSTNAME)
         accessAPI.ping()
 
         val address = FlowAddress("e467b9dd11fa00df")
@@ -87,7 +89,7 @@ class TransactionTest {
 
     @Test
     fun `Can parse events`() {
-        val accessApi = Flow.newAccessApi(FlowChainId.MAINNET)
+        val accessApi = Flow.newAccessApi(MAINNET_HOSTNAME)
 
         val tx = accessApi.getTransactionById(FlowId("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e"))
         assertThat(tx).isNotNull

@@ -2,7 +2,7 @@ package org.onflow.sdk.impl
 
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.access.AccessAPIGrpc
-import org.onflow.sdk.FLowAccount
+import org.onflow.sdk.FlowAccount
 import org.onflow.sdk.FlowAccessApi
 import org.onflow.sdk.FlowAddress
 import org.onflow.sdk.FlowBlock
@@ -140,33 +140,33 @@ class FlowAccessApiImpl(
         return FlowTransactionResult.of(ret)
     }
 
-    override fun getAccountByAddress(addresss: FlowAddress): FLowAccount? {
+    override fun getAccountByAddress(addresss: FlowAddress): FlowAccount? {
         val ret = api.getAccount(
             Access.GetAccountRequest.newBuilder()
                 .setAddress(addresss.byteStringValue)
                 .build()
         )
         return if (ret.hasAccount()) {
-            FLowAccount.of(ret.account)
+            FlowAccount.of(ret.account)
         } else {
             null
         }
     }
 
-    override fun getAccountAtLatestBlock(addresss: FlowAddress): FLowAccount? {
+    override fun getAccountAtLatestBlock(addresss: FlowAddress): FlowAccount? {
         val ret = api.getAccountAtLatestBlock(
             Access.GetAccountAtLatestBlockRequest.newBuilder()
                 .setAddress(addresss.byteStringValue)
                 .build()
         )
         return if (ret.hasAccount()) {
-            FLowAccount.of(ret.account)
+            FlowAccount.of(ret.account)
         } else {
             null
         }
     }
 
-    override fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): FLowAccount? {
+    override fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): FlowAccount? {
         val ret = api.getAccountAtBlockHeight(
             Access.GetAccountAtBlockHeightRequest.newBuilder()
                 .setAddress(addresss.byteStringValue)
@@ -174,7 +174,7 @@ class FlowAccessApiImpl(
                 .build()
         )
         return if (ret.hasAccount()) {
-            FLowAccount.of(ret.account)
+            FlowAccount.of(ret.account)
         } else {
             null
         }

@@ -22,22 +22,14 @@ object Flow {
         objectMapper.findAndRegisterModules()
     }
 
-    fun newAccessApi(host: String, port: Int, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): FlowAccessApi {
+    fun newAccessApi(host: String, port: Int = 9000, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): FlowAccessApi {
         val channel = openChannel(host, port, secure, userAgent)
         return FlowAccessApiImpl(AccessAPIGrpc.newBlockingStub(channel))
     }
 
-    fun newAsyncAccessApi(host: String, port: Int, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): AsyncFlowAccessApi {
+    fun newAsyncAccessApi(host: String, port: Int = 9000, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): AsyncFlowAccessApi {
         val channel = openChannel(host, port, secure, userAgent)
         return AsyncFlowAccessApiImpl(AccessAPIGrpc.newFutureStub(channel))
-    }
-
-    fun newAccessApi(chain: FlowChainId, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): FlowAccessApi {
-        return newAccessApi(chain.endpoint, chain.poort, secure, userAgent)
-    }
-
-    fun newAsyncAccessApi(chain: FlowChainId, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): AsyncFlowAccessApi {
-        return newAsyncAccessApi(chain.endpoint, chain.poort, secure, userAgent)
     }
 
     private fun openChannel(host: String, port: Int, secure: Boolean, userAgent: String): ManagedChannel {
