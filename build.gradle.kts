@@ -11,13 +11,19 @@ plugins {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
-    api("com.github.TrustedDataFramework:java-rlp:1.1.20")
     api("org.onflow:flow:0.21")
 
-    testImplementation(platform("org.junit:junit-bom:5.7.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("org.assertj:assertj-core:3.19.0")
+    api("com.github.TrustedDataFramework:java-rlp:1.1.20")
+
     api("org.bouncycastle:bcpkix-jdk15on:1.68")
+
+    api(platform("com.fasterxml.jackson:jackson-bom:2.12.2"))
+    api("com.fasterxml.jackson.core:jackson-core")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    testApi(platform("org.junit:junit-bom:5.7.1"))
+    testApi("org.junit.jupiter:junit-jupiter")
+    testApi("org.assertj:assertj-core:3.19.0")
 }
 
 tasks.test {
@@ -67,7 +73,7 @@ publishing {
 }
 
 signing {
-    useGpgCmd() //use gpg2
+    useGpgCmd() // use gpg2
     sign(publishing.publications["mavenJava"])
 }
 
@@ -75,7 +81,6 @@ java {
     withJavadocJar()
     withSourcesJar()
 }
-
 
 group = "org.onflow"
 
