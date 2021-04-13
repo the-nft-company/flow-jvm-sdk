@@ -12,6 +12,8 @@ import org.onflow.sdk.impl.FlowAccessApiImpl
 
 object Flow {
 
+    const val DEFAULT_USER_AGENT = "Flow JVM SDK"
+
     var objectMapper: ObjectMapper
 
     init {
@@ -20,19 +22,20 @@ object Flow {
         objectMapper.findAndRegisterModules()
     }
 
-    fun newAccessApi(host: String, port: Int = 9000, secure: Boolean = false): FlowAccessApi {
-        val channel = openChannel(host, port, secure)
+    fun newAccessApi(host: String, port: Int = 9000, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): FlowAccessApi {
+        val channel = openChannel(host, port, secure, userAgent)
         return FlowAccessApiImpl(AccessAPIGrpc.newBlockingStub(channel))
     }
 
-    fun newAsyncAccessApi(host: String, port: Int = 9000, secure: Boolean = false): AsyncFlowAccessApi {
-        val channel = openChannel(host, port, secure)
+    fun newAsyncAccessApi(host: String, port: Int = 9000, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): AsyncFlowAccessApi {
+        val channel = openChannel(host, port, secure, userAgent)
         return AsyncFlowAccessApiImpl(AccessAPIGrpc.newFutureStub(channel))
     }
 
-    private fun openChannel(host: String, port: Int, secure: Boolean): ManagedChannel {
+    private fun openChannel(host: String, port: Int, secure: Boolean, userAgent: String): ManagedChannel {
         var channelBuilder = ManagedChannelBuilder
             .forAddress(host, port)
+            .userAgent(userAgent)
 
         channelBuilder = if (secure) {
             channelBuilder.useTransportSecurity()
