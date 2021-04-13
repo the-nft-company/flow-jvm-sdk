@@ -35,6 +35,8 @@ object Crypto {
         Security.addProvider(BouncyCastleProvider())
     }
 
+    @JvmStatic
+    @JvmOverloads
     fun generateKeyPair(algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): KeyPair {
         val generator = KeyPairGenerator.getInstance("EC", "BC")
         generator.initialize(ECNamedCurveTable.getParameterSpec(algo.curve))
@@ -66,6 +68,8 @@ object Crypto {
         )
     }
 
+    @JvmStatic
+    @JvmOverloads
     fun decodePrivateKey(privateKey: String, algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): PrivateKey {
         val ecParameterSpec = ECNamedCurveTable.getParameterSpec(algo.curve)
         val keyFactory = KeyFactory.getInstance(algo.algorithm, "BC")
@@ -86,6 +90,8 @@ object Crypto {
         )
     }
 
+    @JvmStatic
+    @JvmOverloads
     fun getSigner(privateKey: PrivateKey, hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256): Signer {
         return SignerImpl(privateKey, hashAlgo)
     }

@@ -85,7 +85,7 @@ java {
 group = "org.onflow"
 
 // TODO - grab version from Git
-version = "0.1.1"
+version = "0.2.0-SNAPSHOT"
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
