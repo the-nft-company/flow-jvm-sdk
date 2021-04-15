@@ -134,7 +134,9 @@ open class ArrayField(value: Array<Field<*>>) : Field<Array<Field<*>>>(TYPE_ARRA
 
 open class DictionaryField(value: List<Pair<Field<*>, Field<*>>>) : Field<List<Pair<Field<*>, Field<*>>>>(TYPE_DICTIONARY, value)
 
-open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, value)
+open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.toLowerCase().startsWith("0x")) { "0x$value" } else { value }) {
+    constructor(bytes: ByteArray) : this(bytes.bytesToHex())
+}
 
 open class PathValue(val domain: String, val identifier: String)
 open class PathField(value: PathValue) : Field<PathValue>(TYPE_PATH, value)

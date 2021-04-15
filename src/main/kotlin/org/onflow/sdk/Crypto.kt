@@ -3,13 +3,15 @@ package org.onflow.sdk
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
+import java.security.SecureRandom
 import java.security.Security
 import java.security.Signature
+import java.security.spec.ECGenParameterSpec
+import java.security.spec.X509EncodedKeySpec
 import kotlin.experimental.and
 import kotlin.math.max
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.interfaces.ECPrivateKey
-import org.bouncycastle.jce.interfaces.ECPublicKey
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECPrivateKeySpec
 
@@ -39,7 +41,7 @@ object Crypto {
     @JvmOverloads
     fun generateKeyPair(algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): KeyPair {
         val generator = KeyPairGenerator.getInstance("EC", "BC")
-        generator.initialize(ECNamedCurveTable.getParameterSpec(algo.curve))
+        generator.initialize(ECGenParameterSpec(algo.curve), SecureRandom())
         val keyPair = generator.generateKeyPair()
         val privateKey = keyPair.private
         val publicKey = keyPair.public
@@ -59,11 +61,7 @@ object Crypto {
             ),
             public = PublicKey(
                 key = publicKey,
-                hex = if (publicKey is ECPublicKey) {
-                    publicKey.q.getEncoded(false).bytesToHex()
-                } else {
-                    publicKey.encoded.bytesToHex()
-                }
+                hex = publicKey.encoded.bytesToHex()
             )
         )
     }
@@ -87,6 +85,18 @@ object Crypto {
             } else {
                 pk.encoded.bytesToHex()
             }
+        )
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun decodePublicKey(publicKey: String): PublicKey {
+        val publicKeySpec = X509EncodedKeySpec(publicKey.hexToBytes())
+        val keyFactory = KeyFactory.getInstance("EC")
+        val pk = keyFactory.generatePublic(publicKeySpec)
+        return PublicKey(
+            key = pk,
+            hex = pk.encoded.bytesToHex()
         )
     }
 
