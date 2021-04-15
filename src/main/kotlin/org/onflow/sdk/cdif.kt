@@ -1,6 +1,6 @@
 package org.onflow.sdk
 
-// this files contains types for the cadence data interchange format
+// This files contains types for the JSON-Cadence Data Interchange Format
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
