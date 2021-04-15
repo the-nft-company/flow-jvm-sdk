@@ -97,6 +97,7 @@ object Crypto {
     }
 
     @JvmStatic
+    @JvmOverloads
     fun decodePublicKey(key: String, algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): PublicKey {
         val ecParameterSpec = ECNamedCurveTable.getParameterSpec(algo.curve)
         val keyFactory = KeyFactory.getInstance("EC", "BC")
