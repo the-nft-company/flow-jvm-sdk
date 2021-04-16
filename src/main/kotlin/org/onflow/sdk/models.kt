@@ -712,6 +712,7 @@ data class FlowScriptResponse(override val bytes: ByteArray) : BytesHolder {
 }
 
 data class FlowSignature(override val bytes: ByteArray) : BytesHolder {
+    constructor(hex: String) : this(hex.hexToBytes())
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
