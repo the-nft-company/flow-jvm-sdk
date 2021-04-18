@@ -1,4 +1,3 @@
-
 // configuration variables
 val javaTargetVersion   = "1.8"
 val defaultGroupId      = "org.onflow"
@@ -61,10 +60,10 @@ tasks {
     test {
         useJUnitPlatform()
         testLogging {
-            exceptionFormat 	= org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-            showExceptions 		= true
-            showStackTraces 	= true
-            showCauses 			= true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            showExceptions = true
+            showStackTraces = true
+            showCauses = true
         }
         finalizedBy("jacocoTestReport")
     }
@@ -94,6 +93,12 @@ tasks {
     nexusPublishing {
         repositories {
             sonatype {
+                if (project.hasProperty("sonatypeNexusUrl")) {
+                    nexusUrl.set(uri(project.findProperty("sonatypeNexusUrl").toString()))
+                }
+                if (project.hasProperty("sonatypeRepositoryUrl")) {
+                    snapshotRepositoryUrl.set(uri(project.findProperty("sonatypeRepositoryUrl").toString()))
+                }
                 username.set(project.findProperty("sonatypeUsername")?.toString())
                 password.set(project.findProperty("sonatypePassword")?.toString())
             }
@@ -154,7 +159,9 @@ tasks {
         isRequired = isReleaseVersion && (withType<PublishToMavenRepository>().find {
             gradle.taskGraph.hasTask(it)
         } != null)
-        useGpgCmd() // us
+        if ((project.findProperty("useGpgCmd")?.toString() ?: "true") != "false") {
+            useGpgCmd()
+        }
         sign(publishing.publications)
     }
 }
