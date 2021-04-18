@@ -30,4 +30,4 @@ jobs:
         if: "!contains(github.event.head_commit.message, '[i am bad and i hate unit tests]')"
 
       - name: Publish release
-        run: ./gradlew -x test -PsonatypeUsername=${{ FLOW_JVM_SDK_SONATYPE_USERNAME }} -PsonatypePassword=${{ FLOW_JVM_SDK_SONATYPE_PASSWORD }} -PgroupId=${{ FLOW_JVM_SDK_SONATYPE_GROUP_ID }} publishToSonatype closeAndReleaseSonatypeStagingRepository
+        run: ./gradlew -x test -PsonatypeUsername=${{ secrets.FLOW_JVM_SDK_SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.FLOW_JVM_SDK_SONATYPE_PASSWORD }} -PgroupId=${{ secrets.FLOW_JVM_SDK_SONATYPE_GROUP_ID }} publishToSonatype closeAndReleaseSonatypeStagingRepository
