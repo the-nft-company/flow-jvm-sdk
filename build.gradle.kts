@@ -154,7 +154,6 @@ tasks {
         isRequired = isReleaseVersion && (withType<PublishToMavenRepository>().find {
             gradle.taskGraph.hasTask(it)
         } != null)
-
         useGpgCmd() // us
         sign(publishing.publications)
     }
