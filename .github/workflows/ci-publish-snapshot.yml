@@ -1,8 +1,8 @@
-name: Build And Deploy Platform To Staging
+name: Build And Publish Snapshot
 on:
   push:
     branches:
-      - develop
+      - main
 jobs:
   build:
     name: Build and publish snapshot
@@ -10,6 +10,10 @@ jobs:
     env:
       JAVA_OPTS: -Xmx2g -Dorg.gradle.daemon=false
     steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%m%d%H%M%S')"
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -30,4 +34,4 @@ jobs:
         if: "!contains(github.event.head_commit.message, '[i am bad and i hate unit tests]')"
 
       - name: Publish snapshot
-        run: ./gradlew -x test -PsonatypeUsername=${{ secrets.FLOW_JVM_SDK_SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.FLOW_JVM_SDK_SONATYPE_PASSWORD }} -PgroupId=${{ secrets.FLOW_JVM_SDK_SONATYPE_GROUP_ID }} publishToSonatype closeAndReleaseSonatypeStagingRepository
+        run: ./gradlew -x test -PsonatypeUsername=${{ secrets.FLOW_JVM_SDK_SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.FLOW_JVM_SDK_SONATYPE_PASSWORD }} -PgroupId=${{ secrets.FLOW_JVM_SDK_SONATYPE_GROUP_ID }} -PsnapshotDate=${{ steps.date.outputs.date }} publishToSonatype closeAndReleaseSonatypeStagingRepository

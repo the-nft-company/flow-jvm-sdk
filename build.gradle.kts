@@ -1,13 +1,23 @@
 
 // configuration variables
-val defaultGroupId = "org.onflow"
-val defaultVersion = "0.2.0-SNAPSHOT"
+val javaTargetVersion   = "1.8"
+val defaultGroupId      = "org.onflow"
+val defaultVersion      = "0.2.0-SNAPSHOT"
 
 // other variables
 group = (project.findProperty("groupId")?.toString()?.ifBlank { defaultGroupId }) ?: defaultGroupId
-version = (project.findProperty("version")?.toString()?.ifBlank { defaultGroupId }) ?: defaultGroupId
+version = when {
+    project.hasProperty("version") -> {
+        project.findProperty("version")!!
+    }
+    project.hasProperty("snapshotDate") -> {
+        "${defaultVersion.replace("SNAPSHOT", "")}.${project.findProperty("snapshotDate")!!}-SNAPSHOT"
+    }
+    else -> {
+        defaultVersion
+    }
+}
 
-val javaTargetVersion   = "1.8"
 val isReleaseVersion    = !version.toString().endsWith("-SNAPSHOT")
 
 plugins {
