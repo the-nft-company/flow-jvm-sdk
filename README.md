@@ -2,14 +2,15 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/org.onflow/flow-jvm-sdk)](https://search.maven.org/search?q=g:org.onflow%20AND%20a:flow-jvm-sdk)
 
-> :warning: This is an alpha release; functionality may change.
+> :warning: This is an alpha release not yet intended for production use. Functionality may change, please use at your own risk.
 
-This is a minimal proof-of-concept SDK for JVM languages that provides
+The Flow JVM SDK is a library for JVM languages (e.g. Java, Kotlin) that provides
 utilities to interact with the Flow blockchain.
 
-At the moment, the SDK includes the following features:
+At the moment, this SDK includes the following features:
 - [x] Communication with the [Flow Access API](https://docs.onflow.org/access-api) over gRPC 
 - [x] Transaction preparation and signing
+- [x] Cryptographic key generation, parsing, and signing
 - [x] Events parsing 
 
 ## Installation
@@ -37,4 +38,4 @@ Read the [contributing guide](https://github.com/onflow/flow-jvm-sdk/blob/main/C
 
 ## Dependencies
 
-Java Developer Kit (JDK) 8 or better
+Java Developer Kit (JDK) 8 or newer.
