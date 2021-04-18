@@ -2,11 +2,6 @@ package org.onflow.sdk
 
 import java.util.concurrent.TimeoutException
 
-fun transaction(block: TransactionBuilder.() -> Unit): FlowTransaction {
-    val builder = TransactionBuilder()
-    block(builder)
-    return builder.build()
-}
 
 @Throws(TimeoutException::class)
 fun waitForSeal(api: FlowAccessApi, transactionId: FlowId, pauseMs: Long = 500L, timeoutMs: Long = 10_000L): FlowTransactionResult {
@@ -23,6 +18,88 @@ fun waitForSeal(api: FlowAccessApi, transactionId: FlowId, pauseMs: Long = 500L,
             throw TimeoutException("Timeout waiting for seal")
         }
     }
+}
+
+fun transaction(block: TransactionBuilder.() -> Unit): FlowTransaction {
+    val builder = TransactionBuilder()
+    block(builder)
+    return builder.build()
+}
+
+fun FlowAccessApi.simpleTransaction(address: FlowAddress, signer: Signer, gasLimit: Long = 100, keyIndex: Int = 0, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
+    val api = this
+    val referenceBlockId = api.getLatestBlockHeader().id
+    val payerAccount = checkNotNull(api.getAccountAtLatestBlock(address)) { "Account not found for address: ${address.base16Value}" }
+
+    val builder = TransactionBuilder()
+    builder.referenceBlockId = referenceBlockId
+    builder.gasLimit = gasLimit
+    builder.proposalKey = FlowTransactionProposalKey(
+        address = payerAccount.address,
+        keyIndex = payerAccount.keys[keyIndex].id,
+        sequenceNumber = payerAccount.keys[keyIndex].sequenceNumber.toLong()
+    )
+    builder.payerAddress = payerAccount.address
+    builder.authorizer(payerAccount.address)
+    builder.envelopSignature(
+        PendingSignature(
+            address = payerAccount.address,
+            keyIndex = keyIndex,
+            signer = signer
+        )
+    )
+
+    block(builder)
+
+    return FlowTransactionStub(api, builder)
+}
+
+class FlowTransactionStub(
+    private val api: FlowAccessApi,
+    private val builder: TransactionBuilder
+) {
+
+    var transaction: FlowTransaction? = null
+        private set
+
+    var transactionId: FlowId? = null
+        private set
+
+    fun checkNotBuilt() = check(transaction == null) { "Transaction already built" }
+    fun checkBuilt() = check(transaction != null) { "Transaction not built" }
+    fun checkNotSent() = check(transactionId == null) { "Transaction already sent" }
+    fun checkSent() = check(transactionId != null) { "Transaction not sent" }
+
+    fun build(): FlowTransactionStub {
+        checkNotBuilt()
+        transaction = builder.build()
+        return this
+    }
+
+    fun buildIfNecessary(): FlowTransactionStub {
+        if (transaction == null) {
+            return build()
+        }
+        return this
+    }
+
+    fun send(): FlowTransactionStub {
+        buildIfNecessary()
+        checkNotSent()
+        transactionId = api.sendTransaction(transaction!!)
+        return this
+    }
+
+    fun getResult(): FlowTransactionResult {
+        checkSent()
+        return checkNotNull(api.getTransactionResultById(transactionId!!)) { "Transaction wasn't found" }
+    }
+
+    fun waitForSeal(pauseMs: Long = 500L, timeoutMs: Long = 10_000L): FlowTransactionResult {
+        checkSent()
+        return waitForSeal(api, transactionId!!, pauseMs, timeoutMs)
+    }
+
 }
 
 class TransactionBuilder {

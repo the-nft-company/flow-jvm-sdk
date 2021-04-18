@@ -175,6 +175,36 @@ class TransactionTest {
 
         val txID = accessAPI.sendTransaction(tx)
         val result = waitForSeal(accessAPI, txID)
+        assertThat(result).isNotNull
+        assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
+
+    }
+
+    @Test
+    fun `Can create an account using the simpleTransaction DSL`() {
+        val accessAPI = Flow.newAccessApi("localhost", 3569)
+        val keyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
+        val payerSigner = Crypto.getSigner(keyPair.private, HashAlgorithm.SHA3_256)
+
+        val result = accessAPI.simpleTransaction(FlowAddress("f8d6e0586b0a20c7"), payerSigner) {
+                script {
+                    """
+                        transaction(publicKey: String) {
+                            prepare(signer: AuthAccount) {
+                                let account = AuthAccount(payer: signer)
+                                account.addPublicKey(publicKey.decodeHex())
+                            }
+                        }
+                    """
+                }
+
+                arguments {
+                    arg { StringField(keyPair.public.hex) }
+                }
+            }
+            .send()
+            .waitForSeal()
+        assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
 
     }
 }
