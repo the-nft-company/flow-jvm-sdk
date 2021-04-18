@@ -1,15 +1,35 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+// configuration variables
+val defaultGroupId = "org.onflow"
+val defaultVersion = "0.2.0-SNAPSHOT"
+
+// other variables
+group = (project.findProperty("groupId")?.toString()?.ifBlank { defaultGroupId }) ?: defaultGroupId
+version = (project.findProperty("version")?.toString()?.ifBlank { defaultGroupId }) ?: defaultGroupId
+
+val javaTargetVersion   = "1.8"
+val isReleaseVersion    = !version.toString().endsWith("-SNAPSHOT")
 
 plugins {
+    id("org.jetbrains.dokka") version "1.4.20"
     kotlin("jvm") version "1.4.30"
     idea
-    `maven-publish`
+    jacoco
     signing
+    `maven-publish`
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
+}
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+    jcenter()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
 
     api("org.onflow:flow:0.21")
 
@@ -26,72 +46,106 @@ dependencies {
     testApi("org.assertj:assertj-core:3.19.0")
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
+tasks {
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-}
-
-nexusPublishing {
-    repositories {
-        sonatype()
+    test {
+        useJUnitPlatform()
+        testLogging {
+            exceptionFormat 	= org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            showExceptions 		= true
+            showStackTraces 	= true
+            showCauses 			= true
+        }
+        finalizedBy("jacocoTestReport")
     }
-}
 
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
+    compileKotlin {
+        sourceCompatibility = javaTargetVersion
+        targetCompatibility = javaTargetVersion
 
-            pom {
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+        kotlinOptions {
+            jvmTarget = javaTargetVersion
+        }
+    }
+
+    jacocoTestReport {
+        dependsOn(test)
+        reports {
+            html.isEnabled = true
+            xml.isEnabled = true
+            csv.isEnabled = false
+        }
+    }
+
+    jacoco {
+        toolVersion = "0.8.5"
+    }
+
+    nexusPublishing {
+        repositories {
+            sonatype {
+                username.set(project.findProperty("sonatypeUsername")?.toString())
+                password.set(project.findProperty("sonatypePassword")?.toString())
+            }
+        }
+    }
+
+    val documentationJar by creating(Jar::class) {
+        dependsOn(dokkaHtml)
+        archiveClassifier.set("javadoc")
+        from(dokkaHtml.get().outputs)
+    }
+
+    val sourcesJar by creating(Jar::class) {
+        dependsOn(classes)
+        archiveClassifier.set("sources")
+        from(sourceSets["main"].allSource)
+    }
+
+    artifacts {
+        add("archives", documentationJar)
+        add("archives", sourcesJar)
+    }
+
+    publishing {
+        publications {
+            create<MavenPublication>("mavenJava") {
+                from(project.components["java"])
+                artifact(documentationJar)
+                artifact(sourcesJar)
+
+                pom {
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
                     }
-                }
-                name.set(project.name)
-                url.set("https://onflow.org")
-                description.set("The Flow Blockchain JVM SDK")
-                scm {
-                    url.set("https://github.com/onflow/flow")
-                    connection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
-                    developerConnection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
-                }
-                developers {
-                    developer {
-                        name.set("Flow Developers")
-                        url.set("https://onflow.org")
+                    name.set(project.name)
+                    url.set("https://onflow.org")
+                    description.set("The Flow Blockchain JVM SDK")
+                    scm {
+                        url.set("https://github.com/onflow/flow")
+                        connection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
+                        developerConnection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
+                    }
+                    developers {
+                        developer {
+                            name.set("Flow Developers")
+                            url.set("https://onflow.org")
+                        }
                     }
                 }
             }
         }
     }
-}
 
-signing {
-    useGpgCmd() // use gpg2
-    sign(publishing.publications["mavenJava"])
-}
+    signing {
+        isRequired = isReleaseVersion && (withType<PublishToMavenRepository>().find {
+            gradle.taskGraph.hasTask(it)
+        } != null)
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-group = "org.onflow"
-
-// TODO - grab version from Git
-version = "0.2.0-SNAPSHOT"
-
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+        useGpgCmd() // us
+        sign(publishing.publications)
+    }
 }
