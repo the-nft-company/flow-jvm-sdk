@@ -99,8 +99,12 @@ tasks {
                 if (project.hasProperty("sonatypeRepositoryUrl")) {
                     snapshotRepositoryUrl.set(uri(project.findProperty("sonatypeRepositoryUrl").toString()))
                 }
-                username.set(project.findProperty("sonatypeUsername")?.toString())
-                password.set(project.findProperty("sonatypePassword")?.toString())
+                if (project.hasProperty("sonatypeUsername")) {
+                    username.set(project.findProperty("sonatypeUsername").toString())
+                }
+                if (project.hasProperty("sonatypePassword")) {
+                    password.set(project.findProperty("sonatypePassword").toString())
+                }
             }
         }
     }
