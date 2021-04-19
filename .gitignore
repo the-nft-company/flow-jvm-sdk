@@ -1,3 +1,5 @@
 build
 .gradle
 .idea
+gradle.properties
+publish.sh

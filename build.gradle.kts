@@ -1,23 +1,21 @@
 // configuration variables
 val javaTargetVersion   = "1.8"
 val defaultGroupId      = "org.onflow"
-val defaultVersion      = "0.2.0-SNAPSHOT"
+val defaultVersion      = "0.2.1-SNAPSHOT"
 
 // other variables
-group = (project.findProperty("groupId")?.toString()?.ifBlank { defaultGroupId }) ?: defaultGroupId
-version = when {
-    project.hasProperty("version") -> {
-        project.findProperty("version")!!
-    }
-    project.hasProperty("snapshotDate") -> {
-        "${defaultVersion.replace("SNAPSHOT", "")}.${project.findProperty("snapshotDate")!!}-SNAPSHOT"
-    }
-    else -> {
-        defaultVersion
-    }
-}
 
-val isReleaseVersion    = !version.toString().endsWith("-SNAPSHOT")
+fun getProp(name: String, defaultValue: String? = null): String?
+    = project.findProperty("flow.$name")?.toString()?.trim()?.ifBlank { null }
+    ?: project.findProperty(name)?.toString()?.trim()?.ifBlank { null }
+    ?: defaultValue
+
+group = getProp("groupId", defaultGroupId)!!
+version = when {
+    getProp("version") !in setOf("unspecified", null) -> { getProp("version")!! }
+    getProp("snapshotDate") != null -> { "${defaultVersion.replace("-SNAPSHOT", "")}.${getProp("snapshotDate")!!}-SNAPSHOT" }
+    else -> { defaultVersion }
+}
 
 plugins {
     id("org.jetbrains.dokka") version "1.4.20"
@@ -90,25 +88,6 @@ tasks {
         toolVersion = "0.8.5"
     }
 
-    nexusPublishing {
-        repositories {
-            sonatype {
-                if (project.hasProperty("sonatypeNexusUrl")) {
-                    nexusUrl.set(uri(project.findProperty("sonatypeNexusUrl").toString()))
-                }
-                if (project.hasProperty("sonatypeRepositoryUrl")) {
-                    snapshotRepositoryUrl.set(uri(project.findProperty("sonatypeRepositoryUrl").toString()))
-                }
-                if (project.hasProperty("sonatypeUsername")) {
-                    username.set(project.findProperty("sonatypeUsername").toString())
-                }
-                if (project.hasProperty("sonatypePassword")) {
-                    password.set(project.findProperty("sonatypePassword").toString())
-                }
-            }
-        }
-    }
-
     val documentationJar by creating(Jar::class) {
         dependsOn(dokkaHtml)
         archiveClassifier.set("javadoc")
@@ -124,6 +103,25 @@ tasks {
     artifacts {
         add("archives", documentationJar)
         add("archives", sourcesJar)
+    }
+
+    nexusPublishing {
+        repositories {
+            sonatype {
+                if (getProp("sonatype.nexusUrl") != null) {
+                    nexusUrl.set(uri(getProp("sonatype.nexusUrl")!!))
+                }
+                if (getProp("sonatype.repositoryUrl") != null) {
+                    snapshotRepositoryUrl.set(uri(getProp("sonatype.snapshotRepositoryUrl")!!))
+                }
+                if (getProp("sonatype.username") != null) {
+                    username.set(getProp("sonatype.username")!!)
+                }
+                if (getProp("sonatype.password") != null) {
+                    password.set(getProp("sonatype.password")!!)
+                }
+            }
+        }
     }
 
     publishing {
@@ -160,12 +158,7 @@ tasks {
     }
 
     signing {
-        isRequired = isReleaseVersion && (withType<PublishToMavenRepository>().find {
-            gradle.taskGraph.hasTask(it)
-        } != null)
-        if ((project.findProperty("useGpgCmd")?.toString() ?: "true") != "false") {
-            useGpgCmd()
-        }
+        useGpgCmd()
         sign(publishing.publications)
     }
 }
