@@ -111,7 +111,7 @@ tasks {
                 if (getProp("sonatype.nexusUrl") != null) {
                     nexusUrl.set(uri(getProp("sonatype.nexusUrl")!!))
                 }
-                if (getProp("sonatype.repositoryUrl") != null) {
+                if (getProp("sonatype.snapshotRepositoryUrl") != null) {
                     snapshotRepositoryUrl.set(uri(getProp("sonatype.snapshotRepositoryUrl")!!))
                 }
                 if (getProp("sonatype.username") != null) {
