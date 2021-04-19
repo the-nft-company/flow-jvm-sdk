@@ -4,4 +4,4 @@
   -x test \
   clean \
   publishToSonatype \
-  closeSonatypeStagingRepository
+  closeAndReleaseSonatypeStagingRepository
