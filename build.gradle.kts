@@ -1,7 +1,7 @@
 // configuration variables
 val javaTargetVersion   = "1.8"
 val defaultGroupId      = "org.onflow"
-val defaultVersion      = "0.2.2-SNAPSHOT"
+val defaultVersion      = "0.2.3-SNAPSHOT"
 
 // other variables
 
