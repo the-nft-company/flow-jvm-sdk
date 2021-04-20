@@ -10,15 +10,16 @@ jobs:
     env:
       JAVA_OPTS: -Xmx2g -Dorg.gradle.daemon=false
     services:
-      postgres:
+      flow-emulator:
         image: gcr.io/flow-container-registry/emulator
         env:
           FLOW_VERBOSE: true
-          FLOW_PORT: 9000
+          FLOW_PORT: 3569
           FLOW_INTERVAL: 5s
           FLOW_PERSIST: false
         ports:
-          - 9000:9000
+          - 3569:3569
+        options: --verbose
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
