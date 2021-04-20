@@ -40,19 +40,17 @@ jobs:
         if: "!contains(github.event.head_commit.message, '[i am bad and i hate unit tests]')"
 
       - name: Publish release
-        if: ${{ secrets.FLOW_JVM_SDK_CICD_PUBLISH_ENABLED == 'true' }}
+        env:
+          _FLOW_JVM_SDK_SIGNING_KEY: ${{ secrets.FLOW_JVM_SDK_SIGNING_KEY }}
         run: |
           if [[ "${{ secrets.FLOW_JVM_SDK_CICD_PUBLISH_ENABLED }}" != "true" ]];
           then
             exit 0;
           fi
-          export _FLOW_JVM_SDK_SIGNING_KEY=$(cat<<KEY
-          ${{ secrets.FLOW_JVM_SDK_SIGNING_KEY }}
-          KEY);
           ./gradlew \
             -Pversion=${{ steps.get_version.outputs.version-without-v }} \
             -PgroupId=${{ secrets.FLOW_JVM_SDK_GROUP_ID }} \
-            -Psigning.key=${{ secrets.FLOW_JVM_SDK_SIGNING_KEY }} \
+            -Psigning.key=$_FLOW_JVM_SDK_SIGNING_KEY \
             -Psigning.password=${{ secrets.FLOW_JVM_SDK_SIGNING_PASSWORD }} \
             -Psonatype.nexusUrl=${{ secrets.FLOW_JVM_SDK_NEXUS_URL }} \
             -Psonatype.snapshotRepositoryUrl=${{ secrets.FLOW_JVM_SDK_SNAPSHOT_REPOSITORY_URL }} \
