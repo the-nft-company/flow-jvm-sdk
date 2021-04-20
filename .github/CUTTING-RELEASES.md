@@ -54,7 +54,7 @@ $> ./gradlew \
 ```
 Be sure that the `version` in the `build.gradle.kts` file is what you want it to be.
 
-## continous Integration / Deployment
+## continuous Integration / Deployment
 
 In the case of a CI/CD machine you may not want ot have the keyring file(s) on your machine, in this
 case you can instead use an ascii armored version of the pgp key by passing the following arguments:
@@ -83,12 +83,13 @@ There are two github actions configured:
 
 The following github secrets configure these actions:
 
-- `FLOW_JVM_SDK_CICD_PUBLISH_ENABLED`: Must be `true` for the publishing of artifacts to happen
-- `FLOW_JVM_SDK_GROUP_ID`: optional groupId, defaults to `org.onflow`
-- `FLOW_JVM_SDK_SIGNING_KEY`: ascii armored version of the pgp key for signing releases
-- `FLOW_JVM_SDK_SIGNING_PASSWORD`: password to the pgp key
-- `FLOW_JVM_SDK_NEXUS_URL`: nexus url for performing releases
-- `FLOW_JVM_SDK_SNAPSHOT_REPOSITORY_URL`: nexus url for for permforming releases
-- `FLOW_JVM_SDK_SONATYPE_USERNAME`: sonatype username
-- `FLOW_JVM_SDK_SONATYPE_PASSWORD`: sonatype password
+- `FLOW_JVM_SDK_CICD_PUBLISH_ENABLED`: (optional) Must be `true` for the publishing of artifacts to happen (defaults to `false`)
+- `FLOW_JVM_SDK_GROUP_ID`: (optional) the groupId defaults to `org.onflow`
+- `FLOW_JVM_SDK_SIGNING_KEY`: (required if publish enabled) ascii armored version of the pgp key for signing releases
+- `FLOW_JVM_SDK_SIGNING_PASSWORD`: (required if publish enabled) password to the pgp key
+- `FLOW_JVM_SDK_NEXUS_URL`: (required if publish enabled) nexus url for performing releases
+- `FLOW_JVM_SDK_SNAPSHOT_REPOSITORY_URL`: (required if publish enabled) nexus url for for permforming releases
+- `FLOW_JVM_SDK_SONATYPE_USERNAME`: (required if publish enabled) sonatype username
+- `FLOW_JVM_SDK_SONATYPE_PASSWORD`: (required if publish enabled) sonatype password
 
+The github actions take care of starting/stopping an emulator for the unit tests.
