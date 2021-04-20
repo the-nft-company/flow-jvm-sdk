@@ -9,6 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       JAVA_OPTS: -Xmx2g -Dorg.gradle.daemon=false
+    services:
+      postgres:
+        image: gcr.io/flow-container-registry/emulator
+        env:
+          FLOW_VERBOSE: true
+          FLOW_PORT: 9000
+          FLOW_INTERVAL: 5s
+          FLOW_PERSIST: false
+        ports:
+          - 9000:9000
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
