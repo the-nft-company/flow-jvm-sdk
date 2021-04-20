@@ -19,7 +19,6 @@ jobs:
           FLOW_PERSIST: false
         ports:
           - 3569:3569
-        options: --verbose
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
