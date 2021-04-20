@@ -45,15 +45,13 @@ jobs:
 
       - name: Publish snapshot
         run: |
-
           if [[ "${{ secrets.FLOW_JVM_SDK_CICD_PUBLISH_ENABLED }}" != "true" ]];
+          then
             exit 0;
           fi
-
           export _FLOW_JVM_SDK_SIGNING_KEY=$(cat<<KEY
           ${{ secrets.FLOW_JVM_SDK_SIGNING_KEY }}
           KEY
-
           ./gradlew \
             -PsnapshotDate=${{ steps.date.outputs.date }} \
             -PgroupId=${{ secrets.FLOW_JVM_SDK_GROUP_ID }} \
