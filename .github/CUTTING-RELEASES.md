@@ -83,7 +83,6 @@ There are two github actions configured:
 
 The following github secrets configure these actions:
 
-- `FLOW_JVM_SDK_CICD_ENABLED`: Must be `true` for the actions to run
 - `FLOW_JVM_SDK_CICD_PUBLISH_ENABLED`: Must be `true` for the publishing of artifacts to happen
 - `FLOW_JVM_SDK_GROUP_ID`: optional groupId, defaults to `org.onflow`
 - `FLOW_JVM_SDK_SIGNING_KEY`: ascii armored version of the pgp key for signing releases
