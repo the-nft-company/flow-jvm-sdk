@@ -48,7 +48,7 @@ jobs:
           fi
           export _FLOW_JVM_SDK_SIGNING_KEY=$(cat<<KEY
           ${{ secrets.FLOW_JVM_SDK_SIGNING_KEY }}
-          KEY
+          KEY);
           ./gradlew \
             -Pversion=${{ steps.get_version.outputs.version-without-v }} \
             -PgroupId=${{ secrets.FLOW_JVM_SDK_GROUP_ID }} \

@@ -51,7 +51,7 @@ jobs:
           fi
           export _FLOW_JVM_SDK_SIGNING_KEY=$(cat<<KEY
           ${{ secrets.FLOW_JVM_SDK_SIGNING_KEY }}
-          KEY
+          KEY);
           ./gradlew \
             -PsnapshotDate=${{ steps.date.outputs.date }} \
             -PgroupId=${{ secrets.FLOW_JVM_SDK_GROUP_ID }} \
