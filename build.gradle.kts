@@ -158,7 +158,11 @@ tasks {
     }
 
     signing {
-        useGpgCmd()
+        if (getProp("signing.key") != null) {
+            useInMemoryPgpKeys(getProp("signing.key"), getProp("signing.password"))
+        } else {
+            useGpgCmd()
+        }
         sign(publishing.publications)
     }
 }

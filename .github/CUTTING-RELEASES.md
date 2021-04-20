@@ -31,7 +31,12 @@ You will need to have gpg setup on your machine.
 
 To release a snapshot version run the following in the root directory of the repository:
 ```shell
-$> ./.github/publish-snapshot.sh
+$> ./gradlew \
+  -PsnapshotDate=$(date +'%Y%m%d%H%M%S') \
+  -x test \
+  clean \
+  publishToSonatype \
+  closeAndReleaseSonatypeStagingRepository
 ```
 If the `version` specified in the `build.gradle.kts` file is `1.2.3` then this script will release a 
 SNAPSHOT version that looks something like this: `0.2.0.20210419134847-SNAPSHOT` where the `20210419134847`
@@ -41,6 +46,48 @@ portion is the year, month, day, hour, minutes, seconds that the build was cut.
 
 To release a non snapshot version run the following in the root directory of the repository:
 ```shell
-$> ./.github/publish-snapshot.sh
+$> ./gradlew \
+  -x test \
+  clean \
+  publishToSonatype \
+  closeAndReleaseSonatypeStagingRepository
 ```
 Be sure that the `version` in the `build.gradle.kts` file is what you want it to be.
+
+## continous Integration / Deployment
+
+In the case of a CI/CD machine you may not want ot have the keyring file(s) on your machine, in this
+case you can instead use an ascii armored version of the pgp key by passing the following arguments:
+
+```shell
+$> ./gradlew \
+  -Psigning.key=${ASCII_ARMORED_VERSION_OF_PGP_KEY} \
+  -Psigning.password=${PGP_KEY_PASSWORD} \
+  -Psonatype.nexusUrl=... \
+  -Psonatype.snapshotRepositoryUrl=... \
+  -Psonatype.username=... \
+  -Psonatype.password=... \
+  -x test \
+  clean \
+  publishToSonatype \
+  closeAndReleaseSonatypeStagingRepository
+```
+
+Be sure to pass the `-PsnapshotDate=$(date +'%Y%m%d%H%M%S')` if it's a snapshot
+
+## github actions
+
+There are two github actions configured:
+- SNAPSHOT: On every commit to the `main` branch a build is performed and if successful it is deployed as a snapshot version.
+- RELEASE: Whenever a tag is creatd with the pattern of `vXXX` a version with the name XXX is built and if successful deployed as a release version.
+
+The following github secrets configure these actions:
+
+- `FLOW_JVM_SDK_GROUP_ID`: optional groupId, defaults to `org.onflow`
+- `FLOW_JVM_SDK_SIGNING_KEY`: ascii armored version of the pgp key for signing releases
+- `FLOW_JVM_SDK_SIGNING_PASSWORD`: password to the pgp key
+- `FLOW_JVM_SDK_NEXUS_URL`: nexus url for performing releases
+- `FLOW_JVM_SDK_SNAPSHOT_REPOSITORY_URL`: nexus url for for permforming releases
+- `FLOW_JVM_SDK_SONATYPE_USERNAME`: sonatype username
+- `FLOW_JVM_SDK_SONATYPE_PASSWORD`: sonatype password
+
