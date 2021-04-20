@@ -7,6 +7,7 @@ jobs:
   build:
     name: Build and publish release
     runs-on: ubuntu-latest
+    if: ${{ secrets.FLOW_JVM_SDK_CICD_ENABLED == 'true' }}
     env:
       JAVA_OPTS: -Xmx2g -Dorg.gradle.daemon=false
     services:
@@ -40,6 +41,7 @@ jobs:
         if: "!contains(github.event.head_commit.message, '[i am bad and i hate unit tests]')"
 
       - name: Publish release
+        if: ${{ secrets.FLOW_JVM_SDK_CICD_PUBLISH_ENABLED == 'true' }}
         run: |
           ./gradlew \
             -Pversion=${{ steps.get_version.outputs.version-without-v }} \
