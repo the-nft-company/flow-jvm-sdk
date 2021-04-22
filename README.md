@@ -17,13 +17,37 @@ At the moment, this SDK includes the following features:
 
 To add this SDK to your project using Maven, use the following:
 
+Maven:
 ```xml
+<repositories>
+  <repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+
 <dependency>
-    <groupId>org.onflow</groupId>
-    <artifactId>flow-jvm-sdk</artifactId>
-    <version>0.1</version>
+  <groupId>org.onflow</groupId>
+  <artifactId>flow-jvm-sdk</artifactId>
+  <version>0.2.2</version>
 </dependency>
 ```
+
+Gradle:
+```groovy
+allprojects {
+  repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+  }
+}
+
+dependencies {
+  api("org.onflow:flow-jvm-sdk:0.2.2")
+}
+```
+
+The jitpack.io repository is necesssary to access some of the dependencies of this library that are not available on maven central.
 
 ## Example Usage
 

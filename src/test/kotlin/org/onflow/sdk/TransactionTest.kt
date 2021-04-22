@@ -114,7 +114,97 @@ class TransactionTest {
         val events = accessApi.getEventsForBlockIds("A.0b2a3299cc857e29.TopShot.Withdraw", setOf(block!!.id))
         assertThat(events).isNotNull
     }
+
+    @Test
+    fun `Can create an account using the transaction DSL`() {
+        val accessAPI = Flow.newAccessApi("localhost", 3569)
+
+        val latestBlockId = accessAPI.getLatestBlockHeader().id
+
+        val payerAccount = accessAPI.getAccountAtLatestBlock(FlowAddress("f8d6e0586b0a20c7"))!!
+
+        val keyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
+        val payerSigner = Crypto.getSigner(keyPair.private, payerAccount.keys[0].hashAlgo)
+
+        val newAccountPublicKey = FlowAccountKey(
+            publicKey = FlowPublicKey(keyPair.public.hex),
+            signAlgo = SignatureAlgorithm.ECDSA_P256,
+            hashAlgo = HashAlgorithm.SHA3_256,
+            weight = 1000
+        )
+
+        val tx = transaction {
+            script {
+                """
+                    transaction(publicKey: String) {
+                        prepare(signer: AuthAccount) {
+                            let account = AuthAccount(payer: signer)
+                            account.addPublicKey(publicKey.decodeHex())
+                        }
+                    }
+                """
+            }
+
+            arguments {
+                arg { StringField(newAccountPublicKey.encoded.bytesToHex()) }
+            }
+
+            referenceBlockId = latestBlockId
+            gasLimit = 100
+
+            proposalKey {
+                address = payerAccount.address
+                keyIndex = payerAccount.keys[0].id
+                sequenceNumber = payerAccount.keys[0].sequenceNumber.toLong()
+            }
+
+            payerAddress = payerAccount.address
+
+            authorizers {
+                address(payerAccount.address)
+            }
+
+            envelopeSignatures {
+                signature {
+                    address = payerAccount.address
+                    keyIndex = 0
+                    signer = payerSigner
+                }
+            }
+        }
+
+        val txID = accessAPI.sendTransaction(tx)
+        val result = waitForSeal(accessAPI, txID)
+        assertThat(result).isNotNull
+        assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
+
+    }
+
+    @Test
+    fun `Can create an account using the simpleTransaction DSL`() {
+        val accessAPI = Flow.newAccessApi("localhost", 3569)
+        val keyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
+        val payerSigner = Crypto.getSigner(keyPair.private, HashAlgorithm.SHA3_256)
+
+        val result = accessAPI.simpleTransaction(FlowAddress("f8d6e0586b0a20c7"), payerSigner) {
+                script {
+                    """
+                        transaction(publicKey: String) {
+                            prepare(signer: AuthAccount) {
+                                let account = AuthAccount(payer: signer)
+                                account.addPublicKey(publicKey.decodeHex())
+                            }
+                        }
+                    """
+                }
+
+                arguments {
+                    arg { StringField(keyPair.public.hex) }
+                }
+            }
+            .send()
+            .waitForSeal()
+        assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
+
+    }
 }
-
-// {"type":"Event","value":{"id":"A.0b2a3299cc857e29.TopShot.Withdraw","fields":[{"name":"id","value":{"type":"UInt64","value":"855038"}},{"name":"from","value":{"type":"Optional","value":{"type":"Address","value":"0xd1b16e03b5558c03"}}}]}}
-

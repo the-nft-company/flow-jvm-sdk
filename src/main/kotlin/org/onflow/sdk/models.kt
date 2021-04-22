@@ -2,6 +2,7 @@ package org.onflow.sdk
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.UnsafeByteOperations
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDateTime
 import org.onflow.protobuf.access.Access
@@ -86,7 +87,7 @@ interface Signer {
 
 data class FlowAccount(
     val address: FlowAddress,
-    val balance: Long,
+    val balance: BigDecimal,
     @Deprecated(
         message = "use contracts instead",
         replaceWith = ReplaceWith("contracts")
@@ -99,7 +100,7 @@ data class FlowAccount(
         @JvmStatic
         fun of(value: AccountOuterClass.Account): FlowAccount = FlowAccount(
             address = FlowAddress.of(value.address.toByteArray()),
-            balance = value.balance,
+            balance = BigDecimal(java.lang.Long.toUnsignedString(value.balance)).movePointLeft(8),
             code = FlowCode(value.code.toByteArray()),
             keys = value.keysList.map { FlowAccountKey.of(it) },
             contracts = value.contractsMap.mapValues { FlowCode(it.value.toByteArray()) }
@@ -110,7 +111,7 @@ data class FlowAccount(
     fun builder(builder: AccountOuterClass.Account.Builder = AccountOuterClass.Account.newBuilder()): AccountOuterClass.Account.Builder {
         return builder
             .setAddress(address.byteStringValue)
-            .setBalance(balance)
+            .setBalance(balance.movePointRight(8).toLong())
             .setCode(code.byteStringValue)
             .addAllKeys(keys.map { it.builder().build() })
             .putAllContracts(contracts.mapValues { it.value.byteStringValue })
@@ -118,13 +119,13 @@ data class FlowAccount(
 }
 
 data class FlowAccountKey(
-    val id: Int,
+    val id: Int = -1,
     val publicKey: FlowPublicKey,
     val signAlgo: SignatureAlgorithm,
     val hashAlgo: HashAlgorithm,
     val weight: Int,
-    val sequenceNumber: Int,
-    val revoked: Boolean
+    val sequenceNumber: Int = -1,
+    val revoked: Boolean = false
 ) {
     companion object {
         @JvmStatic
@@ -150,6 +151,13 @@ data class FlowAccountKey(
             .setSequenceNumber(sequenceNumber)
             .setRevoked(revoked)
     }
+
+    val encoded: ByteArray get() = RLPCodec.encode(arrayOf(
+        publicKey.bytes,
+        signAlgo.code,
+        hashAlgo.code,
+        weight
+    ))
 }
 
 data class FlowEventResult(
@@ -704,6 +712,7 @@ data class FlowScriptResponse(override val bytes: ByteArray) : BytesHolder {
 }
 
 data class FlowSignature(override val bytes: ByteArray) : BytesHolder {
+    constructor(hex: String) : this(hex.hexToBytes())
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -751,6 +760,7 @@ data class FlowCode(override val bytes: ByteArray) : BytesHolder {
 }
 
 data class FlowPublicKey(override val bytes: ByteArray) : BytesHolder {
+    constructor(hex: String) : this(hex.hexToBytes())
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

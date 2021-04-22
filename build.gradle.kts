@@ -1,15 +1,42 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+// configuration variables
+val javaTargetVersion   = "1.8"
+val defaultGroupId      = "org.onflow"
+val defaultVersion      = "0.2.4-SNAPSHOT"
+
+// other variables
+
+fun getProp(name: String, defaultValue: String? = null): String?
+    = project.findProperty("flow.$name")?.toString()?.trim()?.ifBlank { null }
+    ?: project.findProperty(name)?.toString()?.trim()?.ifBlank { null }
+    ?: defaultValue
+
+group = getProp("groupId", defaultGroupId)!!
+version = when {
+    getProp("version") !in setOf("unspecified", null) -> { getProp("version")!! }
+    getProp("snapshotDate") != null -> { "${defaultVersion.replace("-SNAPSHOT", "")}.${getProp("snapshotDate")!!}-SNAPSHOT" }
+    else -> { defaultVersion }
+}
 
 plugins {
+    id("org.jetbrains.dokka") version "1.4.20"
     kotlin("jvm") version "1.4.30"
     idea
-    `maven-publish`
+    jacoco
     signing
+    `maven-publish`
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
+}
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+    jcenter()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
 
     api("org.onflow:flow:0.21")
 
@@ -26,72 +53,121 @@ dependencies {
     testApi("org.assertj:assertj-core:3.19.0")
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
+tasks {
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-}
-
-nexusPublishing {
-    repositories {
-        sonatype()
+    test {
+        useJUnitPlatform()
+        testLogging {
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            showExceptions = true
+            showStackTraces = true
+            showCauses = true
+        }
+        finalizedBy("jacocoTestReport")
     }
-}
 
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
+    compileKotlin {
+        sourceCompatibility = javaTargetVersion
+        targetCompatibility = javaTargetVersion
 
-            pom {
-                licenses {
-                    license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+        kotlinOptions {
+            jvmTarget = javaTargetVersion
+        }
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    jacocoTestReport {
+        dependsOn(test)
+        reports {
+            html.isEnabled = true
+            xml.isEnabled = true
+            csv.isEnabled = false
+        }
+    }
+
+    jacoco {
+        toolVersion = "0.8.5"
+    }
+
+    val documentationJar by creating(Jar::class) {
+        dependsOn(dokkaHtml)
+        archiveClassifier.set("javadoc")
+        from(dokkaHtml.get().outputs)
+    }
+
+    val sourcesJar by creating(Jar::class) {
+        dependsOn(classes)
+        archiveClassifier.set("sources")
+        from(sourceSets["main"].allSource)
+    }
+
+    artifacts {
+        add("archives", documentationJar)
+        add("archives", sourcesJar)
+    }
+
+    nexusPublishing {
+        repositories {
+            sonatype {
+                if (getProp("sonatype.nexusUrl") != null) {
+                    nexusUrl.set(uri(getProp("sonatype.nexusUrl")!!))
+                }
+                if (getProp("sonatype.snapshotRepositoryUrl") != null) {
+                    snapshotRepositoryUrl.set(uri(getProp("sonatype.snapshotRepositoryUrl")!!))
+                }
+                if (getProp("sonatype.username") != null) {
+                    username.set(getProp("sonatype.username")!!)
+                }
+                if (getProp("sonatype.password") != null) {
+                    password.set(getProp("sonatype.password")!!)
+                }
+            }
+        }
+    }
+
+    publishing {
+        publications {
+            create<MavenPublication>("mavenJava") {
+                from(project.components["java"])
+                artifact(documentationJar)
+                artifact(sourcesJar)
+
+                pom {
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
                     }
-                }
-                name.set(project.name)
-                url.set("https://onflow.org")
-                description.set("The Flow Blockchain JVM SDK")
-                scm {
-                    url.set("https://github.com/onflow/flow")
-                    connection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
-                    developerConnection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
-                }
-                developers {
-                    developer {
-                        name.set("Flow Developers")
-                        url.set("https://onflow.org")
+                    name.set(project.name)
+                    url.set("https://onflow.org")
+                    description.set("The Flow Blockchain JVM SDK")
+                    scm {
+                        url.set("https://github.com/onflow/flow")
+                        connection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
+                        developerConnection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
+                    }
+                    developers {
+                        developer {
+                            name.set("Flow Developers")
+                            url.set("https://onflow.org")
+                        }
                     }
                 }
             }
         }
     }
-}
 
-signing {
-    useGpgCmd() // use gpg2
-    sign(publishing.publications["mavenJava"])
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-group = "org.onflow"
-
-// TODO - grab version from Git
-version = "0.2.0-SNAPSHOT"
-
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    signing {
+        if (getProp("signing.key") != null) {
+            useInMemoryPgpKeys(getProp("signing.key"), getProp("signing.password"))
+        } else {
+            useGpgCmd()
+        }
+        sign(publishing.publications)
+    }
 }

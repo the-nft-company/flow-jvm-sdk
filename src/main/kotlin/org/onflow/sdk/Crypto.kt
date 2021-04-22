@@ -3,15 +3,21 @@ package org.onflow.sdk
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
+import java.security.SecureRandom
 import java.security.Security
 import java.security.Signature
+import java.security.spec.ECGenParameterSpec
+import java.security.spec.ECPublicKeySpec
 import kotlin.experimental.and
 import kotlin.math.max
 import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.ECPointUtil
 import org.bouncycastle.jce.interfaces.ECPrivateKey
 import org.bouncycastle.jce.interfaces.ECPublicKey
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.bouncycastle.jce.spec.ECPrivateKeySpec
+
 
 data class KeyPair(
     val private: PrivateKey,
@@ -35,9 +41,11 @@ object Crypto {
         Security.addProvider(BouncyCastleProvider())
     }
 
+    @JvmStatic
+    @JvmOverloads
     fun generateKeyPair(algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): KeyPair {
         val generator = KeyPairGenerator.getInstance("EC", "BC")
-        generator.initialize(ECNamedCurveTable.getParameterSpec(algo.curve))
+        generator.initialize(ECGenParameterSpec(algo.curve), SecureRandom())
         val keyPair = generator.generateKeyPair()
         val privateKey = keyPair.private
         val publicKey = keyPair.public
@@ -52,24 +60,26 @@ object Crypto {
                 hex = if (privateKey is ECPrivateKey) {
                     privateKey.d.toByteArray().bytesToHex()
                 } else {
-                    privateKey.encoded.bytesToHex()
+                    throw IllegalArgumentException("PrivateKey must be an ECPublicKey")
                 }
             ),
             public = PublicKey(
                 key = publicKey,
                 hex = if (publicKey is ECPublicKey) {
-                    publicKey.q.getEncoded(false).bytesToHex()
+                    (publicKey.q.xCoord.encoded + publicKey.q.yCoord.encoded).bytesToHex()
                 } else {
-                    publicKey.encoded.bytesToHex()
+                    throw IllegalArgumentException("PublicKey must be an ECPublicKey")
                 }
             )
         )
     }
 
-    fun decodePrivateKey(privateKey: String, algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): PrivateKey {
+    @JvmStatic
+    @JvmOverloads
+    fun decodePrivateKey(key: String, algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): PrivateKey {
         val ecParameterSpec = ECNamedCurveTable.getParameterSpec(algo.curve)
         val keyFactory = KeyFactory.getInstance(algo.algorithm, "BC")
-        val ecPrivateKeySpec = ECPrivateKeySpec(BigInteger(privateKey, 16), ecParameterSpec)
+        val ecPrivateKeySpec = ECPrivateKeySpec(BigInteger(key, 16), ecParameterSpec)
         val pk = keyFactory.generatePrivate(ecPrivateKeySpec)
         return PrivateKey(
             key = pk,
@@ -81,11 +91,35 @@ object Crypto {
             hex = if (pk is ECPrivateKey) {
                 pk.d.toByteArray().bytesToHex()
             } else {
-                pk.encoded.bytesToHex()
+                throw IllegalArgumentException("PrivateKey must be an ECPublicKey")
             }
         )
     }
 
+    @JvmStatic
+    @JvmOverloads
+    fun decodePublicKey(key: String, algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): PublicKey {
+        val ecParameterSpec = ECNamedCurveTable.getParameterSpec(algo.curve)
+        val keyFactory = KeyFactory.getInstance("EC", "BC")
+        val params = ECNamedCurveSpec(
+            algo.curve,
+            ecParameterSpec.curve, ecParameterSpec.g, ecParameterSpec.n
+        )
+        val point = ECPointUtil.decodePoint(params.curve, byteArrayOf(0x04) + key.hexToBytes())
+        val pubKeySpec = ECPublicKeySpec(point, params)
+        val publicKey = keyFactory.generatePublic(pubKeySpec)
+        return PublicKey(
+            key = publicKey,
+            hex = if (publicKey is ECPublicKey) {
+                (publicKey.q.xCoord.encoded + publicKey.q.yCoord.encoded).bytesToHex()
+            } else {
+                throw IllegalArgumentException("PublicKey must be an ECPublicKey")
+            }
+        )
+    }
+
+    @JvmStatic
+    @JvmOverloads
     fun getSigner(privateKey: PrivateKey, hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256): Signer {
         return SignerImpl(privateKey, hashAlgo)
     }
