@@ -1,6 +1,7 @@
 package org.onflow.sdk
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 
 const val MAINNET_HOSTNAME = "access.mainnet.nodes.onflow.org"
@@ -91,6 +92,7 @@ class TransactionTest {
     fun `Can parse events`() {
         val accessApi = Flow.newAccessApi(MAINNET_HOSTNAME)
 
+        // https://flowscan.org/transaction/5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e
         val tx = accessApi.getTransactionById(FlowId("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e"))
         assertThat(tx).isNotNull
 
