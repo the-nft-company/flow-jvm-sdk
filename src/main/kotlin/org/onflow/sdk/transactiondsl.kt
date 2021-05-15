@@ -2,7 +2,6 @@ package org.onflow.sdk
 
 import java.util.concurrent.TimeoutException
 
-
 @Throws(TimeoutException::class)
 fun waitForSeal(api: FlowAccessApi, transactionId: FlowId, pauseMs: Long = 500L, timeoutMs: Long = 10_000L): FlowTransactionResult {
     check(pauseMs < timeoutMs) { "pause must be less than timeout" }
@@ -103,6 +102,7 @@ class FlowTransactionStub(
 }
 
 class TransactionBuilder {
+    var addressRegistry: AddressRegistry = AddressRegistry()
     private var _script: FlowScript? = null
     private var _arguments: MutableList<FlowArgument> = mutableListOf()
     private var _referenceBlockId: FlowId? = null
@@ -113,6 +113,13 @@ class TransactionBuilder {
     private var _payloadSignatures: MutableList<PendingSignature> = mutableListOf()
     private var _envelopeSignatures: MutableList<PendingSignature> = mutableListOf()
 
+    fun addressRegistry(addressRegistry: AddressRegistry) {
+        this.addressRegistry = addressRegistry
+    }
+    fun addressRegistry(block: () -> AddressRegistry) {
+        addressRegistry(block())
+    }
+
     var script: FlowScript
         get() { return _script!! }
         set(value) { _script = value }
@@ -120,11 +127,10 @@ class TransactionBuilder {
     fun script(script: FlowScript) {
         this.script = script
     }
-    fun script(script: String) = script(FlowScript(script))
-    fun script(script: ByteArray) = script(FlowScript(script))
-    fun script(script: () -> String) = this.script(script())
-
-
+    fun script(code: String, chain: FlowChainId? = null) = script(FlowScript(if (chain != null) { addressRegistry.processScript(code, chain) } else { code }))
+    fun script(code: ByteArray, chain: FlowChainId? = null) = script(String(code), chain)
+    fun script(code: () -> String) = this.script(code())
+    fun script(chain: FlowChainId? = null, code: () -> String) = this.script(code(), chain)
 
     var arguments: MutableList<FlowArgument>
         get() { return _arguments }

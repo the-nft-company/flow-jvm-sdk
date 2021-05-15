@@ -8,7 +8,13 @@ import java.time.ZoneOffset
 
 fun ByteArray.bytesToHex(): String = BaseEncoding.base16().lowerCase().encode(this)
 
-fun String.hexToBytes(): ByteArray = BaseEncoding.base16().lowerCase().decode(this)
+fun String.hexToBytes(): ByteArray = BaseEncoding.base16().lowerCase().decode(
+    if (this.toLowerCase().startsWith("0x")) {
+        this.substring(2)
+    } else {
+        this
+    }
+)
 
 fun Timestamp.asLocalDateTime(): LocalDateTime = LocalDateTime.ofEpochSecond(this.seconds, this.nanos, ZoneOffset.UTC)
 

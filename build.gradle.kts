@@ -90,7 +90,7 @@ tasks {
     }
 
     jacoco {
-        toolVersion = "0.8.5"
+        toolVersion = "0.8.6"
     }
 
     val documentationJar by creating(Jar::class) {
