@@ -44,9 +44,9 @@ const val TYPE_CONTRACT = "Contract"
 const val TYPE_ENUM = "Enum"
 
 @JsonTypeInfo(
-    use=JsonTypeInfo.Id.NAME,
-    include=JsonTypeInfo.As.EXISTING_PROPERTY,
-    property="type",
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
     visible = true)
 @JsonSubTypes(value = [
     Type(value = VoidField::class, name = TYPE_VOID),
@@ -130,9 +130,24 @@ open class Word64NumberField(value: String?) : NumberField(TYPE_WORD64, value)
 open class Fix64NumberField(value: String?) : NumberField(TYPE_FIX64, value)
 open class UFix64NumberField(value: String?) : NumberField(TYPE_UFIX64, value)
 
-open class ArrayField(value: Array<Field<*>>) : Field<Array<Field<*>>>(TYPE_ARRAY, value)
+open class ArrayField(value: Array<Field<*>>) : Field<Array<Field<*>>>(TYPE_ARRAY, value) {
+    constructor(value: Iterable<Field<*>>) : this(value.toList().toTypedArray())
+}
 
-open class DictionaryField(value: List<Pair<Field<*>, Field<*>>>) : Field<List<Pair<Field<*>, Field<*>>>>(TYPE_DICTIONARY, value)
+open class DictionaryField(value: Array<DictionaryFieldEntry>) : Field<Array<DictionaryFieldEntry>>(TYPE_DICTIONARY, value) {
+    constructor(value: Iterable<DictionaryFieldEntry>) : this(value.toList().toTypedArray())
+    companion object {
+        fun fromPairs(value: Iterable<Pair<Field<*>, Field<*>>>): DictionaryField {
+            return DictionaryField(value.map { DictionaryFieldEntry(it) }.toTypedArray())
+        }
+        fun <K, V> fromMap(value: Map<K, V>, keys: (K) -> Field<*>, values: (V) -> Field<*>): DictionaryField {
+            return fromPairs(value.mapKeys { keys(it.key) }.mapValues { values(it.value) }.map { Pair(it.key, it.value) })
+        }
+    }
+}
+open class DictionaryFieldEntry(key: Field<*>, value: Field<*>) {
+    constructor(pair: Pair<Field<*>, Field<*>>) : this(pair.first, pair.second)
+}
 
 open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.toLowerCase().startsWith("0x")) { "0x$value" } else { value }) {
     constructor(bytes: ByteArray) : this(bytes.bytesToHex())
@@ -150,10 +165,10 @@ open class CompositeField(type: String, value: CompositeValue) : Field<Composite
     operator fun contains(name: String): Boolean = value?.getField<Field<*>>(name) != null
 }
 open class CompositeAttribute(val name: String, val value: Field<*>)
-open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>)  {
+open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>) {
     fun <T : Field<*>> getField(name: String): T? = fields.find { it.name == name }?.value as T?
     operator fun <T> get(name: String): T? = getField<Field<*>>(name)?.value as T?
-    operator fun contains(name: String): Boolean =fields.find { it.name == name } != null
+    operator fun contains(name: String): Boolean = fields.find { it.name == name } != null
 }
 open class StructField(value: CompositeValue) : CompositeField(TYPE_STRUCT, value)
 open class ResourceField(value: CompositeValue) : CompositeField(TYPE_RESOURCE, value)
