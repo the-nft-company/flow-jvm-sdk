@@ -145,7 +145,7 @@ open class DictionaryField(value: Array<DictionaryFieldEntry>) : Field<Array<Dic
         }
     }
 }
-open class DictionaryFieldEntry(key: Field<*>, value: Field<*>) {
+open class DictionaryFieldEntry(val key: Field<*>, val value: Field<*>) {
     constructor(pair: Pair<Field<*>, Field<*>>) : this(pair.first, pair.second)
 }
 
