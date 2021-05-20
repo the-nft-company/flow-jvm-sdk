@@ -102,7 +102,12 @@ class FlowTransactionStub(
 }
 
 class TransactionBuilder {
-    var addressRegistry: AddressRegistry = AddressRegistry()
+    companion object {
+        var DEFAULT_REGISTRY = AddressRegistry()
+        var DEFAULT_CHAIN_ID = FlowChainId.MAINNET
+    }
+    var addressRegistry: AddressRegistry = DEFAULT_REGISTRY
+    private var _chainId: FlowChainId = DEFAULT_CHAIN_ID
     private var _script: FlowScript? = null
     private var _arguments: MutableList<FlowArgument> = mutableListOf()
     private var _referenceBlockId: FlowId? = null
@@ -127,10 +132,9 @@ class TransactionBuilder {
     fun script(script: FlowScript) {
         this.script = script
     }
-    fun script(code: String, chain: FlowChainId? = null) = script(FlowScript(if (chain != null) { addressRegistry.processScript(code, chain) } else { code }))
-    fun script(code: ByteArray, chain: FlowChainId? = null) = script(String(code), chain)
-    fun script(code: () -> String) = this.script(code())
-    fun script(chain: FlowChainId? = null, code: () -> String) = this.script(code(), chain)
+    fun script(code: String, chain: FlowChainId = _chainId) = script(FlowScript(addressRegistry.processScript(code, chain)))
+    fun script(code: ByteArray, chain: FlowChainId = _chainId) = script(String(code), chain)
+    fun script(chain: FlowChainId = _chainId, code: () -> String) = this.script(code(), _chainId)
 
     var arguments: MutableList<FlowArgument>
         get() { return _arguments }
@@ -172,6 +176,16 @@ class TransactionBuilder {
         this.gasLimit = gasLimit.toLong()
     }
     fun gasLimit(gasLimit: () -> Number) = this.gasLimit(gasLimit())
+
+
+    var chainId: FlowChainId
+        get() { return _chainId!! }
+        set(value) { _chainId = value }
+
+    fun chainId(chainId: FlowChainId) {
+        this.chainId = chainId
+    }
+    fun chainId(chainId: () -> FlowChainId) = this.chainId(chainId())
 
 
     var proposalKey: FlowTransactionProposalKey
