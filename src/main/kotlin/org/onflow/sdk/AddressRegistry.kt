@@ -18,12 +18,14 @@ class AddressRegistry {
 
     private val SCRIPT_TOKEN_MAP: MutableMap<FlowChainId, MutableMap<String, FlowAddress>> = mutableMapOf()
 
+    var defaultChainId = FlowChainId.MAINNET
+
     init {
         registerDefaults()
     }
 
     @JvmOverloads
-    fun processScript(script: String, chainId: FlowChainId = FlowChainId.MAINNET): String {
+    fun processScript(script: String, chainId: FlowChainId = defaultChainId): String {
         var ret = script
         SCRIPT_TOKEN_MAP[chainId]?.forEach {
             ret = ret.replace(it.key, "0x${it.value.base16Value}")
@@ -32,10 +34,10 @@ class AddressRegistry {
     }
 
     @JvmOverloads
-    fun addressOf(contract: String, chainId: FlowChainId = FlowChainId.MAINNET): FlowAddress? = SCRIPT_TOKEN_MAP[chainId]?.get(contract)
+    fun addressOf(contract: String, chainId: FlowChainId = defaultChainId): FlowAddress? = SCRIPT_TOKEN_MAP[chainId]?.get(contract)
 
     @JvmOverloads
-    fun register(contract: String, address: FlowAddress, chainId: FlowChainId = FlowChainId.MAINNET): AddressRegistry {
+    fun register(contract: String, address: FlowAddress, chainId: FlowChainId = defaultChainId): AddressRegistry {
         SCRIPT_TOKEN_MAP.computeIfAbsent(chainId) { mutableMapOf() }[contract] = address
         return this
     }
