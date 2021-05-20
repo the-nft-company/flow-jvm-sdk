@@ -18,7 +18,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.bouncycastle.jce.spec.ECPrivateKeySpec
 
-
 data class KeyPair(
     val private: PrivateKey,
     val public: PublicKey

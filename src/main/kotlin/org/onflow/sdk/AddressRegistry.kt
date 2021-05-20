@@ -59,12 +59,13 @@ class AddressRegistry {
     fun registerDefaults(): AddressRegistry {
         mapOf(
             FlowChainId.EMULATOR to mutableMapOf(
-                FUNGIBLE_TOKEN to FlowAddress("0x9a0766d93b6608b7"),
-                FLOW_TOKEN to FlowAddress("0x7e60df042a9c0868")
-            ),
-            FlowChainId.TESTNET to mutableMapOf(
                 FUNGIBLE_TOKEN to FlowAddress("0xee82856bf20e2aa6"),
                 FLOW_TOKEN to FlowAddress("0x0ae53cb6e3f42a79"),
+                FLOW_FEES to FlowAddress("0xe5a8b7f23e8b548f")
+            ),
+            FlowChainId.TESTNET to mutableMapOf(
+                FUNGIBLE_TOKEN to FlowAddress("0x9a0766d93b6608b7"),
+                FLOW_TOKEN to FlowAddress("0x7e60df042a9c0868"),
                 FLOW_FEES to FlowAddress("0x912d5440f7e3769e"),
                 FLOW_TABLE_STAKING to FlowAddress("0x9eca2b38b18b5dfe"),
                 LOCKED_TOKENS to FlowAddress("0x95e019a17d0e23d7"),
