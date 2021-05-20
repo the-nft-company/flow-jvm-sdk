@@ -18,7 +18,7 @@ class AddressRegistry {
 
     private val SCRIPT_TOKEN_MAP: MutableMap<FlowChainId, MutableMap<String, FlowAddress>> = mutableMapOf()
 
-    var defaultChainId = FlowChainId.MAINNET
+    var defaultChainId = Flow.DEFAULT_CHAIN_ID
 
     init {
         registerDefaults()

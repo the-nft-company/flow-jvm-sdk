@@ -102,12 +102,8 @@ class FlowTransactionStub(
 }
 
 class TransactionBuilder {
-    companion object {
-        var DEFAULT_REGISTRY = AddressRegistry()
-        var DEFAULT_CHAIN_ID = FlowChainId.MAINNET
-    }
-    var addressRegistry: AddressRegistry = DEFAULT_REGISTRY
-    private var _chainId: FlowChainId = DEFAULT_CHAIN_ID
+    var addressRegistry: AddressRegistry = Flow.DEFAULT_ADDRESS_REGISTRY
+    private var _chainId: FlowChainId = Flow.DEFAULT_CHAIN_ID
     private var _script: FlowScript? = null
     private var _arguments: MutableList<FlowArgument> = mutableListOf()
     private var _referenceBlockId: FlowId? = null
