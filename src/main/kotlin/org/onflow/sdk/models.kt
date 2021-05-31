@@ -13,6 +13,8 @@ import org.onflow.protobuf.entities.BlockSealOuterClass
 import org.onflow.protobuf.entities.CollectionOuterClass
 import org.onflow.protobuf.entities.EventOuterClass
 import org.onflow.protobuf.entities.TransactionOuterClass
+import org.onflow.sdk.cadence.EventField
+import org.onflow.sdk.cadence.Field
 import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
 
@@ -53,15 +55,20 @@ enum class SignatureAlgorithm(
     val algorithm: String,
     val curve: String,
     val id: String,
-    val code: Int
+    val code: Int,
+    val index: Int
 ) {
-    UNKNOWN("unknown", "unknown", "unknown", -1),
-    ECDSA_P256("ECDSA", "P-256", "ECDSA_P256", 2),
-    ECDSA_SECP256k1("ECDSA", "secp256k1", "ECDSA_secp256k1", 3);
+    UNKNOWN("unknown", "unknown", "unknown", -1, 0),
+    ECDSA_P256("ECDSA", "P-256", "ECDSA_P256", 2, 1),
+    ECDSA_SECP256k1("ECDSA", "secp256k1", "ECDSA_secp256k1", 3, 2);
     companion object {
         @JvmStatic
         fun fromCode(code: Int): SignatureAlgorithm = values()
             .find { it.code == code } ?: UNKNOWN
+
+        @JvmStatic
+        fun fromCadenceIndex(index: Int): SignatureAlgorithm = values()
+            .find { it.index == index } ?: UNKNOWN
     }
 }
 
@@ -69,15 +76,22 @@ enum class HashAlgorithm(
     val algorithm: String,
     val outputSize: Int,
     val id: String,
-    val code: Int
+    val code: Int,
+    val index: Int
 ) {
-    UNKNOWN("unknown", -1, "unknown", -1),
-    SHA2_256("SHA-2", 256, "SHA256withECDSA", 1),
-    SHA3_256("SHA-3", 256, "SHA3-256withECDSA", 3);
+    UNKNOWN("unknown", -1, "unknown", -1, 0),
+    SHA2_256("SHA-2", 256, "SHA256withECDSA", 1, 1),
+    SHA2_384("SHA-2", 384, "SHA384withECDSA", 1, 2),
+    SHA3_256("SHA-3", 256, "SHA3-256withECDSA", 3, 3),
+    SHA3_384("SHA-3", 384, "SHA3-384withECDSA", 3, 4);
     companion object {
         @JvmStatic
         fun fromCode(code: Int): HashAlgorithm = values()
             .find { it.code == code } ?: UNKNOWN
+
+        @JvmStatic
+        fun fromCadenceIndex(index: Int): HashAlgorithm = values()
+            .find { it.index == index } ?: UNKNOWN
     }
 }
 

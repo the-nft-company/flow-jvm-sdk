@@ -1,4 +1,4 @@
-package org.onflow.sdk
+package org.onflow.sdk.cadence
 
 // This files contains types for the JSON-Cadence Data Interchange Format
 
@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.math.BigDecimal
 import java.math.BigInteger
+import org.onflow.sdk.bytesToHex
 
 const val TYPE_VOID = "Void"
 const val TYPE_OPTIONAL = "Optional"
@@ -97,7 +98,11 @@ open class BooleanField(value: Boolean) : Field<Boolean>(TYPE_BOOLEAN, value)
 
 open class StringField(value: String) : Field<String>(TYPE_STRING, value)
 
-open class NumberField(type: String, value: String?) : Field<String>(type, value) {
+open class NumberField(type: String, value: String) : Field<String>(type, value) {
+    fun toByte(): Byte? = value?.toInt()?.toByte()
+    @ExperimentalUnsignedTypes
+    fun toUShort(): UShort? = value?.toUShort()
+    fun toShort(): Short? = value?.toShort()
     @ExperimentalUnsignedTypes
     fun toUInt(): UInt? = value?.toUInt()
     fun toInt(): Int? = value?.toInt()
@@ -109,26 +114,26 @@ open class NumberField(type: String, value: String?) : Field<String>(type, value
     fun toDouble(): Double? = value?.toDouble()
     fun toBigDecimal(): BigDecimal? = value?.toBigDecimal()
 }
-open class IntNumberField(value: String?) : NumberField(TYPE_INT, value)
-open class UIntNumberField(value: String?) : NumberField(TYPE_UINT, value)
-open class Int8NumberField(value: String?) : NumberField(TYPE_INT8, value)
-open class UInt8NumberField(value: String?) : NumberField(TYPE_UINT8, value)
-open class Int16NumberField(value: String?) : NumberField(TYPE_INT16, value)
-open class UInt16NumberField(value: String?) : NumberField(TYPE_UINT16, value)
-open class Int32NumberField(value: String?) : NumberField(TYPE_INT32, value)
-open class UInt32NumberField(value: String?) : NumberField(TYPE_UINT32, value)
-open class Int64NumberField(value: String?) : NumberField(TYPE_INT64, value)
-open class UInt64NumberField(value: String?) : NumberField(TYPE_UINT64, value)
-open class Int128NumberField(value: String?) : NumberField(TYPE_INT128, value)
-open class UInt128NumberField(value: String?) : NumberField(TYPE_UINT128, value)
-open class Int256NumberField(value: String?) : NumberField(TYPE_INT256, value)
-open class UInt256NumberField(value: String?) : NumberField(TYPE_UINT256, value)
-open class Word8NumberField(value: String?) : NumberField(TYPE_WORD8, value)
-open class Word16NumberField(value: String?) : NumberField(TYPE_WORD16, value)
-open class Word32NumberField(value: String?) : NumberField(TYPE_WORD32, value)
-open class Word64NumberField(value: String?) : NumberField(TYPE_WORD64, value)
-open class Fix64NumberField(value: String?) : NumberField(TYPE_FIX64, value)
-open class UFix64NumberField(value: String?) : NumberField(TYPE_UFIX64, value)
+open class IntNumberField(value: String) : NumberField(TYPE_INT, value)
+open class UIntNumberField(value: String) : NumberField(TYPE_UINT, value)
+open class Int8NumberField(value: String) : NumberField(TYPE_INT8, value)
+open class UInt8NumberField(value: String) : NumberField(TYPE_UINT8, value)
+open class Int16NumberField(value: String) : NumberField(TYPE_INT16, value)
+open class UInt16NumberField(value: String) : NumberField(TYPE_UINT16, value)
+open class Int32NumberField(value: String) : NumberField(TYPE_INT32, value)
+open class UInt32NumberField(value: String) : NumberField(TYPE_UINT32, value)
+open class Int64NumberField(value: String) : NumberField(TYPE_INT64, value)
+open class UInt64NumberField(value: String) : NumberField(TYPE_UINT64, value)
+open class Int128NumberField(value: String) : NumberField(TYPE_INT128, value)
+open class UInt128NumberField(value: String) : NumberField(TYPE_UINT128, value)
+open class Int256NumberField(value: String) : NumberField(TYPE_INT256, value)
+open class UInt256NumberField(value: String) : NumberField(TYPE_UINT256, value)
+open class Word8NumberField(value: String) : NumberField(TYPE_WORD8, value)
+open class Word16NumberField(value: String) : NumberField(TYPE_WORD16, value)
+open class Word32NumberField(value: String) : NumberField(TYPE_WORD32, value)
+open class Word64NumberField(value: String) : NumberField(TYPE_WORD64, value)
+open class Fix64NumberField(value: String) : NumberField(TYPE_FIX64, value)
+open class UFix64NumberField(value: String) : NumberField(TYPE_UFIX64, value)
 
 open class ArrayField(value: Array<Field<*>>) : Field<Array<Field<*>>>(TYPE_ARRAY, value) {
     constructor(value: Iterable<Field<*>>) : this(value.toList().toTypedArray())
@@ -167,6 +172,7 @@ open class CompositeField(type: String, value: CompositeValue) : Field<Composite
 open class CompositeAttribute(val name: String, val value: Field<*>)
 open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>) {
     fun <T : Field<*>> getField(name: String): T? = fields.find { it.name == name }?.value as T?
+    fun <T : Field<*>> getRequiredField(name: String): T = getField(name) ?: throw IllegalStateException("Value for $name not found")
     operator fun <T> get(name: String): T? = getField<Field<*>>(name)?.value as T?
     operator fun contains(name: String): Boolean = fields.find { it.name == name } != null
 }

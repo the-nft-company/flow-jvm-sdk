@@ -1,5 +1,6 @@
 package org.onflow.sdk
 
+import com.google.protobuf.ByteString
 import java.util.concurrent.CompletableFuture
 
 interface AsyncFlowAccessApi {
@@ -36,11 +37,11 @@ interface AsyncFlowAccessApi {
 
     fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): CompletableFuture<FlowAccount?>
 
-    fun executeScriptAtLatestBlock(script: FlowScript): CompletableFuture<FlowScriptResponse>
+    fun executeScriptAtLatestBlock(script: FlowScript, arguments: Iterable<ByteString> = emptyList()): CompletableFuture<FlowScriptResponse>
 
-    fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): CompletableFuture<FlowScriptResponse>
+    fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId, arguments: Iterable<ByteString> = emptyList()): CompletableFuture<FlowScriptResponse>
 
-    fun executeScriptAtBlockHeight(script: FlowScript, height: Long): CompletableFuture<FlowScriptResponse>
+    fun executeScriptAtBlockHeight(script: FlowScript, height: Long, arguments: Iterable<ByteString> = emptyList()): CompletableFuture<FlowScriptResponse>
 
     fun getEventsForHeightRange(type: String, range: ClosedRange<Long>): CompletableFuture<List<FlowEventResult>>
 

@@ -1,4 +1,4 @@
-package org.onflow.sdk
+package org.onflow.sdk.crypto
 
 import java.math.BigInteger
 import java.security.KeyFactory
@@ -17,6 +17,11 @@ import org.bouncycastle.jce.interfaces.ECPublicKey
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.bouncycastle.jce.spec.ECPrivateKeySpec
+import org.onflow.sdk.HashAlgorithm
+import org.onflow.sdk.SignatureAlgorithm
+import org.onflow.sdk.Signer
+import org.onflow.sdk.bytesToHex
+import org.onflow.sdk.hexToBytes
 
 data class KeyPair(
     val private: PrivateKey,

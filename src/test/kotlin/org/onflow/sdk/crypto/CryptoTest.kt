@@ -1,7 +1,9 @@
-package org.onflow.sdk
+package org.onflow.sdk.crypto
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.onflow.sdk.HashAlgorithm
+import org.onflow.sdk.SignatureAlgorithm
 
 internal class CryptoTest {
 

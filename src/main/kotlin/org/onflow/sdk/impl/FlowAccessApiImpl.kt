@@ -1,9 +1,10 @@
 package org.onflow.sdk.impl
 
+import com.google.protobuf.ByteString
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.access.AccessAPIGrpc
-import org.onflow.sdk.FlowAccount
 import org.onflow.sdk.FlowAccessApi
+import org.onflow.sdk.FlowAccount
 import org.onflow.sdk.FlowAddress
 import org.onflow.sdk.FlowBlock
 import org.onflow.sdk.FlowBlockHeader
@@ -180,28 +181,31 @@ class FlowAccessApiImpl(
         }
     }
 
-    override fun executeScriptAtLatestBlock(script: FlowScript): FlowScriptResponse {
+    override fun executeScriptAtLatestBlock(script: FlowScript, arguments: Iterable<ByteString>): FlowScriptResponse {
         val ret = api.executeScriptAtLatestBlock(
             Access.ExecuteScriptAtLatestBlockRequest.newBuilder()
                 .setScript(script.byteStringValue)
+                .addAllArguments(arguments)
                 .build()
         )
         return FlowScriptResponse(ret.value.toByteArray())
     }
 
-    override fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): FlowScriptResponse {
+    override fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId, arguments: Iterable<ByteString>): FlowScriptResponse {
         val ret = api.executeScriptAtBlockID(
             Access.ExecuteScriptAtBlockIDRequest.newBuilder()
                 .setScript(script.byteStringValue)
+                .addAllArguments(arguments)
                 .build()
         )
         return FlowScriptResponse(ret.value.toByteArray())
     }
 
-    override fun executeScriptAtBlockHeight(script: FlowScript, height: Long): FlowScriptResponse {
+    override fun executeScriptAtBlockHeight(script: FlowScript, height: Long, arguments: Iterable<ByteString>): FlowScriptResponse {
         val ret = api.executeScriptAtBlockHeight(
             Access.ExecuteScriptAtBlockHeightRequest.newBuilder()
                 .setScript(script.byteStringValue)
+                .addAllArguments(arguments)
                 .build()
         )
         return FlowScriptResponse(ret.value.toByteArray())

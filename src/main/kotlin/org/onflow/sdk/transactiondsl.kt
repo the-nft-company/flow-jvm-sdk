@@ -1,6 +1,8 @@
 package org.onflow.sdk
 
 import java.util.concurrent.TimeoutException
+import org.onflow.sdk.cadence.CDIFBuilder
+import org.onflow.sdk.cadence.Field
 
 @Throws(TimeoutException::class)
 fun waitForSeal(api: FlowAccessApi, transactionId: FlowId, pauseMs: Long = 500L, timeoutMs: Long = 10_000L): FlowTransactionResult {
@@ -19,13 +21,13 @@ fun waitForSeal(api: FlowAccessApi, transactionId: FlowId, pauseMs: Long = 500L,
     }
 }
 
-fun transaction(block: TransactionBuilder.() -> Unit): FlowTransaction {
+fun flowTransaction(block: TransactionBuilder.() -> Unit): FlowTransaction {
     val builder = TransactionBuilder()
     block(builder)
     return builder.build()
 }
 
-fun FlowAccessApi.simpleTransaction(address: FlowAddress, signer: Signer, gasLimit: Long = 100, keyIndex: Int = 0, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
+fun FlowAccessApi.simpleFlowTransaction(address: FlowAddress, signer: Signer, gasLimit: Long = 100, keyIndex: Int = 0, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
     val api = this
     val referenceBlockId = api.getLatestBlockHeader().id
     val payerAccount = checkNotNull(api.getAccountAtLatestBlock(address)) { "Account not found for address: ${address.base16Value}" }
@@ -130,7 +132,7 @@ class TransactionBuilder {
     }
     fun script(code: String, chain: FlowChainId = _chainId) = script(FlowScript(addressRegistry.processScript(code, chain)))
     fun script(code: ByteArray, chain: FlowChainId = _chainId) = script(String(code), chain)
-    fun script(chain: FlowChainId = _chainId, code: () -> String) = this.script(code(), _chainId)
+    fun script(chain: FlowChainId = _chainId, code: () -> String) = this.script(code(), chain)
 
     var arguments: MutableList<FlowArgument>
         get() { return _arguments }
@@ -149,7 +151,7 @@ class TransactionBuilder {
     }
     fun argument(argument: FlowArgument) = this._arguments.add(argument)
     fun argument(argument: Field<*>) = this._arguments.add(FlowArgument(argument))
-    fun argument(argument: () -> Field<*>) = this.argument(argument())
+    fun argument(argument: CDIFBuilder.() -> Field<*>) = this.argument(argument(CDIFBuilder()))
 
 
     var referenceBlockId: FlowId
@@ -377,7 +379,7 @@ class FlowArgumentsBuilder {
     fun arg(value: FlowArgument) {
         _values.add(value)
     }
-    fun arg(arg: () -> Field<*>) = arg(FlowArgument(arg()))
+    fun arg(arg: CDIFBuilder.() -> Field<*>) = arg(FlowArgument(arg(CDIFBuilder())))
     fun build(): MutableList<FlowArgument> = _values
 }
 

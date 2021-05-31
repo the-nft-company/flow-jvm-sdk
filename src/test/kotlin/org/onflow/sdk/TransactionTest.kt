@@ -1,8 +1,8 @@
 package org.onflow.sdk
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
+import org.onflow.sdk.crypto.Crypto
 
 const val MAINNET_HOSTNAME = "access.mainnet.nodes.onflow.org"
 
@@ -89,7 +89,7 @@ class TransactionTest {
     }
 
     // ignored for now because for whatever reason it can't find this transaction
-    // @Test
+    @Test
     fun `Can parse events`() {
         val accessApi = Flow.newAccessApi(MAINNET_HOSTNAME)
 
@@ -111,11 +111,6 @@ class TransactionTest {
         assertThat("price" in results.events[3].event.value!!).isTrue
         assertThat("seller" in results.events[3].event.value!!).isTrue
 
-        val block = accessApi.getBlockById(tx!!.referenceBlockId)
-        assertThat(block).isNotNull
-
-        val events = accessApi.getEventsForBlockIds("A.0b2a3299cc857e29.TopShot.Withdraw", setOf(block!!.id))
-        assertThat(events).isNotNull
     }
 
     @Test
@@ -136,7 +131,7 @@ class TransactionTest {
             weight = 1000
         )
 
-        val tx = transaction {
+        val tx = flowTransaction {
             script {
                 """
                     transaction(publicKey: String) {
@@ -149,7 +144,7 @@ class TransactionTest {
             }
 
             arguments {
-                arg { StringField(newAccountPublicKey.encoded.bytesToHex()) }
+                arg { string(newAccountPublicKey.encoded.bytesToHex()) }
             }
 
             referenceBlockId = latestBlockId
@@ -189,7 +184,7 @@ class TransactionTest {
         val keyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val payerSigner = Crypto.getSigner(keyPair.private, HashAlgorithm.SHA3_256)
 
-        val result = accessAPI.simpleTransaction(FlowAddress("f8d6e0586b0a20c7"), payerSigner) {
+        val result = accessAPI.simpleFlowTransaction(FlowAddress("f8d6e0586b0a20c7"), payerSigner) {
                 script {
                     """
                         transaction(publicKey: String) {
@@ -202,7 +197,7 @@ class TransactionTest {
                 }
 
                 arguments {
-                    arg { StringField(keyPair.public.hex) }
+                    arg { string(keyPair.public.hex) }
                 }
             }
             .send()

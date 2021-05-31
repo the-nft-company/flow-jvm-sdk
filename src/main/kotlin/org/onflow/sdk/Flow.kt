@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
+import kotlin.reflect.KClass
 import org.onflow.protobuf.access.AccessAPIGrpc
+import org.onflow.sdk.cadence.Field
+import org.onflow.sdk.cadence.Marshalling
 import org.onflow.sdk.impl.AsyncFlowAccessApiImpl
 import org.onflow.sdk.impl.FlowAccessApiImpl
 
@@ -80,4 +83,11 @@ object Flow {
     fun <T : Field<*>> encodeCDIFs(cdifs: Iterable<T>): ByteArray = OBJECT_MAPPER.writeValueAsBytes(cdifs)
     @JvmStatic
     fun <T : Field<*>> encodeCDIF(cdif: T): ByteArray = OBJECT_MAPPER.writeValueAsBytes(cdif)
+
+    @JvmStatic
+    fun <T: Any> unmarshall(type: KClass<T>, value: Field<*>): T = Marshalling.unmarshall(type, value)
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T: Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = Marshalling.marshall(value, clazz)
 }
