@@ -48,43 +48,46 @@ const val TYPE_ENUM = "Enum"
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "type",
-    visible = true)
-@JsonSubTypes(value = [
-    Type(value = VoidField::class, name = TYPE_VOID),
-    Type(value = OptionalField::class, name = TYPE_OPTIONAL),
-    Type(value = BooleanField::class, name = TYPE_BOOLEAN),
-    Type(value = StringField::class, name = TYPE_STRING),
-    Type(value = IntNumberField::class, name = TYPE_INT),
-    Type(value = UIntNumberField::class, name = TYPE_UINT),
-    Type(value = Int8NumberField::class, name = TYPE_INT8),
-    Type(value = UInt8NumberField::class, name = TYPE_UINT8),
-    Type(value = Int16NumberField::class, name = TYPE_INT16),
-    Type(value = UInt16NumberField::class, name = TYPE_UINT16),
-    Type(value = Int32NumberField::class, name = TYPE_INT32),
-    Type(value = UInt32NumberField::class, name = TYPE_UINT32),
-    Type(value = Int64NumberField::class, name = TYPE_INT64),
-    Type(value = UInt64NumberField::class, name = TYPE_UINT64),
-    Type(value = Int128NumberField::class, name = TYPE_INT128),
-    Type(value = UInt128NumberField::class, name = TYPE_UINT128),
-    Type(value = Int256NumberField::class, name = TYPE_INT256),
-    Type(value = UInt256NumberField::class, name = TYPE_UINT256),
-    Type(value = Word8NumberField::class, name = TYPE_WORD8),
-    Type(value = Word16NumberField::class, name = TYPE_WORD16),
-    Type(value = Word32NumberField::class, name = TYPE_WORD32),
-    Type(value = Word64NumberField::class, name = TYPE_WORD64),
-    Type(value = Fix64NumberField::class, name = TYPE_FIX64),
-    Type(value = UFix64NumberField::class, name = TYPE_UFIX64),
-    Type(value = ArrayField::class, name = TYPE_ARRAY),
-    Type(value = DictionaryField::class, name = TYPE_DICTIONARY),
-    Type(value = AddressField::class, name = TYPE_ADDRESS),
-    Type(value = PathField::class, name = TYPE_PATH),
-    Type(value = CapabilityField::class, name = TYPE_CAPABILITY),
-    Type(value = StructField::class, name = TYPE_STRUCT),
-    Type(value = ResourceField::class, name = TYPE_RESOURCE),
-    Type(value = EventField::class, name = TYPE_EVENT),
-    Type(value = ContractField::class, name = TYPE_CONTRACT),
-    Type(value = EnumField::class, name = TYPE_ENUM)
-])
+    visible = true
+)
+@JsonSubTypes(
+    value = [
+        Type(value = VoidField::class, name = TYPE_VOID),
+        Type(value = OptionalField::class, name = TYPE_OPTIONAL),
+        Type(value = BooleanField::class, name = TYPE_BOOLEAN),
+        Type(value = StringField::class, name = TYPE_STRING),
+        Type(value = IntNumberField::class, name = TYPE_INT),
+        Type(value = UIntNumberField::class, name = TYPE_UINT),
+        Type(value = Int8NumberField::class, name = TYPE_INT8),
+        Type(value = UInt8NumberField::class, name = TYPE_UINT8),
+        Type(value = Int16NumberField::class, name = TYPE_INT16),
+        Type(value = UInt16NumberField::class, name = TYPE_UINT16),
+        Type(value = Int32NumberField::class, name = TYPE_INT32),
+        Type(value = UInt32NumberField::class, name = TYPE_UINT32),
+        Type(value = Int64NumberField::class, name = TYPE_INT64),
+        Type(value = UInt64NumberField::class, name = TYPE_UINT64),
+        Type(value = Int128NumberField::class, name = TYPE_INT128),
+        Type(value = UInt128NumberField::class, name = TYPE_UINT128),
+        Type(value = Int256NumberField::class, name = TYPE_INT256),
+        Type(value = UInt256NumberField::class, name = TYPE_UINT256),
+        Type(value = Word8NumberField::class, name = TYPE_WORD8),
+        Type(value = Word16NumberField::class, name = TYPE_WORD16),
+        Type(value = Word32NumberField::class, name = TYPE_WORD32),
+        Type(value = Word64NumberField::class, name = TYPE_WORD64),
+        Type(value = Fix64NumberField::class, name = TYPE_FIX64),
+        Type(value = UFix64NumberField::class, name = TYPE_UFIX64),
+        Type(value = ArrayField::class, name = TYPE_ARRAY),
+        Type(value = DictionaryField::class, name = TYPE_DICTIONARY),
+        Type(value = AddressField::class, name = TYPE_ADDRESS),
+        Type(value = PathField::class, name = TYPE_PATH),
+        Type(value = CapabilityField::class, name = TYPE_CAPABILITY),
+        Type(value = StructField::class, name = TYPE_STRUCT),
+        Type(value = ResourceField::class, name = TYPE_RESOURCE),
+        Type(value = EventField::class, name = TYPE_EVENT),
+        Type(value = ContractField::class, name = TYPE_CONTRACT),
+        Type(value = EnumField::class, name = TYPE_ENUM)
+    ]
+)
 abstract class Field<T> constructor(
     val type: String,
     val value: T?
@@ -171,8 +174,10 @@ open class CompositeField(type: String, value: CompositeValue) : Field<Composite
 }
 open class CompositeAttribute(val name: String, val value: Field<*>)
 open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>) {
+    @Suppress("UNCHECKED_CAST")
     fun <T : Field<*>> getField(name: String): T? = fields.find { it.name == name }?.value as T?
     fun <T : Field<*>> getRequiredField(name: String): T = getField(name) ?: throw IllegalStateException("Value for $name not found")
+    @Suppress("UNCHECKED_CAST")
     operator fun <T> get(name: String): T? = getField<Field<*>>(name)?.value as T?
     operator fun contains(name: String): Boolean = fields.find { it.name == name } != null
 }

@@ -85,9 +85,9 @@ object Flow {
     fun <T : Field<*>> encodeCDIF(cdif: T): ByteArray = OBJECT_MAPPER.writeValueAsBytes(cdif)
 
     @JvmStatic
-    fun <T: Any> unmarshall(type: KClass<T>, value: Field<*>): T = Marshalling.unmarshall(type, value)
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>): T = Marshalling.unmarshall(type, value)
 
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = Marshalling.marshall(value, clazz)
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = Marshalling.marshall(value, clazz)
 }

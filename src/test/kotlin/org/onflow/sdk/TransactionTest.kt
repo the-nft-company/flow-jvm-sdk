@@ -110,7 +110,6 @@ class TransactionTest {
         assertThat("id" in results.events[3].event.value!!).isTrue
         assertThat("price" in results.events[3].event.value!!).isTrue
         assertThat("seller" in results.events[3].event.value!!).isTrue
-
     }
 
     @Test
@@ -175,7 +174,6 @@ class TransactionTest {
         val result = waitForSeal(accessAPI, txID)
         assertThat(result).isNotNull
         assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
-
     }
 
     @Test
@@ -185,24 +183,23 @@ class TransactionTest {
         val payerSigner = Crypto.getSigner(keyPair.private, HashAlgorithm.SHA3_256)
 
         val result = accessAPI.simpleFlowTransaction(FlowAddress("f8d6e0586b0a20c7"), payerSigner) {
-                script {
-                    """
-                        transaction(publicKey: String) {
-                            prepare(signer: AuthAccount) {
-                                let account = AuthAccount(payer: signer)
-                                account.addPublicKey(publicKey.decodeHex())
-                            }
+            script {
+                """
+                    transaction(publicKey: String) {
+                        prepare(signer: AuthAccount) {
+                            let account = AuthAccount(payer: signer)
+                            account.addPublicKey(publicKey.decodeHex())
                         }
-                    """
-                }
-
-                arguments {
-                    arg { string(keyPair.public.hex) }
-                }
+                    }
+                """
             }
+
+            arguments {
+                arg { string(keyPair.public.hex) }
+            }
+        }
             .send()
             .waitForSeal()
         assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
-
     }
 }

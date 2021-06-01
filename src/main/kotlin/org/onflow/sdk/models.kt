@@ -122,6 +122,7 @@ data class FlowAccount(
     }
 
     @JvmOverloads
+    @Suppress("DEPRECATION")
     fun builder(builder: AccountOuterClass.Account.Builder = AccountOuterClass.Account.newBuilder()): AccountOuterClass.Account.Builder {
         return builder
             .setAddress(address.byteStringValue)
@@ -166,12 +167,14 @@ data class FlowAccountKey(
             .setRevoked(revoked)
     }
 
-    val encoded: ByteArray get() = RLPCodec.encode(arrayOf(
-        publicKey.bytes,
-        signAlgo.code,
-        hashAlgo.code,
-        weight
-    ))
+    val encoded: ByteArray get() = RLPCodec.encode(
+        arrayOf(
+            publicKey.bytes,
+            signAlgo.code,
+            hashAlgo.code,
+            weight
+        )
+    )
 }
 
 data class FlowEventResult(
@@ -224,7 +227,7 @@ data class FlowEvent(
     val event: EventField get() = payload.cdif as EventField
 
     fun <T : Field<*>> getField(name: String): T? = event[name]
-    @Suppress("UNCHECKED")
+    @Suppress("UNCHECKED_CAST")
     operator fun <T> get(name: String): T? = getField<Field<*>>(name) as T
     operator fun contains(name: String): Boolean = name in event
 
@@ -826,7 +829,3 @@ data class FlowEventPayload(override val bytes: ByteArray) : BytesHolder {
         return bytes.contentHashCode()
     }
 }
-
-
-
-

@@ -25,6 +25,7 @@ plugins {
     signing
     `maven-publish`
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
+    id("org.jmailen.kotlinter") version "3.4.0"
 }
 
 repositories {
@@ -100,6 +101,21 @@ tasks {
 
     jacoco {
         toolVersion = "0.8.6"
+    }
+
+    kotlinter {
+        ignoreFailures = false
+        indentSize = 4
+        reporters = arrayOf("checkstyle", "plain", "html")
+        experimentalRules = false
+
+        // be sure to update .editorconfig in the root as well
+        disabledRules = arrayOf(
+            "filename",
+            "no-wildcard-imports",
+            "import-ordering",
+            "chain-wrapping"
+        )
     }
 
     val documentationJar by creating(Jar::class) {

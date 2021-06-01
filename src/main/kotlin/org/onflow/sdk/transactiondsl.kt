@@ -100,7 +100,6 @@ class FlowTransactionStub(
         checkSent()
         return waitForSeal(api, transactionId!!, pauseMs, timeoutMs)
     }
-
 }
 
 class TransactionBuilder {
@@ -153,7 +152,6 @@ class TransactionBuilder {
     fun argument(argument: Field<*>) = this._arguments.add(FlowArgument(argument))
     fun argument(argument: CDIFBuilder.() -> Field<*>) = this.argument(argument(CDIFBuilder()))
 
-
     var referenceBlockId: FlowId
         get() { return _referenceBlockId!! }
         set(value) { _referenceBlockId = value }
@@ -165,7 +163,6 @@ class TransactionBuilder {
     fun referenceBlockId(referenceBlockId: ByteArray) = referenceBlockId(FlowId.of(referenceBlockId))
     fun referenceBlockId(referenceBlockId: () -> FlowId) = this.referenceBlockId(referenceBlockId())
 
-
     var gasLimit: Long
         get() { return _gasLimit!! }
         set(value) { _gasLimit = value }
@@ -175,16 +172,14 @@ class TransactionBuilder {
     }
     fun gasLimit(gasLimit: () -> Number) = this.gasLimit(gasLimit())
 
-
     var chainId: FlowChainId
-        get() { return _chainId!! }
+        get() { return _chainId }
         set(value) { _chainId = value }
 
     fun chainId(chainId: FlowChainId) {
         this.chainId = chainId
     }
     fun chainId(chainId: () -> FlowChainId) = this.chainId(chainId())
-
 
     var proposalKey: FlowTransactionProposalKey
         get() { return _proposalKey!! }
@@ -196,7 +191,6 @@ class TransactionBuilder {
         this.proposalKey = builder.build()
     }
 
-
     var payerAddress: FlowAddress
         get() { return _payerAddress!! }
         set(value) { _payerAddress = value }
@@ -207,7 +201,6 @@ class TransactionBuilder {
     fun payerAddress(payerAddress: String) = payerAddress(FlowAddress(payerAddress))
     fun payerAddress(payerAddress: ByteArray) = payerAddress(FlowAddress.of(payerAddress))
     fun payerAddress(payerAddress: () -> FlowAddress) = this.payerAddress(payerAddress())
-
 
     var authorizers: List<FlowAddress>
         get() { return _authorizers }
@@ -247,19 +240,23 @@ class TransactionBuilder {
     fun payloadSignature(payloadSignature: PendingSignature) = this._payloadSignatures.add(payloadSignature)
     fun payloadSignature(payloadSignature: () -> PendingSignature) = payloadSignature(payloadSignature())
     fun payloadSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature) {
-        payloadSignature(PendingSignature(
-            address = address,
-            keyIndex = keyIndex,
-            signature = signature))
+        payloadSignature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signature = signature
+            )
+        )
     }
     fun payloadSignature(address: FlowAddress, keyIndex: Int, signer: Signer) {
-        payloadSignature(PendingSignature(
-            address = address,
-            keyIndex = keyIndex,
-            signer = signer
-        ))
+        payloadSignature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signer = signer
+            )
+        )
     }
-
 
     var envelopeSignatures: List<PendingSignature>
         get() { return _envelopeSignatures }
@@ -282,27 +279,32 @@ class TransactionBuilder {
         envelopSignature(PendingSignature(prepared = signature))
     }
     fun envelopSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature) {
-        envelopSignature(PendingSignature(
-            address = address,
-            keyIndex = keyIndex,
-            signature = signature))
+        envelopSignature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signature = signature
+            )
+        )
     }
     fun envelopSignature(address: FlowAddress, keyIndex: Int, signer: Signer) {
-        envelopSignature(PendingSignature(
-            address = address,
-            keyIndex = keyIndex,
-            signer = signer
-        ))
+        envelopSignature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signer = signer
+            )
+        )
     }
 
     fun build(): FlowTransaction {
         var tx = FlowTransaction(
-            script = checkNotNull(_script) { "script of FlowTransaction is required"},
+            script = checkNotNull(_script) { "script of FlowTransaction is required" },
             arguments = _arguments,
-            referenceBlockId = checkNotNull(_referenceBlockId) { "referenceBlockId of FlowTransaction is required"},
-            gasLimit = checkNotNull(_gasLimit) { "gasLimit of FlowTransaction is required"},
-            proposalKey = checkNotNull(_proposalKey) { "proposalKey of FlowTransaction is required"},
-            payerAddress = checkNotNull(_payerAddress) { "payerAddress of FlowTransaction is required"},
+            referenceBlockId = checkNotNull(_referenceBlockId) { "referenceBlockId of FlowTransaction is required" },
+            gasLimit = checkNotNull(_gasLimit) { "gasLimit of FlowTransaction is required" },
+            proposalKey = checkNotNull(_proposalKey) { "proposalKey of FlowTransaction is required" },
+            payerAddress = checkNotNull(_payerAddress) { "payerAddress of FlowTransaction is required" },
             authorizers = _authorizers
         )
 
@@ -316,7 +318,6 @@ class TransactionBuilder {
 
         return tx
     }
-
 }
 
 class PendingSignature(
@@ -336,15 +337,17 @@ class PendingSignature(
             }
             signature != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required"},
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required"},
-                    signature)
+                    checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signature
+                )
             }
             signer != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required"},
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required"},
-                    signer)
+                    checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signer
+                )
             }
             else -> throw IllegalStateException("One of prepared, signature, or signer must be specified for a payload signature")
         }
@@ -359,15 +362,17 @@ class PendingSignature(
             }
             signature != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required"},
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required"},
-                    signature)
+                    checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signature
+                )
             }
             signer != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required"},
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required"},
-                    signer)
+                    checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signer
+                )
             }
             else -> throw IllegalStateException("One of prepared, signature, or signer must be specified for an envelope signature")
         }
@@ -516,5 +521,4 @@ class FlowTransactionProposalKeyBuilder {
         keyIndex = checkNotNull(_keyIndex) { "keyIndex of FlowTransactionProposalKey required" },
         sequenceNumber = checkNotNull(_sequenceNumber) { "sequenceNumber of FlowTransactionProposalKey required" }
     )
-
 }

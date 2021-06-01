@@ -15,7 +15,8 @@ fun FlowAccessApi.simpleFlowScript(block: ScriptBuilder.() -> Unit): FlowScriptR
     val builder = flowScript(block)
     return api.executeScriptAtLatestBlock(
         script = builder.script,
-        arguments = builder.arguments.map { UnsafeByteOperations.unsafeWrap(Flow.encodeCDIF(it)) })
+        arguments = builder.arguments.map { UnsafeByteOperations.unsafeWrap(Flow.encodeCDIF(it)) }
+    )
 }
 
 class ScriptBuilder {
