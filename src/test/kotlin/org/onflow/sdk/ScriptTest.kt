@@ -1,6 +1,5 @@
 package org.onflow.sdk
 
-import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -11,6 +10,8 @@ import org.onflow.sdk.cadence.StringField
 import org.onflow.sdk.cadence.StructField
 import org.onflow.sdk.cadence.cdif
 import org.onflow.sdk.cadence.parseCdif
+import org.onflow.sdk.test.FlowEmulatorTest
+import java.math.BigDecimal
 
 @CDIFConverter(TestClassConverter::class)
 open class TestClass(
@@ -46,11 +47,12 @@ class TestClassConverter : CadenceDataInterchangeFormatConverter<TestClass> {
     }
 }
 
+@FlowEmulatorTest
 class ScriptTest {
 
     @Test
     fun `Can execute a script`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3569)
+        val accessAPI = Flow.newAccessApi("localhost", 3570)
 
         val result = accessAPI.simpleFlowScript {
             script {
@@ -68,7 +70,7 @@ class ScriptTest {
 
     @Test
     fun `Can input and export arguments`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3569)
+        val accessAPI = Flow.newAccessApi("localhost", 3570)
         val address = "e467b9dd11fa00df"
 
         val result = accessAPI.simpleFlowScript {

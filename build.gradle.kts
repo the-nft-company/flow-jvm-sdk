@@ -23,6 +23,8 @@ plugins {
     idea
     jacoco
     signing
+    `java-library`
+    `java-test-fixtures`
     `maven-publish`
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
     id("org.jmailen.kotlinter") version "3.4.0"
@@ -49,9 +51,10 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-core")
     api("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    testApi(platform("org.junit:junit-bom:5.7.1"))
-    testApi("org.junit.jupiter:junit-jupiter")
+    testApi("org.junit.jupiter:junit-jupiter:5.7.1")
     testApi("org.assertj:assertj-core:3.19.0")
+
+    testFixturesImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
 }
 
 tasks {

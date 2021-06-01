@@ -3,9 +3,11 @@ package org.onflow.sdk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.onflow.sdk.crypto.Crypto
+import org.onflow.sdk.test.FlowEmulatorTest
 
 const val MAINNET_HOSTNAME = "access.mainnet.nodes.onflow.org"
 
+@FlowEmulatorTest
 class TransactionTest {
 
     private var transaction = FlowTransaction(
@@ -114,7 +116,7 @@ class TransactionTest {
 
     @Test
     fun `Can create an account using the transaction DSL`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3569)
+        val accessAPI = Flow.newAccessApi("localhost", 3570)
 
         val latestBlockId = accessAPI.getLatestBlockHeader().id
 
@@ -178,7 +180,7 @@ class TransactionTest {
 
     @Test
     fun `Can create an account using the simpleTransaction DSL`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3569)
+        val accessAPI = Flow.newAccessApi("localhost", 3570)
         val keyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val payerSigner = Crypto.getSigner(keyPair.private, HashAlgorithm.SHA3_256)
 
