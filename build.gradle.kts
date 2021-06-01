@@ -130,7 +130,7 @@ tasks {
     val sourcesJar by creating(Jar::class) {
         dependsOn(classes)
         archiveClassifier.set("sources")
-        from(sourceSets["main"].allSource)
+        from(sourceSets["main"].allSource + sourceSets["testFixtures"].allSource)
     }
 
     artifacts {
