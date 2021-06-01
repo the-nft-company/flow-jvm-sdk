@@ -5,13 +5,14 @@ import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.api.extension.TestExecutionExceptionHandler
 import org.onflow.sdk.Flow
 import java.io.File
 import java.io.IOException
 import java.lang.annotation.Inherited
 import java.util.concurrent.TimeUnit
 
-class FlowExtension : BeforeEachCallback, AfterEachCallback {
+class FlowExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExceptionHandler {
 
     var process: Process? = null
 
@@ -33,6 +34,8 @@ class FlowExtension : BeforeEachCallback, AfterEachCallback {
     }
 
     override fun afterEach(context: ExtensionContext) = shutdownEmulator()
+
+    override fun handleTestExecutionException(context: ExtensionContext, throwable: Throwable) = shutdownEmulator()
 
     private fun shutdownEmulator() {
         val proc = process
