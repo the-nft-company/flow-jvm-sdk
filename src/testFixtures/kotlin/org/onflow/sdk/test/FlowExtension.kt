@@ -35,7 +35,13 @@ class FlowExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExcept
 
     override fun afterEach(context: ExtensionContext) = shutdownEmulator()
 
-    override fun handleTestExecutionException(context: ExtensionContext, throwable: Throwable) = shutdownEmulator()
+    override fun handleTestExecutionException(context: ExtensionContext, throwable: Throwable) {
+        try {
+            shutdownEmulator()
+        } finally {
+            throw throwable
+        }
+    }
 
     private fun shutdownEmulator() {
         val proc = process
