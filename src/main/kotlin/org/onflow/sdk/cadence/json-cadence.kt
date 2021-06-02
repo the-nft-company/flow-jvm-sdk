@@ -2,6 +2,7 @@ package org.onflow.sdk.cadence
 
 // This files contains types for the JSON-Cadence Data Interchange Format
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -168,7 +169,7 @@ open class CapabilityValue(val path: String, val address: String, val borrowType
 open class CapabilityField(value: CapabilityValue) : Field<CapabilityValue>(TYPE_CAPABILITY, value)
 
 open class CompositeField(type: String, value: CompositeValue) : Field<CompositeValue>(type, value) {
-    val id: String? get() = value?.id
+    val id: String? @JsonIgnore get() = value?.id
     operator fun <T : Field<*>> get(name: String): T? = value?.getField(name)
     operator fun contains(name: String): Boolean = value?.getField<Field<*>>(name) != null
 }
