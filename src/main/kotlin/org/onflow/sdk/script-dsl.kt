@@ -1,7 +1,7 @@
 package org.onflow.sdk
 
 import com.google.protobuf.UnsafeByteOperations
-import org.onflow.sdk.cadence.CDIFBuilder
+import org.onflow.sdk.cadence.JsonCadenceBuilder
 import org.onflow.sdk.cadence.Field
 
 fun flowScript(block: ScriptBuilder.() -> Unit): ScriptBuilder {
@@ -15,7 +15,7 @@ fun FlowAccessApi.simpleFlowScript(block: ScriptBuilder.() -> Unit): FlowScriptR
     val builder = flowScript(block)
     return api.executeScriptAtLatestBlock(
         script = builder.script,
-        arguments = builder.arguments.map { UnsafeByteOperations.unsafeWrap(Flow.encodeCDIF(it)) }
+        arguments = builder.arguments.map { UnsafeByteOperations.unsafeWrap(Flow.encodeJsonCadence(it)) }
     )
 }
 
@@ -54,10 +54,10 @@ class ScriptBuilder {
     fun arguments(arguments: MutableList<Field<*>>) {
         this.arguments = arguments
     }
-    fun arguments(arguments: CDIFBuilder.() -> Iterable<Field<*>>) {
-        val builder = CDIFBuilder()
+    fun arguments(arguments: JsonCadenceBuilder.() -> Iterable<Field<*>>) {
+        val builder = JsonCadenceBuilder()
         this.arguments = arguments(builder).toMutableList()
     }
     fun arg(argument: Field<*>) = _arguments.add(argument)
-    fun arg(argument: CDIFBuilder.() -> Field<*>) = arg(argument(CDIFBuilder()))
+    fun arg(argument: JsonCadenceBuilder.() -> Field<*>) = arg(argument(JsonCadenceBuilder()))
 }

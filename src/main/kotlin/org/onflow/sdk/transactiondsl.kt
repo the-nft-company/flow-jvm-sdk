@@ -1,7 +1,7 @@
 package org.onflow.sdk
 
 import java.util.concurrent.TimeoutException
-import org.onflow.sdk.cadence.CDIFBuilder
+import org.onflow.sdk.cadence.JsonCadenceBuilder
 import org.onflow.sdk.cadence.Field
 
 @Throws(TimeoutException::class)
@@ -150,7 +150,7 @@ class TransactionBuilder {
     }
     fun argument(argument: FlowArgument) = this._arguments.add(argument)
     fun argument(argument: Field<*>) = this._arguments.add(FlowArgument(argument))
-    fun argument(argument: CDIFBuilder.() -> Field<*>) = this.argument(argument(CDIFBuilder()))
+    fun argument(argument: JsonCadenceBuilder.() -> Field<*>) = this.argument(argument(JsonCadenceBuilder()))
 
     var referenceBlockId: FlowId
         get() { return _referenceBlockId!! }
@@ -384,7 +384,7 @@ class FlowArgumentsBuilder {
     fun arg(value: FlowArgument) {
         _values.add(value)
     }
-    fun arg(arg: CDIFBuilder.() -> Field<*>) = arg(FlowArgument(arg(CDIFBuilder())))
+    fun arg(arg: JsonCadenceBuilder.() -> Field<*>) = arg(FlowArgument(arg(JsonCadenceBuilder())))
     fun build(): MutableList<FlowArgument> = _values
 }
 

@@ -8,7 +8,7 @@ import io.grpc.ManagedChannelBuilder
 import kotlin.reflect.KClass
 import org.onflow.protobuf.access.AccessAPIGrpc
 import org.onflow.sdk.cadence.Field
-import org.onflow.sdk.cadence.Marshalling
+import org.onflow.sdk.cadence.JsonCadenceMarshalling
 import org.onflow.sdk.impl.AsyncFlowAccessApiImpl
 import org.onflow.sdk.impl.FlowAccessApiImpl
 
@@ -70,24 +70,24 @@ object Flow {
     }
 
     @JvmStatic
-    fun <T : Field<*>> decodeCDIFs(string: String): List<T> = decodeCDIFs(string.toByteArray(Charsets.UTF_8))
+    fun <T : Field<*>> decodeJsonCadenceList(string: String): List<T> = decodeJsonCadenceList(string.toByteArray(Charsets.UTF_8))
     @JvmStatic
-    fun <T : Field<*>> decodeCDIFs(bytes: ByteArray): List<T> = OBJECT_MAPPER.readValue(bytes, object : TypeReference<List<T>>() {})
+    fun <T : Field<*>> decodeJsonCadenceList(bytes: ByteArray): List<T> = OBJECT_MAPPER.readValue(bytes, object : TypeReference<List<T>>() {})
 
     @JvmStatic
-    fun <T : Field<*>> decodeCDIF(string: String): T = decodeCDIF(string.toByteArray(Charsets.UTF_8))
+    fun <T : Field<*>> decodeJsonCadence(string: String): T = decodeJsonCadence(string.toByteArray(Charsets.UTF_8))
     @JvmStatic
-    fun <T : Field<*>> decodeCDIF(bytes: ByteArray): T = OBJECT_MAPPER.readValue(bytes, object : TypeReference<T>() {})
+    fun <T : Field<*>> decodeJsonCadence(bytes: ByteArray): T = OBJECT_MAPPER.readValue(bytes, object : TypeReference<T>() {})
 
     @JvmStatic
-    fun <T : Field<*>> encodeCDIFs(cdifs: Iterable<T>): ByteArray = OBJECT_MAPPER.writeValueAsBytes(cdifs)
+    fun <T : Field<*>> encodeJsonCadenceList(jsonCadences: Iterable<T>): ByteArray = OBJECT_MAPPER.writeValueAsBytes(jsonCadences)
     @JvmStatic
-    fun <T : Field<*>> encodeCDIF(cdif: T): ByteArray = OBJECT_MAPPER.writeValueAsBytes(cdif)
+    fun <T : Field<*>> encodeJsonCadence(jsonCadence: T): ByteArray = OBJECT_MAPPER.writeValueAsBytes(jsonCadence)
 
     @JvmStatic
-    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>): T = Marshalling.unmarshall(type, value)
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>): T = JsonCadenceMarshalling.unmarshall(type, value)
 
     @JvmStatic
     @JvmOverloads
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = Marshalling.marshall(value, clazz)
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = JsonCadenceMarshalling.marshall(value, clazz)
 }

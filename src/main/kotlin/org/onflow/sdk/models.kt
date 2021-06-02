@@ -224,7 +224,7 @@ data class FlowEvent(
     }
 
     val id: String get() = event.id!!
-    val event: EventField get() = payload.cdif as EventField
+    val event: EventField get() = payload.jsonCadence as EventField
 
     fun <T : Field<*>> getField(name: String): T? = event[name]
     @Suppress("UNCHECKED_CAST")
@@ -665,14 +665,14 @@ data class FlowAddress private constructor(override val bytes: ByteArray) : Byte
 
 data class FlowArgument(override val bytes: ByteArray) : BytesHolder {
 
-    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+    constructor(jsonCadence: Field<*>) : this(Flow.encodeJsonCadence(jsonCadence))
 
-    private var _cdif: Field<*>? = null
-    val cdif: Field<*> get() {
-        if (_cdif == null) {
-            _cdif = Flow.decodeCDIF(bytes)
+    private var _jsonCadence: Field<*>? = null
+    val jsonCadence: Field<*> get() {
+        if (_jsonCadence == null) {
+            _jsonCadence = Flow.decodeJsonCadence(bytes)
         }
-        return _cdif!!
+        return _jsonCadence!!
     }
 
     override fun equals(other: Any?): Boolean {
@@ -705,14 +705,14 @@ data class FlowScript(override val bytes: ByteArray) : BytesHolder {
 
 data class FlowScriptResponse(override val bytes: ByteArray) : BytesHolder {
 
-    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+    constructor(jsonCadence: Field<*>) : this(Flow.encodeJsonCadence(jsonCadence))
 
-    private var _cdif: Field<*>? = null
-    val cdif: Field<*> get() {
-        if (_cdif == null) {
-            _cdif = Flow.decodeCDIF(bytes)
+    private var _jsonCadence: Field<*>? = null
+    val jsonCadence: Field<*> get() {
+        if (_jsonCadence == null) {
+            _jsonCadence = Flow.decodeJsonCadence(bytes)
         }
-        return _cdif!!
+        return _jsonCadence!!
     }
 
     override fun equals(other: Any?): Boolean {
@@ -807,14 +807,14 @@ data class FlowSnapshot(override val bytes: ByteArray) : BytesHolder {
 
 data class FlowEventPayload(override val bytes: ByteArray) : BytesHolder {
 
-    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+    constructor(jasonCadence: Field<*>) : this(Flow.encodeJsonCadence(jasonCadence))
 
-    private var _cdif: Field<*>? = null
-    val cdif: Field<*> get() {
-        if (_cdif == null) {
-            _cdif = Flow.decodeCDIF(bytes)
+    private var _jsonCadence: Field<*>? = null
+    val jsonCadence: Field<*> get() {
+        if (_jsonCadence == null) {
+            _jsonCadence = Flow.decodeJsonCadence(bytes)
         }
-        return _cdif!!
+        return _jsonCadence!!
     }
 
     override fun equals(other: Any?): Boolean {
