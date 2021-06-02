@@ -124,8 +124,10 @@ class JsonCadenceBuilder {
     fun word16(value: Number): Word16NumberField = Word16NumberField(value.toString())
     fun word32(value: Number): Word32NumberField = Word32NumberField(value.toString())
     fun word64(value: Number): Word64NumberField = Word64NumberField(value.toString())
-    fun fix64(value: Number): Fix64NumberField = Fix64NumberField(value.toString())
-    fun ufix64(value: Number): UFix64NumberField = UFix64NumberField(value.toString())
+    fun fix64(value: Number): Fix64NumberField = Fix64NumberField("%.8f".format(value))
+    fun ufix64(value: Number): UFix64NumberField = UFix64NumberField("%.8f".format(value))
+    fun fix64(value: String): Fix64NumberField = fix64(BigDecimal(value))
+    fun ufix64(value: String): UFix64NumberField = ufix64(BigDecimal(value))
     fun int(value: String): IntNumberField = IntNumberField(value)
     fun uint(value: String): UIntNumberField = UIntNumberField(value)
     fun int8(value: String): Int8NumberField = Int8NumberField(value)
@@ -144,8 +146,6 @@ class JsonCadenceBuilder {
     fun word16(value: String): Word16NumberField = Word16NumberField(value)
     fun word32(value: String): Word32NumberField = Word32NumberField(value)
     fun word64(value: String): Word64NumberField = Word64NumberField(value)
-    fun fix64(value: String): Fix64NumberField = Fix64NumberField(value)
-    fun ufix64(value: String): UFix64NumberField = UFix64NumberField(value)
 }
 
 fun <T> unmarshall(root: Field<*>, block: JsonCadenceParser.() -> T): T {
