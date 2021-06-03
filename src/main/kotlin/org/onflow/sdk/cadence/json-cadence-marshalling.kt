@@ -1,6 +1,7 @@
 package org.onflow.sdk.cadence
 
 import org.onflow.sdk.Flow
+import org.onflow.sdk.FlowAddress
 import java.lang.annotation.Inherited
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -20,6 +21,8 @@ data class CadenceNamespace(
 ) {
 
     constructor(value: String) : this(value.split(","))
+
+    constructor(address: FlowAddress) : this(listOf("A.${address.formatted}"))
 
     val value: String get() = parts.joinToString(separator = ".")
 
@@ -75,7 +78,15 @@ object JsonCadenceMarshalling {
     }
 
     @JvmStatic
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: FlowAddress): T = getSerializer(type).unmarshall(value, CadenceNamespace(namespace))
+
+    @JvmStatic
+    @JvmOverloads
     fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: CadenceNamespace = CadenceNamespace()): T = getSerializer(type).unmarshall(value, namespace)
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: FlowAddress): Field<*> = getSerializer(clazz).marshall(value, CadenceNamespace(namespace))
 
     @JvmStatic
     @JvmOverloads
@@ -85,7 +96,8 @@ object JsonCadenceMarshalling {
 fun <T : Field<*>> marshall(block: JsonCadenceBuilder.() -> T): T = block(JsonCadenceBuilder())
 
 class JsonCadenceBuilder {
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = Flow.marshall(value, clazz)
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: FlowAddress): Field<*> = Flow.marshall(value, clazz, namespace)
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = Flow.marshall(value, clazz, namespace)
     fun void(): VoidField = VoidField()
     fun <T> optional(block: JsonCadenceBuilder.() -> Field<T>?): OptionalField<T> = OptionalField(block())
     fun <T> optional(value: Field<T>?): OptionalField<T> = OptionalField(value)
@@ -206,10 +218,18 @@ class JsonCadenceParser {
     }
 
     inline fun <reified T : Any> unmarshall(name: String): T = Flow.unmarshall(T::class, field(name))
-    inline fun <reified T : Any> unmarshall(name: String, type: KClass<T>): T = Flow.unmarshall(type, field(name))
+    inline fun <reified T : Any> unmarshall(name: String, namespace: CadenceNamespace = CadenceNamespace()): T = Flow.unmarshall(T::class, field(name), namespace)
+    inline fun <reified T : Any> unmarshall(name: String, namespace: FlowAddress): T = Flow.unmarshall(T::class, field(name), namespace)
 
-    inline fun <reified T : Any> unmarshall(field: Field<*>): T = Flow.unmarshall(T::class, field)
-    inline fun <reified T : Any> unmarshall(field: Field<*>, type: KClass<T>): T = Flow.unmarshall(type, field)
+    inline fun <reified T : Any> unmarshall(name: String, type: KClass<T>): T = Flow.unmarshall(type, field(name))
+    inline fun <reified T : Any> unmarshall(name: String, type: KClass<T>, namespace: CadenceNamespace = CadenceNamespace()): T = Flow.unmarshall(type, field(name), namespace)
+    inline fun <reified T : Any> unmarshall(name: String, type: KClass<T>, namespace: FlowAddress): T = Flow.unmarshall(type, field(name), namespace)
+
+    inline fun <reified T : Any> unmarshall(field: Field<*>, namespace: CadenceNamespace = CadenceNamespace()): T = Flow.unmarshall(T::class, field, namespace)
+    inline fun <reified T : Any> unmarshall(field: Field<*>, namespace: FlowAddress): T = Flow.unmarshall(T::class, field, namespace)
+
+    inline fun <reified T : Any> unmarshall(field: Field<*>, type: KClass<T>, namespace: CadenceNamespace = CadenceNamespace()): T = Flow.unmarshall(type, field, namespace)
+    inline fun <reified T : Any> unmarshall(field: Field<*>, type: KClass<T>, namespace: FlowAddress): T = Flow.unmarshall(type, field, namespace)
 
     fun <T, F : Field<*>> field(name: String, block: JsonCadenceParser.(field: F) -> T): T = block(field(name))
     fun boolean(name: String): Boolean = field<BooleanField>(name).value!!

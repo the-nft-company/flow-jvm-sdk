@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
-import kotlin.reflect.KClass
 import org.onflow.protobuf.access.AccessAPIGrpc
+import org.onflow.sdk.cadence.CadenceNamespace
 import org.onflow.sdk.cadence.Field
 import org.onflow.sdk.cadence.JsonCadenceMarshalling
 import org.onflow.sdk.impl.AsyncFlowAccessApiImpl
 import org.onflow.sdk.impl.FlowAccessApiImpl
+import kotlin.reflect.KClass
 
 object Flow {
 
@@ -85,9 +86,17 @@ object Flow {
     fun <T : Field<*>> encodeJsonCadence(jsonCadence: T): ByteArray = OBJECT_MAPPER.writeValueAsBytes(jsonCadence)
 
     @JvmStatic
-    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>): T = JsonCadenceMarshalling.unmarshall(type, value)
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: FlowAddress): T = JsonCadenceMarshalling.unmarshall(type, value, namespace)
 
     @JvmStatic
     @JvmOverloads
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = JsonCadenceMarshalling.marshall(value, clazz)
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: CadenceNamespace = CadenceNamespace()): T = JsonCadenceMarshalling.unmarshall(type, value, namespace)
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: FlowAddress): Field<*> = JsonCadenceMarshalling.marshall(value, clazz, namespace)
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = JsonCadenceMarshalling.marshall(value, clazz, namespace)
 }
