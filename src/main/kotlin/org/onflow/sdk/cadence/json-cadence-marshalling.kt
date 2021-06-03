@@ -15,11 +15,32 @@ annotation class JsonCadenceConversion(
     val converter: KClass<out JsonCadenceConverter<*>>
 )
 
+data class CadenceNamespace(
+    val parts: List<String> = emptyList()
+) {
+
+    constructor(value: String) : this(value.split(","))
+
+    val value: String get() = parts.joinToString(separator = ".")
+
+    fun withNamespace(id: String): String = (parts + id).joinToString(separator = ".")
+
+    fun withoutNamespace(id: String): String = id.replace("$value.", "")
+
+    fun push(namespace: String): CadenceNamespace = this.copy(
+        parts = this.parts + namespace
+    )
+
+    fun pop(count: Int = 1): CadenceNamespace = this.copy(
+        parts = this.parts.dropLast(count)
+    )
+}
+
 interface JsonCadenceConverter<T> {
-    fun unmarshall(value: Field<*>): T {
+    fun unmarshall(value: Field<*>, namespace: CadenceNamespace): T {
         throw UnsupportedOperationException("${this::class.simpleName} cannot deserialize $value")
     }
-    fun marshall(value: T): Field<*> {
+    fun marshall(value: T, namespace: CadenceNamespace): Field<*> {
         throw UnsupportedOperationException("${this::class.simpleName} cannot serializer $value")
     }
 }
@@ -54,11 +75,11 @@ object JsonCadenceMarshalling {
     }
 
     @JvmStatic
-    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>): T = getSerializer(type).unmarshall(value)
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: CadenceNamespace = CadenceNamespace()): T = getSerializer(type).unmarshall(value, namespace)
 
     @JvmStatic
     @JvmOverloads
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = getSerializer(clazz).marshall(value)
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = getSerializer(clazz).marshall(value, namespace)
 }
 
 fun <T : Field<*>> marshall(block: JsonCadenceBuilder.() -> T): T = block(JsonCadenceBuilder())
@@ -100,7 +121,7 @@ class JsonCadenceBuilder {
     fun event(block: JsonCadenceBuilder.() -> CompositeValue): EventField = EventField(block())
     fun contract(value: CompositeValue): ContractField = ContractField(value)
     fun contract(block: JsonCadenceBuilder.() -> CompositeValue): ContractField = ContractField(block())
-    fun <T : Enum<T>> enum(value: T): EnumField = enum(value.declaringClass.simpleName, uint8(value.ordinal))
+    fun <T : Enum<T>> enum(value: T, namespace: CadenceNamespace = CadenceNamespace()): EnumField = enum(namespace.withNamespace(value.declaringClass.simpleName), uint8(value.ordinal))
     fun enum(value: CompositeValue): EnumField = EnumField(value)
     fun enum(block: JsonCadenceBuilder.() -> CompositeValue): EnumField = EnumField(block())
     fun enum(id: String, value: Field<*>): EnumField = EnumField(compositeOfPairs(id) { listOf("rawValue" to value) })

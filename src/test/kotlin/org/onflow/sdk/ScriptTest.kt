@@ -3,9 +3,10 @@ package org.onflow.sdk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.onflow.sdk.cadence.CadenceNamespace
+import org.onflow.sdk.cadence.Field
 import org.onflow.sdk.cadence.JsonCadenceConversion
 import org.onflow.sdk.cadence.JsonCadenceConverter
-import org.onflow.sdk.cadence.Field
 import org.onflow.sdk.cadence.StringField
 import org.onflow.sdk.cadence.StructField
 import org.onflow.sdk.cadence.marshall
@@ -22,7 +23,7 @@ open class TestClass(
 )
 
 class TestClassConverterJson : JsonCadenceConverter<TestClass> {
-    override fun unmarshall(value: Field<*>): TestClass = unmarshall(value) {
+    override fun unmarshall(value: Field<*>, namespace: CadenceNamespace): TestClass = unmarshall(value) {
         TestClass(
             address = FlowAddress(address("address")),
             balance = bigDecimal("balance"),
@@ -31,10 +32,10 @@ class TestClassConverterJson : JsonCadenceConverter<TestClass> {
         )
     }
 
-    override fun marshall(value: TestClass): Field<*> {
+    override fun marshall(value: TestClass, namespace: CadenceNamespace): Field<*> {
         return marshall {
             struct {
-                compositeOfPairs("TestClass") {
+                compositeOfPairs(namespace.withNamespace("TestClass")) {
                     listOf(
                         "address" to address(value.address.base16Value),
                         "balance" to ufix64(value.balance),
