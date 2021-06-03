@@ -1,14 +1,15 @@
 // configuration variables
-val javaTargetVersion   = "1.8"
-val defaultGroupId      = "org.onflow"
-val defaultVersion      = "0.2.4-SNAPSHOT"
+val javaTargetVersion = "1.8"
+val defaultGroupId = "org.onflow"
+val defaultVersion = "0.2.4-SNAPSHOT"
 
 // other variables
 
-fun getProp(name: String, defaultValue: String? = null): String?
-    = project.findProperty("flow.$name")?.toString()?.trim()?.ifBlank { null }
-    ?: project.findProperty(name)?.toString()?.trim()?.ifBlank { null }
-    ?: defaultValue
+fun getProp(name: String, defaultValue: String? = null): String? {
+    return project.findProperty("flow.$name")?.toString()?.trim()?.ifBlank { null }
+        ?: project.findProperty(name)?.toString()?.trim()?.ifBlank { null }
+        ?: defaultValue
+}
 
 group = getProp("groupId", defaultGroupId)!!
 version = when {
@@ -19,7 +20,7 @@ version = when {
 
 plugins {
     id("org.jetbrains.dokka") version "1.4.20"
-    kotlin("jvm") version "1.4.30"
+    kotlin("jvm") version "1.5.0"
     idea
     jacoco
     signing
@@ -38,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.0")
     dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
 
     api("org.onflow:flow:0.21")
@@ -76,6 +77,9 @@ tasks {
 
         kotlinOptions {
             jvmTarget = javaTargetVersion
+            apiVersion = "1.5"
+            languageVersion = "1.5"
+            freeCompilerArgs = listOf("-Xjsr305=strict", "-Xopt-in=kotlin.RequiresOptIn")
         }
     }
 
@@ -103,7 +107,7 @@ tasks {
     }
 
     jacoco {
-        toolVersion = "0.8.6"
+        toolVersion = "0.8.7"
     }
 
     kotlinter {

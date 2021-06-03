@@ -113,7 +113,6 @@ fun runFlow(
 
     val pidFile = File(System.getProperty("java.io.tmpdir"), pidFilename)
     if (pidFile.exists()) {
-        val pid = String(pidFile.readBytes())
         // TODO: maybe a better way of doing this?
         // we only have to do this because sometimes the process
         // is left alive and there doesn't seem to be a way to
@@ -126,12 +125,11 @@ fun runFlow(
         // the JVM is forcibly killed before the shutdownEmulator
         // method is called on the FlowEmulatorExtension, this seems to
         // only happen when debugging unit tests in the IDE.
-        listOf("kill -9 $pid", "taskkill /F /PID $pid").forEach {
-            try {
-                Runtime.getRuntime().exec(it)
-            } catch (e: Throwable) {
-                // ignore
-            }
+        try {
+            val pid = String(pidFile.readBytes()).toLong()
+            ProcessHandle.of(pid).ifPresent { it.destroyForcibly() }
+        } catch (e: Throwable) {
+            println("Error forcibly killing a zombie emulator process, tests may fail")
         }
     }
     pidFile.delete()

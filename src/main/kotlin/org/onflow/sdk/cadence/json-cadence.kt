@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import org.onflow.sdk.bytesToHex
 import java.math.BigDecimal
 import java.math.BigInteger
-import org.onflow.sdk.bytesToHex
 
 const val TYPE_VOID = "Void"
 const val TYPE_OPTIONAL = "Optional"
@@ -103,16 +103,12 @@ open class BooleanField(value: Boolean) : Field<Boolean>(TYPE_BOOLEAN, value)
 open class StringField(value: String) : Field<String>(TYPE_STRING, value)
 
 open class NumberField(type: String, value: String) : Field<String>(type, value) {
-    @ExperimentalUnsignedTypes
     fun toUByte(): UByte? = value?.toInt()?.toUByte()
     fun toByte(): Byte? = value?.toInt()?.toByte()
-    @ExperimentalUnsignedTypes
     fun toUShort(): UShort? = value?.toUShort()
     fun toShort(): Short? = value?.toShort()
-    @ExperimentalUnsignedTypes
     fun toUInt(): UInt? = value?.toUInt()
     fun toInt(): Int? = value?.toInt()
-    @ExperimentalUnsignedTypes
     fun toULong(): ULong? = value?.toULong()
     fun toLong(): Long? = value?.toLong()
     fun toBigInteger(): BigInteger? = value?.toBigInteger()
