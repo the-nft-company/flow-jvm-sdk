@@ -22,7 +22,7 @@ data class CadenceNamespace(
 
     constructor(value: String) : this(value.split(","))
 
-    constructor(address: FlowAddress) : this(listOf("A.${address.formatted}"))
+    constructor(address: FlowAddress) : this(listOf("A.${address.base16Value}"))
 
     val value: String get() = parts.joinToString(separator = ".")
 
