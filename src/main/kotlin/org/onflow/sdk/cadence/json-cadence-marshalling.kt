@@ -58,6 +58,7 @@ object JsonCadenceMarshalling {
 
     @JvmStatic
     @JvmOverloads
+    @ExperimentalUnsignedTypes
     fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class): Field<*> = getSerializer(clazz).marshall(value)
 }
 

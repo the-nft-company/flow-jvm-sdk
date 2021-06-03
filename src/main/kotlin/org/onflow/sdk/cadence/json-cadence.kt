@@ -103,6 +103,8 @@ open class BooleanField(value: Boolean) : Field<Boolean>(TYPE_BOOLEAN, value)
 open class StringField(value: String) : Field<String>(TYPE_STRING, value)
 
 open class NumberField(type: String, value: String) : Field<String>(type, value) {
+    @ExperimentalUnsignedTypes
+    fun toUByte(): UByte? = value?.toInt()?.toUByte()
     fun toByte(): Byte? = value?.toInt()?.toByte()
     @ExperimentalUnsignedTypes
     fun toUShort(): UShort? = value?.toUShort()

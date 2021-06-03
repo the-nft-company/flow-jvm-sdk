@@ -12,21 +12,56 @@ import java.io.IOException
 import java.lang.annotation.Inherited
 import java.util.concurrent.TimeUnit
 
-class FlowExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExceptionHandler {
+
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION
+)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+@Inherited
+@ExtendWith(FlowEmulatorExtension::class)
+@API(status = API.Status.STABLE, since = "5.0")
+annotation class FlowEmulatorTest(
+
+    val executable: String = "flow",
+
+    val arguments: String = "--log debug --verbose",
+
+    val host: String = "localhost",
+
+    val port: Int = 3570,
+
+    val httpPort: Int = 8081,
+
+    /**
+     * Location of flow.json, can also be in the classpath or
+     * a directory containing flow.json.
+     */
+    val flowJsonLocation: String = "flow.json",
+
+    val pidFilename: String = "flow-emulator.pid"
+)
+
+class FlowEmulatorExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExceptionHandler {
 
     var process: Process? = null
+    var pidFile: File? = null
 
     override fun beforeEach(context: ExtensionContext) {
         if (context.requiredTestClass.isAnnotationPresent(FlowEmulatorTest::class.java)) {
             val config = context.requiredTestClass.getAnnotation(FlowEmulatorTest::class.java)
-            process = runFlow(
+            val (process, pidFile) = runFlow(
                 executable = config.executable,
                 arguments = config.arguments.trim().takeIf { it.isNotEmpty() },
                 host = config.host,
                 port = config.port,
                 httpPort = config.httpPort,
-                flowJsonLocation = config.flowJsonLocation.trim().takeIf { it.isNotEmpty() }
+                flowJsonLocation = config.flowJsonLocation.trim().takeIf { it.isNotEmpty() },
+                pidFilename = config.pidFilename
             )
+            this.process = process
+            this.pidFile = pidFile
             Runtime.getRuntime().addShutdownHook(
                 Thread(this::shutdownEmulator)
             )
@@ -56,37 +91,13 @@ class FlowExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExcept
                 }
             }
         }
+        if (pidFile != null) {
+            pidFile?.delete()
+            pidFile = null
+        }
         process = null
     }
 }
-
-@Target(
-    AnnotationTarget.CLASS,
-    AnnotationTarget.FUNCTION
-)
-@Retention(AnnotationRetention.RUNTIME)
-@MustBeDocumented
-@Inherited
-@ExtendWith(FlowExtension::class)
-@API(status = API.Status.STABLE, since = "5.0")
-annotation class FlowEmulatorTest(
-
-    val executable: String = "flow",
-
-    val arguments: String = "--log debug",
-
-    val host: String = "localhost",
-
-    val port: Int = 3570,
-
-    val httpPort: Int = 8081,
-
-    /**
-     * Location of flow.json, can also be in the classpath or
-     * a directory containing flow.json.
-     */
-    val flowJsonLocation: String = "flow.json"
-)
 
 fun runFlow(
     executable: String = "flow",
@@ -95,10 +106,36 @@ fun runFlow(
     port: Int = 3570,
     httpPort: Int = 8081,
     flowJsonLocation: String? = null,
-    classLoader: ClassLoader = FlowExtension::class.java.classLoader
-): Process {
+    classLoader: ClassLoader = FlowEmulatorExtension::class.java.classLoader,
+    pidFilename: String = "flow-emulator.pid"
+): Pair<Process, File> {
 
     var flowJson: String? = null
+
+    val pidFile = File(System.getProperty("java.io.tmpdir"), pidFilename)
+    if (pidFile.exists()) {
+        val pid = String(pidFile.readBytes())
+        // TODO: maybe a better way of doing this?
+        // we only have to do this because sometimes the process
+        // is left alive and there doesn't seem to be a way to
+        // stop it remotely by connecting to it and issuing a
+        // shutdown command or similar. The only other thing I
+        // can think of is to start the emulator on a random port
+        // and inject it into the test, but then we may leave
+        // a bunch of rogue emulators running on the client machine.
+        // The only time a rogue emulator is left running is when
+        // the JVM is forcibly killed before the shutdownEmulator
+        // method is called on the FlowEmulatorExtension, this seems to
+        // only happen when debugging unit tests in the IDE.
+        listOf("kill -9 $pid", "taskkill /F /PID $pid").forEach {
+            try {
+                Runtime.getRuntime().exec(it)
+            } catch (e: Throwable) {
+                // ignore
+            }
+        }
+    }
+    pidFile.delete()
 
     // is it a file?
     if (flowJson == null) {
@@ -154,9 +191,11 @@ fun runFlow(
     val start = System.currentTimeMillis()
     val ret = ProcessBuilder()
         .command(emulatorCommand.split(" "))
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .inheritIO()
         .start()
+    if (ret.isAlive) {
+        pidFile.writeBytes(ret.pid().toString().toByteArray())
+    }
 
     val api = Flow.newAccessApi(host = host, port = port)
     while (true) {
@@ -174,5 +213,5 @@ fun runFlow(
         }
     }
 
-    return ret
+    return ret to pidFile
 }
