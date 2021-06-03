@@ -87,7 +87,11 @@ class FlowTransactionStub(
     fun send(): FlowTransactionStub {
         buildIfNecessary()
         checkNotSent()
-        transactionId = api.sendTransaction(transaction!!)
+        transactionId = try {
+            api.sendTransaction(transaction!!)
+        } catch (t: Throwable) {
+            throw FlowException("Error while executing transaction", t)
+        }
         return this
     }
 

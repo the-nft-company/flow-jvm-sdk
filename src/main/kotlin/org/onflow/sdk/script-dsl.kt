@@ -1,8 +1,8 @@
 package org.onflow.sdk
 
 import com.google.protobuf.UnsafeByteOperations
-import org.onflow.sdk.cadence.JsonCadenceBuilder
 import org.onflow.sdk.cadence.Field
+import org.onflow.sdk.cadence.JsonCadenceBuilder
 
 fun flowScript(block: ScriptBuilder.() -> Unit): ScriptBuilder {
     val ret = ScriptBuilder()
@@ -13,10 +13,14 @@ fun flowScript(block: ScriptBuilder.() -> Unit): ScriptBuilder {
 fun FlowAccessApi.simpleFlowScript(block: ScriptBuilder.() -> Unit): FlowScriptResponse {
     val api = this
     val builder = flowScript(block)
-    return api.executeScriptAtLatestBlock(
-        script = builder.script,
-        arguments = builder.arguments.map { UnsafeByteOperations.unsafeWrap(Flow.encodeJsonCadence(it)) }
-    )
+    return try {
+        api.executeScriptAtLatestBlock(
+            script = builder.script,
+            arguments = builder.arguments.map { UnsafeByteOperations.unsafeWrap(Flow.encodeJsonCadence(it)) }
+        )
+    } catch (t: Throwable) {
+        throw FlowException("Error while running script", t)
+    }
 }
 
 class ScriptBuilder {
