@@ -1,8 +1,8 @@
 package org.onflow.sdk
 
-import java.util.concurrent.TimeoutException
-import org.onflow.sdk.cadence.JsonCadenceBuilder
 import org.onflow.sdk.cadence.Field
+import org.onflow.sdk.cadence.JsonCadenceBuilder
+import java.util.concurrent.TimeoutException
 
 @Throws(TimeoutException::class)
 fun waitForSeal(api: FlowAccessApi, transactionId: FlowId, pauseMs: Long = 500L, timeoutMs: Long = 10_000L): FlowTransactionResult {
@@ -89,6 +89,10 @@ class FlowTransactionStub(
         checkNotSent()
         transactionId = api.sendTransaction(transaction!!)
         return this
+    }
+
+    fun sendAndWaitForSeal(pauseMs: Long = 500L, timeoutMs: Long = 10_000L): FlowTransactionResult {
+        return send().waitForSeal(pauseMs, timeoutMs)
     }
 
     fun getResult(): FlowTransactionResult {

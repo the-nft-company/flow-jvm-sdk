@@ -199,9 +199,7 @@ class TransactionTest {
             arguments {
                 arg { string(keyPair.public.hex) }
             }
-        }
-            .send()
-            .waitForSeal()
+        }.sendAndWaitForSeal()
         assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
     }
 }

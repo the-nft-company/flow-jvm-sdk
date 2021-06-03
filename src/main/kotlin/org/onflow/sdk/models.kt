@@ -2,9 +2,6 @@ package org.onflow.sdk
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.UnsafeByteOperations
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.time.LocalDateTime
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.entities.AccountOuterClass
 import org.onflow.protobuf.entities.BlockHeaderOuterClass
@@ -17,6 +14,9 @@ import org.onflow.sdk.cadence.EventField
 import org.onflow.sdk.cadence.Field
 import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.time.LocalDateTime
 
 enum class FlowTransactionStatus(val num: Int) {
     UNKNOWN(0),
@@ -265,6 +265,14 @@ data class FlowTransactionResult(
             .setStatusCode(statusCode)
             .setErrorMessage(errorMessage)
             .addAllEvents(events.map { it.builder().build() })
+    }
+
+    @JvmOverloads
+    fun throwOnError(validStatusCodes: Set<Int> = setOf(0)): FlowTransactionResult {
+        if (statusCode !in validStatusCodes) {
+            throw FlowException("Transaction failed with statusCode: $statusCode")
+        }
+        return this
     }
 }
 
