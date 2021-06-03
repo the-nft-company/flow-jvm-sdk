@@ -666,6 +666,8 @@ data class FlowAddress private constructor(override val bytes: ByteArray) : Byte
         return true
     }
 
+    val formatted: String = "0x$base16Value"
+
     override fun hashCode(): Int {
         return bytes.contentHashCode()
     }

@@ -156,7 +156,7 @@ open class DictionaryFieldEntry(val key: Field<*>, val value: Field<*>) {
     constructor(pair: Pair<Field<*>, Field<*>>) : this(pair.first, pair.second)
 }
 
-open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.toLowerCase().startsWith("0x")) { "0x$value" } else { value }) {
+open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.lowercase().startsWith("0x")) { "0x$value" } else { value }) {
     constructor(bytes: ByteArray) : this(bytes.bytesToHex())
 }
 
