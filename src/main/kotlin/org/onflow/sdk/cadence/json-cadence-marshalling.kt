@@ -100,12 +100,18 @@ object JsonCadenceMarshalling {
     fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: CadenceNamespace = CadenceNamespace()): T = getSerializer(type).unmarshall(value, namespace)
 
     @JvmStatic
-    @JvmOverloads
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: FlowAddress): Field<*> = getSerializer(clazz).marshall(value, ns(namespace))
+    fun <T : Any> marshall(value: T, clazz: KClass<out T>, namespace: FlowAddress): Field<*> = getSerializer(clazz).marshall(value, ns(namespace))
 
     @JvmStatic
     @JvmOverloads
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = getSerializer(clazz).marshall(value, namespace)
+    fun <T : Any> marshall(value: T, clazz: KClass<out T>, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = getSerializer(clazz).marshall(value, namespace)
+
+    @JvmStatic
+    fun <T : Any> marshall(value: T, namespace: FlowAddress): Field<*> = getSerializer(value::class).marshall(value, ns(namespace))
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> marshall(value: T, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = getSerializer(value::class).marshall(value, namespace)
 }
 
 fun <T : Field<*>> marshall(block: JsonCadenceBuilder.() -> T): T = block(JsonCadenceBuilder())
