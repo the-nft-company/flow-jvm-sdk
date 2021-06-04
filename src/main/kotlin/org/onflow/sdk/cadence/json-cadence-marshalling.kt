@@ -2,6 +2,7 @@ package org.onflow.sdk.cadence
 
 import org.onflow.sdk.Flow
 import org.onflow.sdk.FlowAddress
+import org.onflow.sdk.cadence.CadenceNamespace.Companion.ns
 import java.lang.annotation.Inherited
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -20,11 +21,20 @@ data class CadenceNamespace(
     val parts: List<String> = emptyList()
 ) {
 
-    constructor(value: String) : this(value.split(","))
+    companion object {
+        @JvmStatic
+        fun ns(vararg values: String): CadenceNamespace = CadenceNamespace(*values)
 
-    constructor(address: FlowAddress) : this(listOf("A.${address.base16Value}"))
+        @JvmStatic
+        fun ns(address: FlowAddress): CadenceNamespace = CadenceNamespace("A", address.base16Value)
 
-    val value: String get() = parts.joinToString(separator = ".")
+        @JvmStatic
+        fun ns(address: FlowAddress, vararg values: String): CadenceNamespace = CadenceNamespace("A", address.base16Value, *values)
+    }
+
+    constructor(vararg value: String) : this(value.toList())
+
+    val value: String = parts.joinToString(separator = ".")
 
     fun withNamespace(id: String): String = (parts + id).joinToString(separator = ".")
 
@@ -34,9 +44,14 @@ data class CadenceNamespace(
         parts = this.parts + namespace
     )
 
+    fun push(address: FlowAddress): CadenceNamespace = push(address.base16Value)
+
     fun pop(count: Int = 1): CadenceNamespace = this.copy(
         parts = this.parts.dropLast(count)
     )
+
+    operator fun plus(element: String): CadenceNamespace = this.push(element)
+    operator fun plus(element: FlowAddress): CadenceNamespace = this.push(element)
 }
 
 interface JsonCadenceConverter<T> {
@@ -78,7 +93,7 @@ object JsonCadenceMarshalling {
     }
 
     @JvmStatic
-    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: FlowAddress): T = getSerializer(type).unmarshall(value, CadenceNamespace(namespace))
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: FlowAddress): T = getSerializer(type).unmarshall(value, ns(namespace))
 
     @JvmStatic
     @JvmOverloads
@@ -86,7 +101,7 @@ object JsonCadenceMarshalling {
 
     @JvmStatic
     @JvmOverloads
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: FlowAddress): Field<*> = getSerializer(clazz).marshall(value, CadenceNamespace(namespace))
+    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: FlowAddress): Field<*> = getSerializer(clazz).marshall(value, ns(namespace))
 
     @JvmStatic
     @JvmOverloads

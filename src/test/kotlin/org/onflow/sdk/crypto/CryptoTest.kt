@@ -23,9 +23,9 @@ internal class CryptoTest {
     }
 
     @Test
-    fun `Test`() {
+    fun `Can sign stuff`() {
         val pair = Crypto.generateKeyPair()
         val signer = Crypto.getSigner(pair.private, HashAlgorithm.SHA3_256)
-        val ret = signer.sign("testing".toByteArray())
+        signer.sign("testing".toByteArray())
     }
 }
