@@ -93,10 +93,16 @@ object Flow {
     fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: CadenceNamespace = CadenceNamespace()): T = JsonCadenceMarshalling.unmarshall(type, value, namespace)
 
     @JvmStatic
-    @JvmOverloads
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: FlowAddress): Field<*> = JsonCadenceMarshalling.marshall(value, clazz, namespace)
+    fun <T : Any> marshall(value: T, clazz: KClass<out T>, namespace: FlowAddress): Field<*> = JsonCadenceMarshalling.marshall(value, clazz, namespace)
 
     @JvmStatic
     @JvmOverloads
-    fun <T : Any> marshall(value: T, clazz: KClass<out T> = value::class, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = JsonCadenceMarshalling.marshall(value, clazz, namespace)
+    fun <T : Any> marshall(value: T, clazz: KClass<out T>, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = JsonCadenceMarshalling.marshall(value, clazz, namespace)
+
+    @JvmStatic
+    fun <T : Any> marshall(value: T, namespace: FlowAddress): Field<*> = JsonCadenceMarshalling.marshall(value, namespace)
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> marshall(value: T, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = JsonCadenceMarshalling.marshall(value, namespace)
 }
