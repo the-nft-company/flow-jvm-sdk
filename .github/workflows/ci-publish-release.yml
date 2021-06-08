@@ -9,16 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       JAVA_OPTS: -Xmx2g -Dorg.gradle.daemon=false
-    services:
-      flow-emulator:
-        image: gcr.io/flow-container-registry/emulator
-        env:
-          FLOW_VERBOSE: true
-          FLOW_PORT: 3569
-          FLOW_INTERVAL: 5s
-          FLOW_PERSIST: false
-        ports:
-          - 3569:3569
+    #services:
+    #  flow-emulator:
+    #    image: gcr.io/flow-container-registry/emulator
+    #    env:
+    #      FLOW_VERBOSE: true
+    #      FLOW_PORT: 3569
+    #      FLOW_INTERVAL: 5s
+    #      FLOW_PERSIST: false
+    #    ports:
+    #      - 3569:3569
     steps:
       - id: get_version
         uses: battila7/get-version-action@v2
@@ -29,8 +29,11 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '9'
           java-package: jdk
+
+      - name: Install flow emulator
+        run: sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"
 
       - name: Make gradle executable
         run: chmod +x ./gradlew
@@ -39,7 +42,9 @@ jobs:
         run: ./gradlew --warning-mode all build -x test
 
       - name: Test
-        run: ./gradlew --no-daemon --max-workers=2 --warning-mode=all test --continue
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          ./gradlew --no-daemon --max-workers=2 --warning-mode=all test --continue
         if: "!contains(github.event.head_commit.message, '[i am bad and i hate unit tests]')"
 
       - name: Publish release

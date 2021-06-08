@@ -1,5 +1,7 @@
 package org.onflow.sdk
 
+import com.google.protobuf.ByteString
+
 interface FlowAccessApi {
 
     fun ping()
@@ -34,11 +36,11 @@ interface FlowAccessApi {
 
     fun getAccountByBlockHeight(addresss: FlowAddress, height: Long): FlowAccount?
 
-    fun executeScriptAtLatestBlock(script: FlowScript): FlowScriptResponse
+    fun executeScriptAtLatestBlock(script: FlowScript, arguments: Iterable<ByteString> = emptyList()): FlowScriptResponse
 
-    fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): FlowScriptResponse
+    fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId, arguments: Iterable<ByteString> = emptyList()): FlowScriptResponse
 
-    fun executeScriptAtBlockHeight(script: FlowScript, height: Long): FlowScriptResponse
+    fun executeScriptAtBlockHeight(script: FlowScript, height: Long, arguments: Iterable<ByteString> = emptyList()): FlowScriptResponse
 
     fun getEventsForHeightRange(type: String, range: ClosedRange<Long>): List<FlowEventResult>
 

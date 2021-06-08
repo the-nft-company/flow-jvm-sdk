@@ -1,0 +1,24 @@
+root = true
+
+[*.{kt,kts}]
+indent_size=4
+max_line_length=off
+insert_final_newline = true
+
+# be sure to update build.gradle.kts in the root as well,
+disabled_rules=no-wildcard-imports,filename,import-ordering,chain-wrapping
+
+# Defines the imports layout. The layout can be composed by the following symbols:
+# "*" - wildcard. There must be at least one entry of a single wildcard to match all other imports. Matches anything after a specified symbol/import as well.
+# "|" - blank line. Supports only single blank lines between imports. No blank line is allowed in the beginning or end of the layout.
+# "^" - alias import, e.g. "^android.*" will match all android alias imports, "^" will match all other alias imports.
+# import paths - these can be full paths, e.g. "java.util.List.*" as well as wildcard paths, e.g. "kotlin.**"
+# Examples (we use ij_kotlin_imports_layout to set an imports layout for both ktlint and IDEA via a single property):
+# default IntelliJ IDEA style, same as alphabetical, but with "java", "javax", "kotlin" and alias imports in the end of the imports list
+ij_kotlin_imports_layout=*,java.**,javax.**,kotlin.**,^
+
+# According to https://kotlinlang.org/docs/reference/coding-conventions.html#names-for-test-methods it is acceptable to write method names
+# in natural language. When using natural language, the description tends to be longer. Allow lines containing an identifier between
+# backticks to be longer than the maximum line length. (Since 0.41.0)
+[**/test/**.kt]
+ktlint_ignore_back_ticked_identifier=true

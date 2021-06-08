@@ -1,11 +1,13 @@
 package org.onflow.sdk
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
+import org.onflow.sdk.crypto.Crypto
+import org.onflow.sdk.test.FlowEmulatorTest
 
 const val MAINNET_HOSTNAME = "access.mainnet.nodes.onflow.org"
 
+@FlowEmulatorTest
 class TransactionTest {
 
     private var transaction = FlowTransaction(
@@ -89,7 +91,7 @@ class TransactionTest {
     }
 
     // ignored for now because for whatever reason it can't find this transaction
-    // @Test
+    @Test
     fun `Can parse events`() {
         val accessApi = Flow.newAccessApi(MAINNET_HOSTNAME)
 
@@ -110,17 +112,11 @@ class TransactionTest {
         assertThat("id" in results.events[3].event.value!!).isTrue
         assertThat("price" in results.events[3].event.value!!).isTrue
         assertThat("seller" in results.events[3].event.value!!).isTrue
-
-        val block = accessApi.getBlockById(tx!!.referenceBlockId)
-        assertThat(block).isNotNull
-
-        val events = accessApi.getEventsForBlockIds("A.0b2a3299cc857e29.TopShot.Withdraw", setOf(block!!.id))
-        assertThat(events).isNotNull
     }
 
     @Test
     fun `Can create an account using the transaction DSL`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3569)
+        val accessAPI = Flow.newAccessApi("localhost", 3570)
 
         val latestBlockId = accessAPI.getLatestBlockHeader().id
 
@@ -136,7 +132,7 @@ class TransactionTest {
             weight = 1000
         )
 
-        val tx = transaction {
+        val tx = flowTransaction {
             script {
                 """
                     transaction(publicKey: String) {
@@ -149,7 +145,7 @@ class TransactionTest {
             }
 
             arguments {
-                arg { StringField(newAccountPublicKey.encoded.bytesToHex()) }
+                arg { string(newAccountPublicKey.encoded.bytesToHex()) }
             }
 
             referenceBlockId = latestBlockId
@@ -180,34 +176,30 @@ class TransactionTest {
         val result = waitForSeal(accessAPI, txID)
         assertThat(result).isNotNull
         assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
-
     }
 
     @Test
     fun `Can create an account using the simpleTransaction DSL`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3569)
+        val accessAPI = Flow.newAccessApi("localhost", 3570)
         val keyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val payerSigner = Crypto.getSigner(keyPair.private, HashAlgorithm.SHA3_256)
 
-        val result = accessAPI.simpleTransaction(FlowAddress("f8d6e0586b0a20c7"), payerSigner) {
-                script {
-                    """
-                        transaction(publicKey: String) {
-                            prepare(signer: AuthAccount) {
-                                let account = AuthAccount(payer: signer)
-                                account.addPublicKey(publicKey.decodeHex())
-                            }
+        val result = accessAPI.simpleFlowTransaction(FlowAddress("f8d6e0586b0a20c7"), payerSigner) {
+            script {
+                """
+                    transaction(publicKey: String) {
+                        prepare(signer: AuthAccount) {
+                            let account = AuthAccount(payer: signer)
+                            account.addPublicKey(publicKey.decodeHex())
                         }
-                    """
-                }
-
-                arguments {
-                    arg { StringField(keyPair.public.hex) }
-                }
+                    }
+                """
             }
-            .send()
-            .waitForSeal()
-        assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
 
+            arguments {
+                arg { string(keyPair.public.hex) }
+            }
+        }.sendAndWaitForSeal()
+        assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
     }
 }

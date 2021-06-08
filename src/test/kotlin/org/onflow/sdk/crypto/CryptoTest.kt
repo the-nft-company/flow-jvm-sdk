@@ -1,7 +1,9 @@
-package org.onflow.sdk
+package org.onflow.sdk.crypto
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.onflow.sdk.HashAlgorithm
+import org.onflow.sdk.SignatureAlgorithm
 
 internal class CryptoTest {
 
@@ -21,9 +23,9 @@ internal class CryptoTest {
     }
 
     @Test
-    fun `Test`() {
+    fun `Can sign stuff`() {
         val pair = Crypto.generateKeyPair()
         val signer = Crypto.getSigner(pair.private, HashAlgorithm.SHA3_256)
-        val ret = signer.sign("testing".toByteArray())
+        signer.sign("testing".toByteArray())
     }
 }

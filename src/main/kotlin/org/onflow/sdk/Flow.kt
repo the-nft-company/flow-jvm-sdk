@@ -6,20 +6,39 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import org.onflow.protobuf.access.AccessAPIGrpc
+import org.onflow.sdk.cadence.CadenceNamespace
+import org.onflow.sdk.cadence.Field
+import org.onflow.sdk.cadence.JsonCadenceMarshalling
 import org.onflow.sdk.impl.AsyncFlowAccessApiImpl
 import org.onflow.sdk.impl.FlowAccessApiImpl
-
+import kotlin.reflect.KClass
 
 object Flow {
 
     const val DEFAULT_USER_AGENT = "Flow JVM SDK"
 
-    var objectMapper: ObjectMapper
+    var OBJECT_MAPPER: ObjectMapper
+
+    var DEFAULT_CHAIN_ID: FlowChainId = FlowChainId.MAINNET
+        private set
+
+    var DEFAULT_ADDRESS_REGISTRY: AddressRegistry = AddressRegistry()
+        private set
 
     init {
-        objectMapper = ObjectMapper()
-        objectMapper.registerKotlinModule()
-        objectMapper.findAndRegisterModules()
+        OBJECT_MAPPER = ObjectMapper()
+        OBJECT_MAPPER.registerKotlinModule()
+        OBJECT_MAPPER.findAndRegisterModules()
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun configureDefaults(
+        chainId: FlowChainId = DEFAULT_CHAIN_ID,
+        addressRegistry: AddressRegistry = DEFAULT_ADDRESS_REGISTRY
+    ) {
+        this.DEFAULT_CHAIN_ID = chainId
+        this.DEFAULT_ADDRESS_REGISTRY = addressRegistry
     }
 
     @JvmStatic
@@ -52,17 +71,38 @@ object Flow {
     }
 
     @JvmStatic
-    fun <T : Field<*>> decodeCDIFs(string: String): List<T> = decodeCDIFs(string.toByteArray(Charsets.UTF_8))
+    fun <T : Field<*>> decodeJsonCadenceList(string: String): List<T> = decodeJsonCadenceList(string.toByteArray(Charsets.UTF_8))
     @JvmStatic
-    fun <T : Field<*>> decodeCDIFs(bytes: ByteArray): List<T> = objectMapper.readValue(bytes, object : TypeReference<List<T>>() {})
+    fun <T : Field<*>> decodeJsonCadenceList(bytes: ByteArray): List<T> = OBJECT_MAPPER.readValue(bytes, object : TypeReference<List<T>>() {})
 
     @JvmStatic
-    fun <T : Field<*>> decodeCDIF(string: String): T = decodeCDIF(string.toByteArray(Charsets.UTF_8))
+    fun <T : Field<*>> decodeJsonCadence(string: String): T = decodeJsonCadence(string.toByteArray(Charsets.UTF_8))
     @JvmStatic
-    fun <T : Field<*>> decodeCDIF(bytes: ByteArray): T = objectMapper.readValue(bytes, object : TypeReference<T>() {})
+    fun <T : Field<*>> decodeJsonCadence(bytes: ByteArray): T = OBJECT_MAPPER.readValue(bytes, object : TypeReference<T>() {})
 
     @JvmStatic
-    fun <T : Field<*>> encodeCDIFs(cdifs: Iterable<T>): ByteArray = objectMapper.writeValueAsBytes(cdifs)
+    fun <T : Field<*>> encodeJsonCadenceList(jsonCadences: Iterable<T>): ByteArray = OBJECT_MAPPER.writeValueAsBytes(jsonCadences)
     @JvmStatic
-    fun <T : Field<*>> encodeCDIF(cdif: T): ByteArray = objectMapper.writeValueAsBytes(cdif)
+    fun <T : Field<*>> encodeJsonCadence(jsonCadence: T): ByteArray = OBJECT_MAPPER.writeValueAsBytes(jsonCadence)
+
+    @JvmStatic
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: FlowAddress): T = JsonCadenceMarshalling.unmarshall(type, value, namespace)
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> unmarshall(type: KClass<T>, value: Field<*>, namespace: CadenceNamespace = CadenceNamespace()): T = JsonCadenceMarshalling.unmarshall(type, value, namespace)
+
+    @JvmStatic
+    fun <T : Any> marshall(value: T, clazz: KClass<out T>, namespace: FlowAddress): Field<*> = JsonCadenceMarshalling.marshall(value, clazz, namespace)
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> marshall(value: T, clazz: KClass<out T>, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = JsonCadenceMarshalling.marshall(value, clazz, namespace)
+
+    @JvmStatic
+    fun <T : Any> marshall(value: T, namespace: FlowAddress): Field<*> = JsonCadenceMarshalling.marshall(value, namespace)
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> marshall(value: T, namespace: CadenceNamespace = CadenceNamespace()): Field<*> = JsonCadenceMarshalling.marshall(value, namespace)
 }

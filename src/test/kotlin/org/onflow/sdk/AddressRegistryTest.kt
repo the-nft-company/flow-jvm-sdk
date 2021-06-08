@@ -73,14 +73,14 @@ internal class AddressRegistryTest {
     @Test
     fun `Can process a script`() {
         assertEquals(
-            "fungibleToken: 0x9a0766d93b6608b7, flowToken: 0x7e60df042a9c0868",
+            "fungibleToken: 0xee82856bf20e2aa6, flowToken: 0x0ae53cb6e3f42a79",
             registry.processScript(
                 "fungibleToken: 0xFUNGIBLETOKEN, flowToken: 0xFLOWTOKEN",
                 FlowChainId.EMULATOR
             )
         )
         assertEquals(
-            "fungibleToken: 0xee82856bf20e2aa6, flowToken: 0x0ae53cb6e3f42a79",
+            "fungibleToken: 0x9a0766d93b6608b7, flowToken: 0x7e60df042a9c0868",
             registry.processScript(
                 "fungibleToken: 0xFUNGIBLETOKEN, flowToken: 0xFLOWTOKEN",
                 FlowChainId.TESTNET

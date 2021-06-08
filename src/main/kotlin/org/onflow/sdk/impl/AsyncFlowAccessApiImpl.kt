@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.google.protobuf.ByteString
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.access.AccessAPIGrpc
 import org.onflow.sdk.AsyncFlowAccessApi
@@ -228,11 +229,12 @@ class AsyncFlowAccessApiImpl(
         }
     }
 
-    override fun executeScriptAtLatestBlock(script: FlowScript): CompletableFuture<FlowScriptResponse> {
+    override fun executeScriptAtLatestBlock(script: FlowScript, arguments: Iterable<ByteString>): CompletableFuture<FlowScriptResponse> {
         return completableFuture(
             api.executeScriptAtLatestBlock(
                 Access.ExecuteScriptAtLatestBlockRequest.newBuilder()
                     .setScript(script.byteStringValue)
+                    .addAllArguments(arguments)
                     .build()
             )
         ).thenApply {
@@ -240,11 +242,12 @@ class AsyncFlowAccessApiImpl(
         }
     }
 
-    override fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId): CompletableFuture<FlowScriptResponse> {
+    override fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId, arguments: Iterable<ByteString>): CompletableFuture<FlowScriptResponse> {
         return completableFuture(
             api.executeScriptAtBlockID(
                 Access.ExecuteScriptAtBlockIDRequest.newBuilder()
                     .setScript(script.byteStringValue)
+                    .addAllArguments(arguments)
                     .build()
             )
         ).thenApply {
@@ -254,12 +257,14 @@ class AsyncFlowAccessApiImpl(
 
     override fun executeScriptAtBlockHeight(
         script: FlowScript,
-        height: Long
+        height: Long,
+        arguments: Iterable<ByteString>
     ): CompletableFuture<FlowScriptResponse> {
         return completableFuture(
             api.executeScriptAtBlockHeight(
                 Access.ExecuteScriptAtBlockHeightRequest.newBuilder()
                     .setScript(script.byteStringValue)
+                    .addAllArguments(arguments)
                     .build()
             )
         ).thenApply {

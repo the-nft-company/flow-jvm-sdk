@@ -1,5 +1,7 @@
 package org.onflow.sdk
 
+import org.onflow.sdk.cadence.Field
+import org.onflow.sdk.cadence.JsonCadenceBuilder
 import java.util.concurrent.TimeoutException
 
 @Throws(TimeoutException::class)
@@ -19,13 +21,13 @@ fun waitForSeal(api: FlowAccessApi, transactionId: FlowId, pauseMs: Long = 500L,
     }
 }
 
-fun transaction(block: TransactionBuilder.() -> Unit): FlowTransaction {
+fun flowTransaction(block: TransactionBuilder.() -> Unit): FlowTransaction {
     val builder = TransactionBuilder()
     block(builder)
     return builder.build()
 }
 
-fun FlowAccessApi.simpleTransaction(address: FlowAddress, signer: Signer, gasLimit: Long = 100, keyIndex: Int = 0, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
+fun FlowAccessApi.simpleFlowTransaction(address: FlowAddress, signer: Signer, gasLimit: Long = 100, keyIndex: Int = 0, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
     val api = this
     val referenceBlockId = api.getLatestBlockHeader().id
     val payerAccount = checkNotNull(api.getAccountAtLatestBlock(address)) { "Account not found for address: ${address.base16Value}" }
@@ -85,8 +87,16 @@ class FlowTransactionStub(
     fun send(): FlowTransactionStub {
         buildIfNecessary()
         checkNotSent()
-        transactionId = api.sendTransaction(transaction!!)
+        transactionId = try {
+            api.sendTransaction(transaction!!)
+        } catch (t: Throwable) {
+            throw FlowException("Error while executing transaction", t)
+        }
         return this
+    }
+
+    fun sendAndWaitForSeal(pauseMs: Long = 500L, timeoutMs: Long = 10_000L): FlowTransactionResult {
+        return send().waitForSeal(pauseMs, timeoutMs)
     }
 
     fun getResult(): FlowTransactionResult {
@@ -98,11 +108,11 @@ class FlowTransactionStub(
         checkSent()
         return waitForSeal(api, transactionId!!, pauseMs, timeoutMs)
     }
-
 }
 
 class TransactionBuilder {
-    var addressRegistry: AddressRegistry = AddressRegistry()
+    var addressRegistry: AddressRegistry = Flow.DEFAULT_ADDRESS_REGISTRY
+    private var _chainId: FlowChainId = Flow.DEFAULT_CHAIN_ID
     private var _script: FlowScript? = null
     private var _arguments: MutableList<FlowArgument> = mutableListOf()
     private var _referenceBlockId: FlowId? = null
@@ -127,10 +137,9 @@ class TransactionBuilder {
     fun script(script: FlowScript) {
         this.script = script
     }
-    fun script(code: String, chain: FlowChainId? = null) = script(FlowScript(if (chain != null) { addressRegistry.processScript(code, chain) } else { code }))
-    fun script(code: ByteArray, chain: FlowChainId? = null) = script(String(code), chain)
-    fun script(code: () -> String) = this.script(code())
-    fun script(chain: FlowChainId? = null, code: () -> String) = this.script(code(), chain)
+    fun script(code: String, chain: FlowChainId = _chainId) = script(FlowScript(addressRegistry.processScript(code, chain)))
+    fun script(code: ByteArray, chain: FlowChainId = _chainId) = script(String(code), chain)
+    fun script(chain: FlowChainId = _chainId, code: () -> String) = this.script(code(), chain)
 
     var arguments: MutableList<FlowArgument>
         get() { return _arguments }
@@ -149,8 +158,7 @@ class TransactionBuilder {
     }
     fun argument(argument: FlowArgument) = this._arguments.add(argument)
     fun argument(argument: Field<*>) = this._arguments.add(FlowArgument(argument))
-    fun argument(argument: () -> Field<*>) = this.argument(argument())
-
+    fun argument(argument: JsonCadenceBuilder.() -> Field<*>) = this.argument(argument(JsonCadenceBuilder()))
 
     var referenceBlockId: FlowId
         get() { return _referenceBlockId!! }
@@ -163,7 +171,6 @@ class TransactionBuilder {
     fun referenceBlockId(referenceBlockId: ByteArray) = referenceBlockId(FlowId.of(referenceBlockId))
     fun referenceBlockId(referenceBlockId: () -> FlowId) = this.referenceBlockId(referenceBlockId())
 
-
     var gasLimit: Long
         get() { return _gasLimit!! }
         set(value) { _gasLimit = value }
@@ -173,6 +180,14 @@ class TransactionBuilder {
     }
     fun gasLimit(gasLimit: () -> Number) = this.gasLimit(gasLimit())
 
+    var chainId: FlowChainId
+        get() { return _chainId }
+        set(value) { _chainId = value }
+
+    fun chainId(chainId: FlowChainId) {
+        this.chainId = chainId
+    }
+    fun chainId(chainId: () -> FlowChainId) = this.chainId(chainId())
 
     var proposalKey: FlowTransactionProposalKey
         get() { return _proposalKey!! }
@@ -184,7 +199,6 @@ class TransactionBuilder {
         this.proposalKey = builder.build()
     }
 
-
     var payerAddress: FlowAddress
         get() { return _payerAddress!! }
         set(value) { _payerAddress = value }
@@ -195,7 +209,6 @@ class TransactionBuilder {
     fun payerAddress(payerAddress: String) = payerAddress(FlowAddress(payerAddress))
     fun payerAddress(payerAddress: ByteArray) = payerAddress(FlowAddress.of(payerAddress))
     fun payerAddress(payerAddress: () -> FlowAddress) = this.payerAddress(payerAddress())
-
 
     var authorizers: List<FlowAddress>
         get() { return _authorizers }
@@ -235,19 +248,23 @@ class TransactionBuilder {
     fun payloadSignature(payloadSignature: PendingSignature) = this._payloadSignatures.add(payloadSignature)
     fun payloadSignature(payloadSignature: () -> PendingSignature) = payloadSignature(payloadSignature())
     fun payloadSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature) {
-        payloadSignature(PendingSignature(
-            address = address,
-            keyIndex = keyIndex,
-            signature = signature))
+        payloadSignature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signature = signature
+            )
+        )
     }
     fun payloadSignature(address: FlowAddress, keyIndex: Int, signer: Signer) {
-        payloadSignature(PendingSignature(
-            address = address,
-            keyIndex = keyIndex,
-            signer = signer
-        ))
+        payloadSignature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signer = signer
+            )
+        )
     }
-
 
     var envelopeSignatures: List<PendingSignature>
         get() { return _envelopeSignatures }
@@ -270,27 +287,32 @@ class TransactionBuilder {
         envelopSignature(PendingSignature(prepared = signature))
     }
     fun envelopSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature) {
-        envelopSignature(PendingSignature(
-            address = address,
-            keyIndex = keyIndex,
-            signature = signature))
+        envelopSignature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signature = signature
+            )
+        )
     }
     fun envelopSignature(address: FlowAddress, keyIndex: Int, signer: Signer) {
-        envelopSignature(PendingSignature(
-            address = address,
-            keyIndex = keyIndex,
-            signer = signer
-        ))
+        envelopSignature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signer = signer
+            )
+        )
     }
 
     fun build(): FlowTransaction {
         var tx = FlowTransaction(
-            script = checkNotNull(_script) { "script of FlowTransaction is required"},
+            script = checkNotNull(_script) { "script of FlowTransaction is required" },
             arguments = _arguments,
-            referenceBlockId = checkNotNull(_referenceBlockId) { "referenceBlockId of FlowTransaction is required"},
-            gasLimit = checkNotNull(_gasLimit) { "gasLimit of FlowTransaction is required"},
-            proposalKey = checkNotNull(_proposalKey) { "proposalKey of FlowTransaction is required"},
-            payerAddress = checkNotNull(_payerAddress) { "payerAddress of FlowTransaction is required"},
+            referenceBlockId = checkNotNull(_referenceBlockId) { "referenceBlockId of FlowTransaction is required" },
+            gasLimit = checkNotNull(_gasLimit) { "gasLimit of FlowTransaction is required" },
+            proposalKey = checkNotNull(_proposalKey) { "proposalKey of FlowTransaction is required" },
+            payerAddress = checkNotNull(_payerAddress) { "payerAddress of FlowTransaction is required" },
             authorizers = _authorizers
         )
 
@@ -304,7 +326,6 @@ class TransactionBuilder {
 
         return tx
     }
-
 }
 
 class PendingSignature(
@@ -324,15 +345,17 @@ class PendingSignature(
             }
             signature != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required"},
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required"},
-                    signature)
+                    checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signature
+                )
             }
             signer != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required"},
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required"},
-                    signer)
+                    checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signer
+                )
             }
             else -> throw IllegalStateException("One of prepared, signature, or signer must be specified for a payload signature")
         }
@@ -347,15 +370,17 @@ class PendingSignature(
             }
             signature != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required"},
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required"},
-                    signature)
+                    checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signature
+                )
             }
             signer != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required"},
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required"},
-                    signer)
+                    checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signer
+                )
             }
             else -> throw IllegalStateException("One of prepared, signature, or signer must be specified for an envelope signature")
         }
@@ -367,7 +392,7 @@ class FlowArgumentsBuilder {
     fun arg(value: FlowArgument) {
         _values.add(value)
     }
-    fun arg(arg: () -> Field<*>) = arg(FlowArgument(arg()))
+    fun arg(arg: JsonCadenceBuilder.() -> Field<*>) = arg(FlowArgument(arg(JsonCadenceBuilder())))
     fun build(): MutableList<FlowArgument> = _values
 }
 
@@ -504,5 +529,4 @@ class FlowTransactionProposalKeyBuilder {
         keyIndex = checkNotNull(_keyIndex) { "keyIndex of FlowTransactionProposalKey required" },
         sequenceNumber = checkNotNull(_sequenceNumber) { "sequenceNumber of FlowTransactionProposalKey required" }
     )
-
 }

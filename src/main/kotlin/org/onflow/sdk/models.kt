@@ -2,9 +2,6 @@ package org.onflow.sdk
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.UnsafeByteOperations
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.time.LocalDateTime
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.entities.AccountOuterClass
 import org.onflow.protobuf.entities.BlockHeaderOuterClass
@@ -13,8 +10,13 @@ import org.onflow.protobuf.entities.BlockSealOuterClass
 import org.onflow.protobuf.entities.CollectionOuterClass
 import org.onflow.protobuf.entities.EventOuterClass
 import org.onflow.protobuf.entities.TransactionOuterClass
+import org.onflow.sdk.cadence.EventField
+import org.onflow.sdk.cadence.Field
 import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.time.LocalDateTime
 
 enum class FlowTransactionStatus(val num: Int) {
     UNKNOWN(0),
@@ -53,15 +55,20 @@ enum class SignatureAlgorithm(
     val algorithm: String,
     val curve: String,
     val id: String,
-    val code: Int
+    val code: Int,
+    val index: Int
 ) {
-    UNKNOWN("unknown", "unknown", "unknown", -1),
-    ECDSA_P256("ECDSA", "P-256", "ECDSA_P256", 2),
-    ECDSA_SECP256k1("ECDSA", "secp256k1", "ECDSA_secp256k1", 3);
+    UNKNOWN("unknown", "unknown", "unknown", -1, 0),
+    ECDSA_P256("ECDSA", "P-256", "ECDSA_P256", 2, 1),
+    ECDSA_SECP256k1("ECDSA", "secp256k1", "ECDSA_secp256k1", 3, 2);
     companion object {
         @JvmStatic
         fun fromCode(code: Int): SignatureAlgorithm = values()
             .find { it.code == code } ?: UNKNOWN
+
+        @JvmStatic
+        fun fromCadenceIndex(index: Int): SignatureAlgorithm = values()
+            .find { it.index == index } ?: UNKNOWN
     }
 }
 
@@ -69,15 +76,22 @@ enum class HashAlgorithm(
     val algorithm: String,
     val outputSize: Int,
     val id: String,
-    val code: Int
+    val code: Int,
+    val index: Int
 ) {
-    UNKNOWN("unknown", -1, "unknown", -1),
-    SHA2_256("SHA-2", 256, "SHA256withECDSA", 1),
-    SHA3_256("SHA-3", 256, "SHA3-256withECDSA", 3);
+    UNKNOWN("unknown", -1, "unknown", -1, 0),
+    SHA2_256("SHA-2", 256, "SHA256withECDSA", 1, 1),
+    SHA2_384("SHA-2", 384, "SHA384withECDSA", 1, 2),
+    SHA3_256("SHA-3", 256, "SHA3-256withECDSA", 3, 3),
+    SHA3_384("SHA-3", 384, "SHA3-384withECDSA", 3, 4);
     companion object {
         @JvmStatic
         fun fromCode(code: Int): HashAlgorithm = values()
             .find { it.code == code } ?: UNKNOWN
+
+        @JvmStatic
+        fun fromCadenceIndex(index: Int): HashAlgorithm = values()
+            .find { it.index == index } ?: UNKNOWN
     }
 }
 
@@ -108,6 +122,7 @@ data class FlowAccount(
     }
 
     @JvmOverloads
+    @Suppress("DEPRECATION")
     fun builder(builder: AccountOuterClass.Account.Builder = AccountOuterClass.Account.newBuilder()): AccountOuterClass.Account.Builder {
         return builder
             .setAddress(address.byteStringValue)
@@ -152,12 +167,14 @@ data class FlowAccountKey(
             .setRevoked(revoked)
     }
 
-    val encoded: ByteArray get() = RLPCodec.encode(arrayOf(
-        publicKey.bytes,
-        signAlgo.code,
-        hashAlgo.code,
-        weight
-    ))
+    val encoded: ByteArray get() = RLPCodec.encode(
+        arrayOf(
+            publicKey.bytes,
+            signAlgo.code,
+            hashAlgo.code,
+            weight
+        )
+    )
 }
 
 data class FlowEventResult(
@@ -207,10 +224,10 @@ data class FlowEvent(
     }
 
     val id: String get() = event.id!!
-    val event: EventField get() = payload.cdif as EventField
+    val event: EventField get() = payload.jsonCadence as EventField
 
     fun <T : Field<*>> getField(name: String): T? = event[name]
-    @Suppress("UNCHECKED")
+    @Suppress("UNCHECKED_CAST")
     operator fun <T> get(name: String): T? = getField<Field<*>>(name) as T
     operator fun contains(name: String): Boolean = name in event
 
@@ -248,6 +265,14 @@ data class FlowTransactionResult(
             .setStatusCode(statusCode)
             .setErrorMessage(errorMessage)
             .addAllEvents(events.map { it.builder().build() })
+    }
+
+    @JvmOverloads
+    fun throwOnError(validStatusCodes: Set<Int> = setOf(0)): FlowTransactionResult {
+        if (statusCode !in validStatusCodes) {
+            throw FlowException("Transaction failed with statusCode: $statusCode")
+        }
+        return this
     }
 }
 
@@ -641,6 +666,8 @@ data class FlowAddress private constructor(override val bytes: ByteArray) : Byte
         return true
     }
 
+    val formatted: String = "0x$base16Value"
+
     override fun hashCode(): Int {
         return bytes.contentHashCode()
     }
@@ -648,14 +675,14 @@ data class FlowAddress private constructor(override val bytes: ByteArray) : Byte
 
 data class FlowArgument(override val bytes: ByteArray) : BytesHolder {
 
-    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+    constructor(jsonCadence: Field<*>) : this(Flow.encodeJsonCadence(jsonCadence))
 
-    private var _cdif: Field<*>? = null
-    val cdif: Field<*> get() {
-        if (_cdif == null) {
-            _cdif = Flow.decodeCDIF(bytes)
+    private var _jsonCadence: Field<*>? = null
+    val jsonCadence: Field<*> get() {
+        if (_jsonCadence == null) {
+            _jsonCadence = Flow.decodeJsonCadence(bytes)
         }
-        return _cdif!!
+        return _jsonCadence!!
     }
 
     override fun equals(other: Any?): Boolean {
@@ -688,14 +715,14 @@ data class FlowScript(override val bytes: ByteArray) : BytesHolder {
 
 data class FlowScriptResponse(override val bytes: ByteArray) : BytesHolder {
 
-    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+    constructor(jsonCadence: Field<*>) : this(Flow.encodeJsonCadence(jsonCadence))
 
-    private var _cdif: Field<*>? = null
-    val cdif: Field<*> get() {
-        if (_cdif == null) {
-            _cdif = Flow.decodeCDIF(bytes)
+    private var _jsonCadence: Field<*>? = null
+    val jsonCadence: Field<*> get() {
+        if (_jsonCadence == null) {
+            _jsonCadence = Flow.decodeJsonCadence(bytes)
         }
-        return _cdif!!
+        return _jsonCadence!!
     }
 
     override fun equals(other: Any?): Boolean {
@@ -790,14 +817,14 @@ data class FlowSnapshot(override val bytes: ByteArray) : BytesHolder {
 
 data class FlowEventPayload(override val bytes: ByteArray) : BytesHolder {
 
-    constructor(cdif: Field<*>) : this(Flow.encodeCDIF(cdif))
+    constructor(jasonCadence: Field<*>) : this(Flow.encodeJsonCadence(jasonCadence))
 
-    private var _cdif: Field<*>? = null
-    val cdif: Field<*> get() {
-        if (_cdif == null) {
-            _cdif = Flow.decodeCDIF(bytes)
+    private var _jsonCadence: Field<*>? = null
+    val jsonCadence: Field<*> get() {
+        if (_jsonCadence == null) {
+            _jsonCadence = Flow.decodeJsonCadence(bytes)
         }
-        return _cdif!!
+        return _jsonCadence!!
     }
 
     override fun equals(other: Any?): Boolean {
@@ -812,7 +839,3 @@ data class FlowEventPayload(override val bytes: ByteArray) : BytesHolder {
         return bytes.contentHashCode()
     }
 }
-
-
-
-
