@@ -344,18 +344,17 @@ class PendingSignature(
                 ).updateSignerIndices()
             }
             signature != null -> {
-                tx.addEnvelopeSignature(
+                tx.addPayloadSignature(
                     address = checkNotNull(address) { "address of FlowTransactionSignature required" },
                     keyIndex = checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
                     signature = signature
                 )
             }
             signer != null -> {
-                tx.addEnvelopeSignature(
+                tx.addPayloadSignature(
                     address = checkNotNull(address) { "address of FlowTransactionSignature required" },
                     keyIndex = checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
-                    signer = signer,
-                    domainTag = DomainTag.TRANSACTION_DOMAIN_TAG
+                    signer = signer
                 )
             }
             else -> throw IllegalStateException("One of prepared, signature, or signer must be specified for a payload signature")
@@ -380,8 +379,7 @@ class PendingSignature(
                 tx.addEnvelopeSignature(
                     address = checkNotNull(address) { "address of FlowTransactionSignature required" },
                     keyIndex = checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
-                    signer = signer,
-                    domainTag = DomainTag.TRANSACTION_DOMAIN_TAG
+                    signer = signer
                 )
             }
             else -> throw IllegalStateException("One of prepared, signature, or signer must be specified for an envelope signature")

@@ -420,9 +420,8 @@ data class FlowTransaction(
             .addAllEnvelopeSignatures(envelopeSignatures.map { it.builder().build() })
     }
 
-    @JvmOverloads
-    fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signer: Signer, domainTag: ByteArray = DomainTag.TRANSACTION_DOMAIN_TAG): FlowTransaction {
-        return addPayloadSignature(address, keyIndex, FlowSignature(signer.signWithDomain(canonicalPayload, domainTag)))
+    fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signer: Signer): FlowTransaction {
+        return addPayloadSignature(address, keyIndex, FlowSignature(signer.signWithDomain(canonicalPayload, DomainTag.TRANSACTION_DOMAIN_TAG)))
     }
 
     fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature): FlowTransaction {
@@ -440,8 +439,8 @@ data class FlowTransaction(
         ).updateSignerIndices()
     }
 
-    fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signer: Signer, domainTag: ByteArray = DomainTag.TRANSACTION_DOMAIN_TAG): FlowTransaction {
-        return addEnvelopeSignature(address, keyIndex, FlowSignature(signer.signWithDomain(canonicalAuthorizationEnvelope, domainTag)))
+    fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signer: Signer): FlowTransaction {
+        return addEnvelopeSignature(address, keyIndex, FlowSignature(signer.signWithDomain(canonicalAuthorizationEnvelope, DomainTag.TRANSACTION_DOMAIN_TAG)))
     }
 
     fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature): FlowTransaction {
