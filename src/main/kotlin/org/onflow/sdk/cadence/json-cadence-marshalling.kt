@@ -277,12 +277,11 @@ class JsonCadenceParser {
         }
     }
     inline fun <reified T : Enum<T>> enum(field: Field<*>): T = enum<T, UInt8NumberField>(field) { f -> f.toInt()!!.let { enumValues<T>()[it] } }
-    fun <T> optional(field: Field<*>?, block: JsonCadenceParser.(field: Field<*>) -> T): T? {
-        return if (field != null) {
-            block(field)
-        } else {
-            null
+    fun <T> optional(field: Field<*>, block: JsonCadenceParser.(field: Field<*>) -> T): T? {
+        if (field !is OptionalField) {
+            throw IllegalArgumentException("field is not an OptionalField")
         }
+        return field.value?.let { block(it) }
     }
 
     fun boolean(name: String): Boolean = boolean(field<BooleanField>(name))
@@ -306,5 +305,5 @@ class JsonCadenceParser {
     fun <K, V> dictionaryMap(name: String, mapper: JsonCadenceParser.(key: Field<*>, value: Field<*>) -> Pair<K, V>): Map<K, V> = dictionaryPairs(name, mapper).toMap()
     inline fun <reified T : Enum<T>, V : Field<*>> enum(name: String, crossinline mapper: (V) -> T): T = enum(field(name), mapper)
     inline fun <reified T : Enum<T>> enum(name: String): T = enum(field(name))
-    fun <T> optional(name: String, block: JsonCadenceParser.(field: Field<*>) -> T): T? = optional(compositeValue.getField(name), block)
+    fun <T> optional(name: String, block: JsonCadenceParser.(field: Field<*>) -> T): T? = optional(field(name), block)
 }
