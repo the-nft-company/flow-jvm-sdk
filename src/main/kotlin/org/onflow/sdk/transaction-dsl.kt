@@ -333,7 +333,7 @@ class PendingSignature(
     val address: FlowAddress? = null,
     val keyIndex: Int? = null,
     val signer: Signer? = null,
-    val signature: FlowSignature? = null
+    val signature: FlowSignature? = null,
 ) {
 
     fun applyAsPayloadSignature(tx: FlowTransaction): FlowTransaction {
@@ -345,16 +345,17 @@ class PendingSignature(
             }
             signature != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required" },
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
-                    signature
+                    address = checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    keyIndex = checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signature = signature
                 )
             }
             signer != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required" },
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
-                    signer
+                    address = checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    keyIndex = checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signer = signer,
+                    domainTag = DomainTag.TRANSACTION_DOMAIN_TAG
                 )
             }
             else -> throw IllegalStateException("One of prepared, signature, or signer must be specified for a payload signature")
@@ -370,16 +371,17 @@ class PendingSignature(
             }
             signature != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required" },
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
-                    signature
+                    address = checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    keyIndex = checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signature = signature,
                 )
             }
             signer != null -> {
                 tx.addEnvelopeSignature(
-                    checkNotNull(address) { "address of FlowTransactionSignature required" },
-                    checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
-                    signer
+                    address = checkNotNull(address) { "address of FlowTransactionSignature required" },
+                    keyIndex = checkNotNull(keyIndex) { "keyIndex of FlowTransactionSignature required" },
+                    signer = signer,
+                    domainTag = DomainTag.TRANSACTION_DOMAIN_TAG
                 )
             }
             else -> throw IllegalStateException("One of prepared, signature, or signer must be specified for an envelope signature")
