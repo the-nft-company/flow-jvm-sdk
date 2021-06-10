@@ -20,7 +20,7 @@ version = when {
 
 plugins {
     id("org.jetbrains.dokka") version "1.4.20"
-    kotlin("jvm") version "1.5.0"
+    kotlin("jvm") version "1.5.10"
     idea
     jacoco
     signing
@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    api("org.jetbrains.kotlin:kotlin-reflect:1.5.0")
+    api("org.jetbrains.kotlin:kotlin-reflect:1.5.10")
     dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
 
     api("org.onflow:flow:0.21")
