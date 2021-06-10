@@ -30,21 +30,37 @@ Maven:
 <dependency>
   <groupId>org.onflow</groupId>
   <artifactId>flow-jvm-sdk</artifactId>
-  <version>0.2.2</version>
+  <version>[VERSION HERE]</version>
 </dependency>
 ```
 
 Gradle:
 ```groovy
-allprojects {
-  repositories {
+repositories {
     ...
     maven { url 'https://jitpack.io' }
-  }
 }
 
 dependencies {
-  api("org.onflow:flow-jvm-sdk:0.2.2")
+    api("org.onflow:flow-jvm-sdk:[VERSION HERE]")
+}
+```
+
+Gradle (with test etensions):
+```groovy
+plugins {
+    ...
+    id("java-test-fixtures")
+}
+
+repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    api("org.onflow:flow-jvm-sdk:[VERSION HERE]")
+    testFixturesApi(testFixtures("com.nftco:flow-jvm-sdk:[VERSION HERE]"))
 }
 ```
 
