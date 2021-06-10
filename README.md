@@ -11,7 +11,8 @@ At the moment, this SDK includes the following features:
 - [x] Communication with the [Flow Access API](https://docs.onflow.org/access-api) over gRPC 
 - [x] Transaction preparation and signing
 - [x] Cryptographic key generation, parsing, and signing
-- [x] Events parsing 
+- [x] Marshalling/Unmarshalling of [Json Cadence](https://docs.onflow.org/cadence/json-cadence-spec/)
+- [x] DSL for creating, signing, and sending transactions and scripts
 
 ## Installation
 
