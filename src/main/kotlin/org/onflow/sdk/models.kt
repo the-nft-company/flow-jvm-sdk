@@ -80,10 +80,10 @@ enum class HashAlgorithm(
     val index: Int
 ) {
     UNKNOWN("unknown", -1, "unknown", -1, 0),
-    SHA2_256("SHA-2", 256, "SHA256withECDSA", 1, 1),
-    SHA2_384("SHA-2", 384, "SHA384withECDSA", 1, 2),
-    SHA3_256("SHA-3", 256, "SHA3-256withECDSA", 3, 3),
-    SHA3_384("SHA-3", 384, "SHA3-384withECDSA", 3, 4);
+    SHA2_256("SHA2-256", 256, "SHA256withECDSA", 1, 1),
+    SHA2_384("SHA2-384", 384, "SHA384withECDSA", 1, 2),
+    SHA3_256("SHA3-256", 256, "SHA3-256withECDSA", 3, 3),
+    SHA3_384("SHA3-384", 384, "SHA3-384withECDSA", 3, 4);
     companion object {
         @JvmStatic
         fun fromCode(code: Int): HashAlgorithm = values()
@@ -112,6 +112,11 @@ interface Signer {
         }
         return sign(bytes)
     }
+}
+
+interface Hasher {
+    fun hash(bytes: ByteArray): ByteArray
+    fun hashAsHexString(bytes: ByteArray): String = hash(bytes).bytesToHex()
 }
 
 data class FlowAccount(

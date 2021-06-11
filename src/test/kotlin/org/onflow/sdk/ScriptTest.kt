@@ -127,11 +127,17 @@ class ScriptTest {
         val pairB = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val signerB = Crypto.getSigner(pairB.private, HashAlgorithm.SHA3_256)
 
+        val hasher = Crypto.getHasher(HashAlgorithm.SHA3_256)
+
         val toAddress = AddressField("e7d6e0582b0a21c3")
         val fromAddress = AddressField("e536e1583b0a22d4")
         val amount = UFix64NumberField("100.00")
 
-        val message = toAddress.value!!.hexToBytes() + fromAddress.value!!.hexToBytes() // TODO: + amount bytes
+        val message = hasher.hash(
+            toAddress.value!!.hexToBytes()
+                + fromAddress.value!!.hexToBytes()
+                // TODO: + amount bytes
+        )
 
         val signatureA = signerA.signAsUser(message)
         val signatureB = signerB.signAsUser(message)
