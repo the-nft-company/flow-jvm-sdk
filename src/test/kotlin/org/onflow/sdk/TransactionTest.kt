@@ -5,9 +5,7 @@ import org.junit.jupiter.api.Test
 import org.onflow.sdk.crypto.Crypto
 import org.onflow.sdk.test.FlowEmulatorTest
 
-const val MAINNET_HOSTNAME = "access.mainnet.nodes.onflow.org"
-
-@FlowEmulatorTest
+@FlowEmulatorTest(flowJsonLocation = "flow/flow.json")
 class TransactionTest {
 
     private var transaction = FlowTransaction(
@@ -61,7 +59,7 @@ class TransactionTest {
 
         assertThat(payloadEnvelope).isEqualTo(payloadExpectedHex.hexToBytes())
 
-        val address = FlowAddress("f8d6e0586b0a20c7")
+        val address = TestUtils.MAIN_ACCOUNT_ADDRESS
 
         val fooSignature = byteArrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)
         val barSignature = byteArrayOf(3, 3, 3)
@@ -80,7 +78,7 @@ class TransactionTest {
     @Test
     fun `Can connect to mainnet`() {
 
-        val accessAPI = Flow.newAccessApi(MAINNET_HOSTNAME)
+        val accessAPI = TestUtils.newMainnetAccessApi()
         accessAPI.ping()
 
         val address = FlowAddress("e467b9dd11fa00df")
@@ -93,7 +91,7 @@ class TransactionTest {
     // ignored for now because for whatever reason it can't find this transaction
     @Test
     fun `Can parse events`() {
-        val accessApi = Flow.newAccessApi(MAINNET_HOSTNAME)
+        val accessApi = TestUtils.newMainnetAccessApi()
 
         // https://flowscan.org/transaction/5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e
         val tx = accessApi.getTransactionById(FlowId("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e"))
@@ -116,17 +114,15 @@ class TransactionTest {
 
     @Test
     fun `Can create an account using the transaction DSL`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
+        val accessAPI = TestUtils.newEmulatorAccessApi()
 
         val latestBlockId = accessAPI.getLatestBlockHeader().id
 
-        val payerAccount = accessAPI.getAccountAtLatestBlock(FlowAddress("f8d6e0586b0a20c7"))!!
+        val payerAccount = accessAPI.getAccountAtLatestBlock(TestUtils.MAIN_ACCOUNT_ADDRESS)!!
 
-        val keyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
-        val payerSigner = Crypto.getSigner(keyPair.private, payerAccount.keys[0].hashAlgo)
-
+        val newAccountKeyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val newAccountPublicKey = FlowAccountKey(
-            publicKey = FlowPublicKey(keyPair.public.hex),
+            publicKey = FlowPublicKey(newAccountKeyPair.public.hex),
             signAlgo = SignatureAlgorithm.ECDSA_P256,
             hashAlgo = HashAlgorithm.SHA3_256,
             weight = 1000
@@ -167,24 +163,30 @@ class TransactionTest {
                 signature {
                     address = payerAccount.address
                     keyIndex = 0
-                    signer = payerSigner
+                    signer = TestUtils.MAIN_ACCOUNT_SIGNER
                 }
             }
         }
 
         val txID = accessAPI.sendTransaction(tx)
-        val result = waitForSeal(accessAPI, txID)
+        val result = waitForSeal(accessAPI, txID).throwOnError()
         assertThat(result).isNotNull
         assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
     }
 
     @Test
     fun `Can create an account using the simpleTransaction DSL`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
-        val keyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
-        val payerSigner = Crypto.getSigner(keyPair.private, HashAlgorithm.SHA3_256)
+        val accessAPI = TestUtils.newEmulatorAccessApi()
 
-        val result = accessAPI.simpleFlowTransaction(FlowAddress("f8d6e0586b0a20c7"), payerSigner) {
+        val newAccountKeyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
+        val newAccountPublicKey = FlowAccountKey(
+            publicKey = FlowPublicKey(newAccountKeyPair.public.hex),
+            signAlgo = SignatureAlgorithm.ECDSA_P256,
+            hashAlgo = HashAlgorithm.SHA3_256,
+            weight = 1000
+        )
+
+        val result = accessAPI.simpleFlowTransaction(TestUtils.MAIN_ACCOUNT_ADDRESS, TestUtils.MAIN_ACCOUNT_SIGNER) {
             script {
                 """
                     transaction(publicKey: String) {
@@ -197,15 +199,16 @@ class TransactionTest {
             }
 
             arguments {
-                arg { string(keyPair.public.hex) }
+                arg { string(newAccountPublicKey.encoded.bytesToHex()) }
             }
         }.sendAndWaitForSeal()
+            .throwOnError()
         assertThat(result.status).isEqualTo(FlowTransactionStatus.SEALED)
     }
 
     @Test
     fun `Can get block header by id`() {
-        val accessAPI = Flow.newAccessApi(MAINNET_HOSTNAME)
+        val accessAPI = TestUtils.newMainnetAccessApi()
 
         val latestBlock = accessAPI.getLatestBlock(true)
         assertThat(latestBlock).isNotNull
@@ -215,7 +218,7 @@ class TransactionTest {
 
     @Test
     fun `Can get block header by height`() {
-        val accessAPI = Flow.newAccessApi(MAINNET_HOSTNAME)
+        val accessAPI = TestUtils.newMainnetAccessApi()
 
         val latestBlock = accessAPI.getLatestBlock(true)
         assertThat(latestBlock).isNotNull
@@ -226,7 +229,7 @@ class TransactionTest {
 
     @Test
     fun `Can get latest block`() {
-        val accessAPI = Flow.newAccessApi(MAINNET_HOSTNAME)
+        val accessAPI = TestUtils.newMainnetAccessApi()
 
         val latestBlock = accessAPI.getLatestBlock(true)
         assertThat(latestBlock).isNotNull
@@ -234,7 +237,7 @@ class TransactionTest {
 
     @Test
     fun `Can get block by id`() {
-        val accessAPI = Flow.newAccessApi(MAINNET_HOSTNAME)
+        val accessAPI = TestUtils.newMainnetAccessApi()
 
         val latestBlock = accessAPI.getLatestBlock(true)
         assertThat(latestBlock).isNotNull
@@ -246,7 +249,7 @@ class TransactionTest {
 
     @Test
     fun `Can get block by height`() {
-        val accessAPI = Flow.newAccessApi(MAINNET_HOSTNAME)
+        val accessAPI = TestUtils.newMainnetAccessApi()
 
         val latestBlock = accessAPI.getLatestBlock(true)
         assertThat(latestBlock).isNotNull
@@ -258,7 +261,7 @@ class TransactionTest {
 
     @Test
     fun `Can get account by address`() {
-        val accessAPI = Flow.newAccessApi(MAINNET_HOSTNAME)
+        val accessAPI = TestUtils.newMainnetAccessApi()
 
         val address = FlowAddress("18eb4ee6b3c026d2")
         val account = accessAPI.getAccountAtLatestBlock(address)!!
