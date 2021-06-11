@@ -143,8 +143,7 @@ internal class HasherImpl(
 
     override fun hash(bytes: ByteArray): ByteArray {
         val digest = MessageDigest.getInstance(hashAlgo.algorithm)
-        val ret = digest.digest(bytes)
-        return ret
+        return digest.digest(bytes)
     }
 }
 

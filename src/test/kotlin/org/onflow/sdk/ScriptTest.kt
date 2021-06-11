@@ -161,14 +161,16 @@ class ScriptTest {
             script {
                 """
                     import Crypto
+                    
                     pub fun main(
                       rawPublicKeys: [String],
                       weights: [UFix64],
                       signatures: [String],
                       signedData: String,
                     ): Bool {
-                      let keyList = Crypto.KeyList()
+                    
                       var i = 0
+                      let keyList = Crypto.KeyList()
                       for rawPublicKey in rawPublicKeys {
                         keyList.add(
                           PublicKey(
@@ -180,17 +182,19 @@ class ScriptTest {
                         )
                         i = i + 1
                       }
+                      
+                      i = 0
                       let signatureSet: [Crypto.KeyListSignature] = []
-                      var j = 0
                       for signature in signatures {
                         signatureSet.append(
                           Crypto.KeyListSignature(
-                            keyIndex: j,
+                            keyIndex: i,
                             signature: signature.decodeHex()
                           )
                         )
-                        j = j + 1
+                        i = i + 1
                       }
+                      
                       return keyList.isValid(
                         signatureSet: signatureSet,
                         signedData: signedData.decodeHex(),
