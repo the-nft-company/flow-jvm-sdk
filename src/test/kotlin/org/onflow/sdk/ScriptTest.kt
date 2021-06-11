@@ -125,10 +125,10 @@ class ScriptTest {
         val pairB = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val signerB = Crypto.getSigner(pairB.private, HashAlgorithm.SHA3_256)
 
-        val signedData = "666f6f"
+        val message = "666f6f"
 
-        val signatureA = signerA.signAsUser(signedData.hexToBytes())
-        val signatureB = signerB.signAsUser(signedData.hexToBytes())
+        val signatureA = signerA.signAsUser(message.hexToBytes())
+        val signatureB = signerB.signAsUser(message.hexToBytes())
 
         val publicKeys = marshall {
             array {
@@ -166,7 +166,7 @@ class ScriptTest {
                       rawPublicKeys: [String],
                       weights: [UFix64],
                       signatures: [String],
-                      signedData: String,
+                      message: String,
                     ): Bool {
                     
                       var i = 0
@@ -197,7 +197,7 @@ class ScriptTest {
                       
                       return keyList.isValid(
                         signatureSet: signatureSet,
-                        signedData: signedData.decodeHex(),
+                        signedData: message.decodeHex(),
                       )
                     }
                 """
@@ -205,7 +205,7 @@ class ScriptTest {
             arg { publicKeys }
             arg { weights }
             arg { signatures }
-            arg { string(signedData) }
+            arg { string(message) }
         }
 
         assertTrue(result.jsonCadence is BooleanField)
