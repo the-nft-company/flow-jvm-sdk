@@ -57,7 +57,7 @@ class ScriptTest {
 
     @Test
     fun `Can execute a script`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
+        val accessAPI = TestUtils.newEmulatorAccessApi()
 
         val result = accessAPI.simpleFlowScript {
             script {
@@ -75,7 +75,7 @@ class ScriptTest {
 
     @Test
     fun `Can input and export arguments`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
+        val accessAPI = TestUtils.newEmulatorAccessApi()
         val address = "e467b9dd11fa00df"
 
         val result = accessAPI.simpleFlowScript {
@@ -116,25 +116,25 @@ class ScriptTest {
         assertTrue(struct.isValid)
     }
 
-    // @Test
+    @Test
     // TODO: Re-enable this test once the cli has been updated with the latest emulator
     fun `Test domain tags`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
+        val accessAPI = TestUtils.newEmulatorAccessApi()
 
-        val pairA = Crypto.generateKeyPair()
+        val pairA = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val signerA = Crypto.getSigner(pairA.private, HashAlgorithm.SHA3_256)
 
-        val pairB = Crypto.generateKeyPair()
+        val pairB = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val signerB = Crypto.getSigner(pairB.private, HashAlgorithm.SHA3_256)
 
         val toAddress = AddressField("e7d6e0582b0a21c3")
         val fromAddress = AddressField("e536e1583b0a22d4")
         val amount = UFix64NumberField("100.00")
 
-        val message = Flow.encodeJsonCadence(toAddress) + Flow.encodeJsonCadence(fromAddress) + Flow.encodeJsonCadence(amount)
+        val message = toAddress.value!!.hexToBytes() + fromAddress.value!!.hexToBytes() // TODO: + amount bytes
 
-        val signatureA = signerA.signWithDomain(message, DomainTag.USER_DOMAIN_TAG)
-        val signatureB = signerB.signWithDomain(message, DomainTag.USER_DOMAIN_TAG)
+        val signatureA = signerA.signAsUser(message)
+        val signatureB = signerB.signAsUser(message)
 
         val publicKeys = marshall {
             array {
@@ -179,11 +179,11 @@ class ScriptTest {
                       var i = 0
                       for rawPublicKey in rawPublicKeys {
                         keyList.add(
-                          Crypto.PublicKey(
+                          PublicKey(
                             publicKey: rawPublicKey.decodeHex(),
-                            signatureAlgorithm: Crypto.ECDSA_P256
+                            signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
                           ),
-                          hashAlgorithm: Crypto.SHA3_256,
+                          hashAlgorithm: HashAlgorithm.SHA3_256,
                           weight: weights[i],
                         )
                         i = i + 1
@@ -201,7 +201,8 @@ class ScriptTest {
                       }
                       let message = toAddress.toBytes()
                         .concat(fromAddress.toBytes())
-                        .concat(amount.toBigEndianBytes())
+                        // .concat(amount.toBigEndianBytes())
+                        // TODO: figure out how to toBigEndianBytes on the JVM
                       return keyList.isValid(
                         signatureSet: signatureSet,
                         signedData: message,
