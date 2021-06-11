@@ -3,7 +3,6 @@ package org.onflow.sdk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.onflow.sdk.cadence.AddressField
 import org.onflow.sdk.cadence.BooleanField
 import org.onflow.sdk.cadence.CadenceNamespace
 import org.onflow.sdk.cadence.Field
@@ -11,7 +10,6 @@ import org.onflow.sdk.cadence.JsonCadenceConversion
 import org.onflow.sdk.cadence.JsonCadenceConverter
 import org.onflow.sdk.cadence.StringField
 import org.onflow.sdk.cadence.StructField
-import org.onflow.sdk.cadence.UFix64NumberField
 import org.onflow.sdk.cadence.marshall
 import org.onflow.sdk.cadence.unmarshall
 import org.onflow.sdk.crypto.Crypto
@@ -127,20 +125,10 @@ class ScriptTest {
         val pairB = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val signerB = Crypto.getSigner(pairB.private, HashAlgorithm.SHA3_256)
 
-        val hasher = Crypto.getHasher(HashAlgorithm.SHA3_256)
+        val signedData = "666f6f"
 
-        val toAddress = AddressField("e7d6e0582b0a21c3")
-        val fromAddress = AddressField("e536e1583b0a22d4")
-        val amount = UFix64NumberField("100.00")
-
-        val message = hasher.hash(
-            toAddress.value!!.hexToBytes()
-                + fromAddress.value!!.hexToBytes()
-                // TODO: + amount bytes
-        )
-
-        val signatureA = signerA.signAsUser(message)
-        val signatureB = signerB.signAsUser(message)
+        val signatureA = signerA.signAsUser(signedData.hexToBytes())
+        val signatureB = signerB.signAsUser(signedData.hexToBytes())
 
         val publicKeys = marshall {
             array {
@@ -177,9 +165,7 @@ class ScriptTest {
                       rawPublicKeys: [String],
                       weights: [UFix64],
                       signatures: [String],
-                      toAddress: Address,
-                      fromAddress: Address,
-                      amount: UFix64,
+                      signedData: String,
                     ): Bool {
                       let keyList = Crypto.KeyList()
                       var i = 0
@@ -205,13 +191,9 @@ class ScriptTest {
                         )
                         j = j + 1
                       }
-                      let message = toAddress.toBytes()
-                        .concat(fromAddress.toBytes())
-                        // .concat(amount.toBigEndianBytes())
-                        // TODO: figure out how to toBigEndianBytes on the JVM
                       return keyList.isValid(
                         signatureSet: signatureSet,
-                        signedData: message,
+                        signedData: signedData.decodeHex(),
                       )
                     }
                 """
@@ -219,9 +201,7 @@ class ScriptTest {
             arg { publicKeys }
             arg { weights }
             arg { signatures }
-            arg { toAddress }
-            arg { fromAddress }
-            arg { amount }
+            arg { string(signedData) }
         }
 
         assertTrue(result.jsonCadence is BooleanField)

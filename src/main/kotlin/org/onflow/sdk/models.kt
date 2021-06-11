@@ -96,22 +96,16 @@ enum class HashAlgorithm(
 }
 
 interface Signer {
+
+    val hasher: Hasher
+
     fun sign(bytes: ByteArray): ByteArray
 
-    fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray = sign(domain + bytes)
+    fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray = sign(hasher.hash(domain + bytes))
 
     fun signAsUser(bytes: ByteArray): ByteArray = signWithDomain(bytes, DomainTag.USER_DOMAIN_TAG)
 
     fun signAsTransaction(bytes: ByteArray): ByteArray = signWithDomain(bytes, DomainTag.TRANSACTION_DOMAIN_TAG)
-
-    fun signWithExpectedDomain(bytes: ByteArray, expectedDomain: ByteArray): ByteArray {
-        val expectedDomainTag = String(expectedDomain, Charsets.UTF_8)
-        val actualDomainTag = String(bytes.sliceArray(0 until 32), Charsets.UTF_8)
-        if (expectedDomainTag != actualDomainTag) {
-            throw IllegalArgumentException("Expected domain $expectedDomain doesn't match actual domain $actualDomainTag")
-        }
-        return sign(bytes)
-    }
 }
 
 interface Hasher {

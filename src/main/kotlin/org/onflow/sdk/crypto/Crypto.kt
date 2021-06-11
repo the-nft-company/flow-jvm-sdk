@@ -150,8 +150,10 @@ internal class HasherImpl(
 
 internal class SignerImpl(
     private val privateKey: PrivateKey,
-    private val hashAlgo: HashAlgorithm
+    private val hashAlgo: HashAlgorithm,
+    override val hasher: Hasher = HasherImpl(hashAlgo)
 ) : Signer {
+
 
     override fun sign(bytes: ByteArray): ByteArray {
 
