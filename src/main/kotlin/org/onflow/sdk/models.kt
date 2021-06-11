@@ -421,7 +421,7 @@ data class FlowTransaction(
     }
 
     fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signer: Signer): FlowTransaction {
-        return addPayloadSignature(address, keyIndex, FlowSignature(signer.signWithDomain(canonicalPayload, DomainTag.TRANSACTION_DOMAIN_TAG)))
+        return addPayloadSignature(address, keyIndex, FlowSignature(signer.sign(canonicalPayload)))
     }
 
     fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature): FlowTransaction {
@@ -440,7 +440,7 @@ data class FlowTransaction(
     }
 
     fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signer: Signer): FlowTransaction {
-        return addEnvelopeSignature(address, keyIndex, FlowSignature(signer.signWithDomain(canonicalAuthorizationEnvelope, DomainTag.TRANSACTION_DOMAIN_TAG)))
+        return addEnvelopeSignature(address, keyIndex, FlowSignature(signer.sign(canonicalAuthorizationEnvelope)))
     }
 
     fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature): FlowTransaction {

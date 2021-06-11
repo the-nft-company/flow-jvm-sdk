@@ -52,7 +52,7 @@ class TestClassConverterJson : JsonCadenceConverter<TestClass> {
     }
 }
 
-@FlowEmulatorTest
+@FlowEmulatorTest(flowJsonLocation = "flow/flow.json")
 class ScriptTest {
 
     @Test
