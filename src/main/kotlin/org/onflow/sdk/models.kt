@@ -101,7 +101,7 @@ interface Signer {
 
     fun sign(bytes: ByteArray): ByteArray
 
-    fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray = sign(hasher.hash(domain + bytes))
+    fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray = sign(domain + bytes)
 
     fun signAsUser(bytes: ByteArray): ByteArray = signWithDomain(bytes, DomainTag.USER_DOMAIN_TAG)
 

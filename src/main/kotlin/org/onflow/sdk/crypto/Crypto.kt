@@ -153,7 +153,6 @@ internal class SignerImpl(
     override val hasher: Hasher = HasherImpl(hashAlgo)
 ) : Signer {
 
-
     override fun sign(bytes: ByteArray): ByteArray {
 
         val ecdsaSign = Signature.getInstance(hashAlgo.id)

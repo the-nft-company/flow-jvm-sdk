@@ -13,7 +13,7 @@ object DomainTag {
         val bytes = tag.toByteArray(Charsets.UTF_8)
         return when {
             bytes.size > 32 -> throw IllegalArgumentException("Domain tags cannot be longer than 32 characters")
-            bytes.size < 32 ->  bytes + ByteArray(32 - bytes.size)
+            bytes.size < 32 -> bytes + ByteArray(32 - bytes.size)
             else -> bytes
         }
     }
