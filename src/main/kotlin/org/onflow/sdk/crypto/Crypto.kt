@@ -8,6 +8,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.bouncycastle.jce.spec.ECPrivateKeySpec
 import org.onflow.sdk.HashAlgorithm
+import org.onflow.sdk.Hasher
 import org.onflow.sdk.SignatureAlgorithm
 import org.onflow.sdk.Signer
 import org.onflow.sdk.bytesToHex
@@ -15,6 +16,7 @@ import org.onflow.sdk.hexToBytes
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
+import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.Security
 import java.security.Signature
@@ -127,11 +129,28 @@ object Crypto {
     fun getSigner(privateKey: PrivateKey, hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256): Signer {
         return SignerImpl(privateKey, hashAlgo)
     }
+
+    @JvmStatic
+    @JvmOverloads
+    fun getHasher(hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256): Hasher {
+        return HasherImpl(hashAlgo)
+    }
+}
+
+internal class HasherImpl(
+    private val hashAlgo: HashAlgorithm
+) : Hasher {
+
+    override fun hash(bytes: ByteArray): ByteArray {
+        val digest = MessageDigest.getInstance(hashAlgo.algorithm)
+        return digest.digest(bytes)
+    }
 }
 
 internal class SignerImpl(
     private val privateKey: PrivateKey,
-    private val hashAlgo: HashAlgorithm
+    private val hashAlgo: HashAlgorithm,
+    override val hasher: Hasher = HasherImpl(hashAlgo)
 ) : Signer {
 
     override fun sign(bytes: ByteArray): ByteArray {

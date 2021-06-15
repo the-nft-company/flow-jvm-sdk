@@ -80,10 +80,10 @@ enum class HashAlgorithm(
     val index: Int
 ) {
     UNKNOWN("unknown", -1, "unknown", -1, 0),
-    SHA2_256("SHA-2", 256, "SHA256withECDSA", 1, 1),
-    SHA2_384("SHA-2", 384, "SHA384withECDSA", 1, 2),
-    SHA3_256("SHA-3", 256, "SHA3-256withECDSA", 3, 3),
-    SHA3_384("SHA-3", 384, "SHA3-384withECDSA", 3, 4);
+    SHA2_256("SHA2-256", 256, "SHA256withECDSA", 1, 1),
+    SHA2_384("SHA2-384", 384, "SHA384withECDSA", 1, 2),
+    SHA3_256("SHA3-256", 256, "SHA3-256withECDSA", 3, 3),
+    SHA3_384("SHA3-384", 384, "SHA3-384withECDSA", 3, 4);
     companion object {
         @JvmStatic
         fun fromCode(code: Int): HashAlgorithm = values()
@@ -96,6 +96,9 @@ enum class HashAlgorithm(
 }
 
 interface Signer {
+
+    val hasher: Hasher
+
     fun sign(bytes: ByteArray): ByteArray
 
     fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray = sign(domain + bytes)
@@ -103,15 +106,11 @@ interface Signer {
     fun signAsUser(bytes: ByteArray): ByteArray = signWithDomain(bytes, DomainTag.USER_DOMAIN_TAG)
 
     fun signAsTransaction(bytes: ByteArray): ByteArray = signWithDomain(bytes, DomainTag.TRANSACTION_DOMAIN_TAG)
+}
 
-    fun signWithExpectedDomain(bytes: ByteArray, expectedDomain: ByteArray): ByteArray {
-        val expectedDomainTag = String(expectedDomain, Charsets.UTF_8)
-        val actualDomainTag = String(bytes.sliceArray(0 until 32), Charsets.UTF_8)
-        if (expectedDomainTag != actualDomainTag) {
-            throw IllegalArgumentException("Expected domain $expectedDomain doesn't match actual domain $actualDomainTag")
-        }
-        return sign(bytes)
-    }
+interface Hasher {
+    fun hash(bytes: ByteArray): ByteArray
+    fun hashAsHexString(bytes: ByteArray): String = hash(bytes).bytesToHex()
 }
 
 data class FlowAccount(
@@ -421,7 +420,7 @@ data class FlowTransaction(
     }
 
     fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signer: Signer): FlowTransaction {
-        return addPayloadSignature(address, keyIndex, FlowSignature(signer.sign(canonicalPayload)))
+        return addPayloadSignature(address, keyIndex, FlowSignature(signer.signAsTransaction(canonicalPayload)))
     }
 
     fun addPayloadSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature): FlowTransaction {
@@ -440,7 +439,7 @@ data class FlowTransaction(
     }
 
     fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signer: Signer): FlowTransaction {
-        return addEnvelopeSignature(address, keyIndex, FlowSignature(signer.sign(canonicalAuthorizationEnvelope)))
+        return addEnvelopeSignature(address, keyIndex, FlowSignature(signer.signAsTransaction(canonicalAuthorizationEnvelope)))
     }
 
     fun addEnvelopeSignature(address: FlowAddress, keyIndex: Int, signature: FlowSignature): FlowTransaction {

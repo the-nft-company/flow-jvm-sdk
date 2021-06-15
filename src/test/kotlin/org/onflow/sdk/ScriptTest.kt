@@ -3,7 +3,6 @@ package org.onflow.sdk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.onflow.sdk.cadence.AddressField
 import org.onflow.sdk.cadence.BooleanField
 import org.onflow.sdk.cadence.CadenceNamespace
 import org.onflow.sdk.cadence.Field
@@ -11,7 +10,6 @@ import org.onflow.sdk.cadence.JsonCadenceConversion
 import org.onflow.sdk.cadence.JsonCadenceConverter
 import org.onflow.sdk.cadence.StringField
 import org.onflow.sdk.cadence.StructField
-import org.onflow.sdk.cadence.UFix64NumberField
 import org.onflow.sdk.cadence.marshall
 import org.onflow.sdk.cadence.unmarshall
 import org.onflow.sdk.crypto.Crypto
@@ -57,7 +55,7 @@ class ScriptTest {
 
     @Test
     fun `Can execute a script`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
+        val accessAPI = TestUtils.newEmulatorAccessApi()
 
         val result = accessAPI.simpleFlowScript {
             script {
@@ -75,7 +73,7 @@ class ScriptTest {
 
     @Test
     fun `Can input and export arguments`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
+        val accessAPI = TestUtils.newEmulatorAccessApi()
         val address = "e467b9dd11fa00df"
 
         val result = accessAPI.simpleFlowScript {
@@ -119,22 +117,18 @@ class ScriptTest {
     // @Test
     // TODO: Re-enable this test once the cli has been updated with the latest emulator
     fun `Test domain tags`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
+        val accessAPI = TestUtils.newEmulatorAccessApi()
 
-        val pairA = Crypto.generateKeyPair()
+        val pairA = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val signerA = Crypto.getSigner(pairA.private, HashAlgorithm.SHA3_256)
 
-        val pairB = Crypto.generateKeyPair()
+        val pairB = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val signerB = Crypto.getSigner(pairB.private, HashAlgorithm.SHA3_256)
 
-        val toAddress = AddressField("e7d6e0582b0a21c3")
-        val fromAddress = AddressField("e536e1583b0a22d4")
-        val amount = UFix64NumberField("100.00")
+        val message = "666f6f"
 
-        val message = Flow.encodeJsonCadence(toAddress) + Flow.encodeJsonCadence(fromAddress) + Flow.encodeJsonCadence(amount)
-
-        val signatureA = signerA.signWithDomain(message, DomainTag.USER_DOMAIN_TAG)
-        val signatureB = signerB.signWithDomain(message, DomainTag.USER_DOMAIN_TAG)
+        val signatureA = signerA.signAsUser(message.hexToBytes())
+        val signatureB = signerB.signAsUser(message.hexToBytes())
 
         val publicKeys = marshall {
             array {
@@ -167,44 +161,43 @@ class ScriptTest {
             script {
                 """
                     import Crypto
+                    
                     pub fun main(
                       rawPublicKeys: [String],
                       weights: [UFix64],
                       signatures: [String],
-                      toAddress: Address,
-                      fromAddress: Address,
-                      amount: UFix64,
+                      message: String,
                     ): Bool {
-                      let keyList = Crypto.KeyList()
+                    
                       var i = 0
+                      let keyList = Crypto.KeyList()
                       for rawPublicKey in rawPublicKeys {
                         keyList.add(
-                          Crypto.PublicKey(
+                          PublicKey(
                             publicKey: rawPublicKey.decodeHex(),
-                            signatureAlgorithm: Crypto.ECDSA_P256
+                            signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
                           ),
-                          hashAlgorithm: Crypto.SHA3_256,
+                          hashAlgorithm: HashAlgorithm.SHA3_256,
                           weight: weights[i],
                         )
                         i = i + 1
                       }
+                      
+                      i = 0
                       let signatureSet: [Crypto.KeyListSignature] = []
-                      var j = 0
                       for signature in signatures {
                         signatureSet.append(
                           Crypto.KeyListSignature(
-                            keyIndex: j,
+                            keyIndex: i,
                             signature: signature.decodeHex()
                           )
                         )
-                        j = j + 1
+                        i = i + 1
                       }
-                      let message = toAddress.toBytes()
-                        .concat(fromAddress.toBytes())
-                        .concat(amount.toBigEndianBytes())
+                      
                       return keyList.isValid(
                         signatureSet: signatureSet,
-                        signedData: message,
+                        signedData: message.decodeHex(),
                       )
                     }
                 """
@@ -212,9 +205,7 @@ class ScriptTest {
             arg { publicKeys }
             arg { weights }
             arg { signatures }
-            arg { toAddress }
-            arg { fromAddress }
-            arg { amount }
+            arg { string(message) }
         }
 
         assertTrue(result.jsonCadence is BooleanField)
