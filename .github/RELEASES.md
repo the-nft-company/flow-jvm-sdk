@@ -1,19 +1,22 @@
 
-# How to cut a release
+# How to make a release
 
-## configuration
+## From your local machine
+
+### Configuration
 
 First, create a `gradle.properties` file in the root of the project with the following properties:
+
 ```properties
 signing.gnupg.executable=gpg
 signing.gnupg.useLegacyGpg=false
-#signing.gnupg.homeDir=gnupg-home
-#signing.gnupg.optionsFile=gnupg-home/gpg.conf
+# signing.gnupg.homeDir=gnupg-home
+# signing.gnupg.optionsFile=gnupg-home/gpg.conf
 signing.gnupg.keyName=XXXX
 signing.gnupg.passphrase=XXXX
 
 # only use this if you're overriding the group id
-#groupId=com.nftco
+# groupId=com.nftco
 
 sonatype.nexusUrl=https://s01.oss.sonatype.org/service/local/
 sonatype.snapshotRepositoryUrl=https://s01.oss.sonatype.org/content/repositories/snapshots/
@@ -27,9 +30,10 @@ and more information on the release process can be found here [here](https://git
 
 You will need to have gpg setup on your machine.
 
-## publishing a snapshot version
+### Publishing a snapshot
 
-To release a snapshot version run the following in the root directory of the repository:
+To release a snapshot version, run the following in the root directory of the repository:
+
 ```shell
 $> ./gradlew \
   -PsnapshotDate=$(date +'%Y%m%d%H%M%S') \
@@ -38,13 +42,15 @@ $> ./gradlew \
   publishToSonatype \
   closeAndReleaseSonatypeStagingRepository
 ```
+
 If the `version` specified in the `build.gradle.kts` file is `1.2.3` then this script will release a 
 SNAPSHOT version that looks something like this: `0.2.0.20210419134847-SNAPSHOT` where the `20210419134847`
 portion is the year, month, day, hour, minutes, seconds that the build was cut.
 
-## publishing a snapshot version
+### Publishing a release
 
-To release a non snapshot version run the following in the root directory of the repository:
+To release a non-snapshot version, run the following in the root directory of the repository:
+
 ```shell
 $> ./gradlew \
   -x test \
@@ -52,9 +58,10 @@ $> ./gradlew \
   publishToSonatype \
   closeAndReleaseSonatypeStagingRepository
 ```
+
 Be sure that the `version` in the `build.gradle.kts` file is what you want it to be.
 
-## continuous Integration / Deployment
+## Continuous integration & deployment (CI/CD)
 
 In the case of a CI/CD machine you may not want ot have the keyring file(s) on your machine, in this
 case you can instead use an ascii armored version of the pgp key by passing the following arguments:
@@ -75,13 +82,14 @@ $> ./gradlew \
 
 Be sure to pass the `-PsnapshotDate=$(date +'%Y%m%d%H%M%S')` if it's a snapshot
 
-## github actions
+## GitHub Actions
 
-There are two github actions configured:
+There are two GitHub Actions configured:
+
 - SNAPSHOT: On every commit to the `main` branch a build is performed and if successful it is deployed as a snapshot version.
 - RELEASE: Whenever a tag is creatd with the pattern of `vXXX` a version with the name XXX is built and if successful deployed as a release version.
 
-The following github secrets configure these actions:
+The following GitHub repository secrets configure these actions:
 
 - `FLOW_JVM_SDK_CICD_PUBLISH_ENABLED`: (optional) Must be `true` for the publishing of artifacts to happen (defaults to `false`)
 - `FLOW_JVM_SDK_GROUP_ID`: (optional) the groupId defaults to `org.onflow`
@@ -92,4 +100,4 @@ The following github secrets configure these actions:
 - `FLOW_JVM_SDK_SONATYPE_USERNAME`: (required if publish enabled) sonatype username
 - `FLOW_JVM_SDK_SONATYPE_PASSWORD`: (required if publish enabled) sonatype password
 
-The github actions take care of starting/stopping an emulator for the unit tests.
+The Github Actions take care of starting/stopping an emulator for the unit tests.
