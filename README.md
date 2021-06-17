@@ -87,4 +87,11 @@ Read the [contributing guide](https://github.com/onflow/flow-jvm-sdk/blob/main/C
 
 ## Dependencies
 
-Java Developer Kit (JDK) 8 or newer.
+This SDK requires Java Developer Kit (JDK) 8 or newer.
+
+## Credit
+
+The Flow JVM SDK is maintained by @briandilley and @jereanon from
+[The NFT Company](https://nftco.com/).
+
+![NFTco](nftco.svg)
