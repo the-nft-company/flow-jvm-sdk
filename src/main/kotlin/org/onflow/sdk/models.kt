@@ -145,6 +145,20 @@ data class FlowAccount(
             .addAllKeys(keys.map { it.builder().build() })
             .putAllContracts(contracts.mapValues { it.value.byteStringValue })
     }
+
+    /**
+     * Returns the index of the public key on the account, or -1 if not found.
+     */
+    fun getKeyIndex(publicKey: String): Int {
+        return this.keys
+            .filter { !it.revoked }
+            .find {
+                it.publicKey.base16Value.lowercase().endsWith(publicKey.lowercase())
+                    || publicKey.lowercase().endsWith(it.publicKey.base16Value.lowercase())
+            }
+            ?.id
+            ?: -1
+    }
 }
 
 data class FlowAccountKey(
@@ -284,7 +298,7 @@ data class FlowTransactionResult(
     @JvmOverloads
     fun throwOnError(validStatusCodes: Set<Int> = setOf(0)): FlowTransactionResult {
         if (statusCode !in validStatusCodes) {
-            throw FlowException("Transaction failed with statusCode: $statusCode")
+            throw FlowException("Transaction failed with code $statusCode:\n$errorMessage")
         }
         return this
     }

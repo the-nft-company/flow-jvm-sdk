@@ -114,8 +114,7 @@ class ScriptTest {
         assertTrue(struct.isValid)
     }
 
-    // @Test
-    // TODO: Re-enable this test once the cli has been updated with the latest emulator
+    @Test
     fun `Test domain tags`() {
         val accessAPI = TestUtils.newEmulatorAccessApi()
 
@@ -161,7 +160,7 @@ class ScriptTest {
             script {
                 """
                     import Crypto
-                    
+
                     pub fun main(
                       rawPublicKeys: [String],
                       weights: [UFix64],
@@ -195,7 +194,7 @@ class ScriptTest {
                         i = i + 1
                       }
                       
-                      return keyList.isValid(
+                      return keyList.verify(
                         signatureSet: signatureSet,
                         signedData: message.decodeHex(),
                       )

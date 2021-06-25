@@ -108,6 +108,24 @@ class FlowTransactionStub(
         checkSent()
         return waitForSeal(api, transactionId!!, pauseMs, timeoutMs)
     }
+
+    fun getResult(
+        pauseMs: Long = 500L,
+        timeoutMs: Long = 10_000L,
+        validStatusCodes: Set<Int> = setOf(0)
+    ): Pair<FlowId, FlowTransactionResult> {
+        checkSent()
+        return transactionId!! to waitForSeal(pauseMs, timeoutMs).throwOnError(validStatusCodes)
+    }
+
+    fun sendAndGetResult(
+        pauseMs: Long = 500L,
+        timeoutMs: Long = 10_000L,
+        validStatusCodes: Set<Int> = setOf(0)
+    ): Pair<FlowId, FlowTransactionResult> {
+        send()
+        return getResult(pauseMs, timeoutMs, validStatusCodes)
+    }
 }
 
 class TransactionBuilder {

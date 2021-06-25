@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import org.onflow.sdk.Flow
 import org.onflow.sdk.bytesToHex
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -92,7 +93,19 @@ const val TYPE_ENUM = "Enum"
 abstract class Field<T> constructor(
     val type: String,
     val value: T?
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Field<*>) return false
+        // TODO: something better than this
+        return String(Flow.encodeJsonCadence(this)) == String(Flow.encodeJsonCadence(other))
+    }
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + (value?.hashCode() ?: 0)
+        return result
+    }
+}
 
 open class VoidField : Field<Void>(TYPE_VOID, null)
 

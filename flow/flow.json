@@ -26,13 +26,6 @@
       ]
     }
   },
-  "contracts": {
-    "NonFungibleToken": {
-      "source": "./NonFungibleToken.cdc",
-      "aliases": {
-        "emulator": "eeaaeeaaeeaa1234"
-      }
-    }
-  },
+  "contracts": {},
   "deployments": {}
 }
