@@ -6,7 +6,7 @@ object DomainTag {
     val TRANSACTION_DOMAIN_TAG = normalize("FLOW-V0.0-transaction")
 
     @JvmStatic
-    val USER_DOMAIN_TAG = normalize("user") // TODO FLOW-V0.0-user
+    val USER_DOMAIN_TAG = normalize("FLOW-V0.0-user")
 
     @JvmStatic
     fun normalize(tag: String): ByteArray {

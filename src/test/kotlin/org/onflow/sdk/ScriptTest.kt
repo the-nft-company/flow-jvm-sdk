@@ -194,7 +194,7 @@ class ScriptTest {
                         i = i + 1
                       }
                       
-                      return keyList.isValid(
+                      return keyList.verify(
                         signatureSet: signatureSet,
                         signedData: message.decodeHex(),
                       )
