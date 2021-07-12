@@ -171,7 +171,7 @@ fun runFlow(
         "--init"
     }
 
-    val cmd = if (File(executable).exists()) {
+    val cmd = if (File(executable).exists() && File(executable).isFile && File(executable).canExecute()) {
         executable
     } else {
         (
