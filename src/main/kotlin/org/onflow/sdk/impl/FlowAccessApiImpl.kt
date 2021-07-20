@@ -66,6 +66,7 @@ class FlowAccessApiImpl(
     override fun getLatestBlock(sealed: Boolean): FlowBlock {
         val ret = api.getLatestBlock(
             Access.GetLatestBlockRequest.newBuilder()
+                .setIsSealed(sealed)
                 .build()
         )
         return FlowBlock.of(ret.block)

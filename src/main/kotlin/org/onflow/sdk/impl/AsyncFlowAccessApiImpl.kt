@@ -85,6 +85,7 @@ class AsyncFlowAccessApiImpl(
         return completableFuture(
             api.getLatestBlock(
                 Access.GetLatestBlockRequest.newBuilder()
+                    .setIsSealed(sealed)
                     .build()
             )
         ).thenApply {
