@@ -314,7 +314,10 @@ internal class Payload(
     val proposalKeySequenceNumber: Long,
     val payer: ByteArray,
     val authorizers: List<ByteArray>
-)
+) {
+    // no-arg constructor required for decoding
+    constructor() : this(byteArrayOf(), listOf(), byteArrayOf(), 0, byteArrayOf(), 0, 0, byteArrayOf(), listOf())
+}
 
 internal class PayloadEnvelope(
     @RLP(0) val payload: Payload,
@@ -326,11 +329,20 @@ internal class PaymentEnvelope(
     @RLP(1) val envelopeSignatures: List<EnvelopeSignature>
 )
 
+internal class TransactionEnvelope(
+    @RLP(0) val payload: Payload = Payload(),
+    @RLP(1) val payloadSignatures: List<EnvelopeSignature> = emptyList(),
+    @RLP(2) val envelopeSignatures: List<EnvelopeSignature> = emptyList()
+)
+
 internal class EnvelopeSignature(
     val signerIndex: Int,
     val keyIndex: Int,
     val signature: ByteArray
-)
+) {
+    // no-arg constructor required for decoding
+    constructor() : this(0, 0, byteArrayOf())
+}
 
 data class FlowTransaction(
     val script: FlowScript,
@@ -350,7 +362,7 @@ data class FlowTransaction(
         referenceBlockId = referenceBlockId.bytes,
         gasLimit = gasLimit,
         proposalKeyAddress = proposalKey.address.bytes,
-        proposalKeyIndex = proposalKey.keyIndex.toLong(), // TODO: type missmatch here
+        proposalKeyIndex = proposalKey.keyIndex.toLong(), // TODO: type mismatch here
         proposalKeySequenceNumber = proposalKey.sequenceNumber,
         payer = payerAddress.bytes,
         authorizers = authorizers.map { it.bytes }
@@ -378,9 +390,29 @@ data class FlowTransaction(
         }
     )
 
+    private val transaction: TransactionEnvelope get() = TransactionEnvelope(
+        payload = payload,
+        payloadSignatures = payloadSignatures.map {
+            EnvelopeSignature(
+                signerIndex = it.signerIndex,
+                keyIndex = it.keyIndex,
+                signature = it.signature.bytes
+            )
+        },
+        envelopeSignatures = envelopeSignatures.map {
+            EnvelopeSignature(
+                signerIndex = it.signerIndex,
+                keyIndex = it.keyIndex,
+                signature = it.signature.bytes
+            )
+        }
+    )
+
     val canonicalPayload: ByteArray get() = RLPCodec.encode(payload)
     val canonicalAuthorizationEnvelope: ByteArray get() = RLPCodec.encode(authorization)
     val canonicalPaymentEnvelope: ByteArray get() = RLPCodec.encode(payment)
+    val canonicalTransaction: ByteArray get() = RLPCodec.encode(transaction)
+    val id: FlowId get() = FlowId.of(canonicalTransaction.sha3256Hash())
 
     val signerList: List<FlowAddress> get() {
         val ret = mutableListOf<FlowAddress>()
@@ -417,6 +449,32 @@ data class FlowTransaction(
             payloadSignatures = value.payloadSignaturesList.map { FlowTransactionSignature.of(it) },
             envelopeSignatures = value.envelopeSignaturesList.map { FlowTransactionSignature.of(it) }
         )
+
+        @JvmStatic
+        fun of(bytes: ByteArray): FlowTransaction {
+            val txEnvelope: TransactionEnvelope = RLPCodec.decode(bytes, TransactionEnvelope::class.java)
+            var tx = FlowTransaction(
+                script = FlowScript(txEnvelope.payload.script),
+                arguments = txEnvelope.payload.arguments.map { FlowArgument(it) },
+                referenceBlockId = FlowId.of(txEnvelope.payload.referenceBlockId),
+                gasLimit = txEnvelope.payload.gasLimit,
+                proposalKey = FlowTransactionProposalKey(
+                    FlowAddress.of(txEnvelope.payload.proposalKeyAddress),
+                    txEnvelope.payload.proposalKeyIndex.toInt(),
+                    txEnvelope.payload.proposalKeySequenceNumber
+                ),
+                payerAddress = FlowAddress.of(txEnvelope.payload.payer),
+                authorizers = txEnvelope.payload.authorizers.map { FlowAddress.of(it) }
+            )
+
+            txEnvelope.payloadSignatures.map {
+                tx = tx.addPayloadSignature(tx.signerList[it.signerIndex], it.keyIndex, FlowSignature(it.signature))
+            }
+            txEnvelope.envelopeSignatures.map {
+                tx = tx.addEnvelopeSignature(tx.signerList[it.signerIndex], it.keyIndex, FlowSignature(it.signature))
+            }
+            return tx
+        }
     }
 
     @JvmOverloads
