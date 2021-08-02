@@ -2,8 +2,6 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/org.onflow/flow-jvm-sdk)](https://search.maven.org/search?q=g:org.onflow%20AND%20a:flow-jvm-sdk)
 
-> :warning: This is an alpha release not yet intended for production use. Functionality may change, please use at your own risk.
-
 The Flow JVM SDK is a library for JVM languages (e.g. Java, Kotlin) that provides
 utilities to interact with the Flow blockchain.
 

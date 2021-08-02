@@ -48,6 +48,12 @@ jobs:
           ./gradlew --no-daemon --max-workers=2 --warning-mode=all test --continue
         if: "!contains(github.event.head_commit.message, '[i am bad and i hate unit tests]')"
 
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1.18
+        if: always()
+        with:
+          files: "**/test-results/**/*.xml"
+
       - name: Publish snapshot
         run: |
           if [[ "${{ secrets.FLOW_JVM_SDK_CICD_PUBLISH_ENABLED }}" != "true" ]];

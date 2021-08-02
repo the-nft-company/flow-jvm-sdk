@@ -302,6 +302,15 @@ data class FlowTransactionResult(
         }
         return this
     }
+
+    @JvmOverloads
+    fun getEventsOfType(type: String, exact: Boolean = false, expectedCount: Int? = null): List<EventField> {
+        val ret = this.events
+            .filter { if (exact) { it.type == type } else { it.type.endsWith(type) } }
+            .map { it.event }
+        check(expectedCount == null || ret.size == expectedCount) { "Expected $expectedCount events of type $type but there were ${ret.size}" }
+        return ret
+    }
 }
 
 internal class Payload(
