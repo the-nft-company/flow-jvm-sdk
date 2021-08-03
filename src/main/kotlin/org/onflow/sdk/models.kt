@@ -18,6 +18,9 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDateTime
 
+private const val FLOW_ID_SIZE_BYTES = 32
+private const val FLOW_ADDRESS_SIZE_BYTES = 8
+
 enum class FlowTransactionStatus(val num: Int) {
     UNKNOWN(0),
     PENDING(1),
@@ -750,9 +753,9 @@ interface BytesHolder {
 data class FlowAddress private constructor(override val bytes: ByteArray) : BytesHolder {
     companion object {
         @JvmStatic
-        fun of(bytes: ByteArray): FlowAddress = FlowAddress(fixedSize(bytes, 8))
+        fun of(bytes: ByteArray): FlowAddress = FlowAddress(fixedSize(bytes, FLOW_ADDRESS_SIZE_BYTES))
     }
-    constructor(hex: String) : this(hex.hexToBytes())
+    constructor(hex: String) : this(fixedSize(hex.hexToBytes(), FLOW_ADDRESS_SIZE_BYTES))
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -851,9 +854,9 @@ data class FlowSignature(override val bytes: ByteArray) : BytesHolder {
 data class FlowId private constructor(override val bytes: ByteArray) : BytesHolder {
     companion object {
         @JvmStatic
-        fun of(bytes: ByteArray): FlowId = FlowId(fixedSize(bytes, 32))
+        fun of(bytes: ByteArray): FlowId = FlowId(fixedSize(bytes, FLOW_ID_SIZE_BYTES))
     }
-    constructor(hex: String) : this(hex.hexToBytes())
+    constructor(hex: String) : this(fixedSize(hex.hexToBytes(), FLOW_ID_SIZE_BYTES))
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
