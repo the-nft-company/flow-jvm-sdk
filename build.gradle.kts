@@ -1,7 +1,7 @@
 // configuration variables
 
 val javaTargetVersion = "1.8"
-val defaultGroupId = "org.onflow"
+val defaultGroupId = "com.nftco"
 val defaultVersion = "0.5.0-SNAPSHOT"
 
 // other variables

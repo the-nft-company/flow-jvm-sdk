@@ -40,7 +40,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build
-        run: ./gradlew --warning-mode all build -x test
+        run: ./gradlew --warning-mode all check build -x test
 
       - name: Test
         run: |
