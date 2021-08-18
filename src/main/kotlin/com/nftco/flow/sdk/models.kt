@@ -77,8 +77,8 @@ enum class HashAlgorithm(
     val index: Int
 ) {
     UNKNOWN("unknown", -1, "unknown", -1, 0),
-    SHA2_256("SHA2-256", 256, "SHA256withECDSA", 1, 1),
-    SHA2_384("SHA2-384", 384, "SHA384withECDSA", 1, 2),
+    SHA2_256("SHA-256", 256, "SHA256withECDSA", 1, 1),
+    SHA2_384("SHA-384", 384, "SHA384withECDSA", 1, 2),
     SHA3_256("SHA3-256", 256, "SHA3-256withECDSA", 3, 3),
     SHA3_384("SHA3-384", 384, "SHA3-384withECDSA", 3, 4);
     companion object {
