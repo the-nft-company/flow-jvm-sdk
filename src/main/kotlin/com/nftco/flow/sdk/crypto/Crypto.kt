@@ -1,5 +1,7 @@
 package com.nftco.flow.sdk.crypto
 
+import com.nftco.flow.sdk.*
+import com.nftco.flow.sdk.Signer
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.ECPointUtil
 import org.bouncycastle.jce.interfaces.ECPrivateKey
@@ -7,19 +9,8 @@ import org.bouncycastle.jce.interfaces.ECPublicKey
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.bouncycastle.jce.spec.ECPrivateKeySpec
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.Hasher
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.Signer
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.hexToBytes
 import java.math.BigInteger
-import java.security.KeyFactory
-import java.security.KeyPairGenerator
-import java.security.MessageDigest
-import java.security.SecureRandom
-import java.security.Security
-import java.security.Signature
+import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.ECPublicKeySpec
 import kotlin.experimental.and
@@ -135,6 +126,35 @@ object Crypto {
     fun getHasher(hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256): Hasher {
         return HasherImpl(hashAlgo)
     }
+
+    @JvmStatic
+    fun normalizeSignature(signature: ByteArray, ecCoupleComponentSize: Int): ByteArray {
+        val (r, s) = extractRS(signature)
+
+        val nLen = ecCoupleComponentSize
+        val paddedSignature = ByteArray(2 * nLen)
+
+        val rBytes = r.toByteArray()
+        val sBytes = s.toByteArray()
+
+        // occasionally R/S bytes representation has leading zeroes, so make sure we trim them appropriately
+        rBytes.copyInto(paddedSignature, max(nLen - rBytes.size, 0), max(0, rBytes.size - nLen))
+        sBytes.copyInto(paddedSignature, max(2 * nLen - sBytes.size, nLen), max(0, sBytes.size - nLen))
+
+        return paddedSignature
+    }
+
+    @JvmStatic
+    fun extractRS(signature: ByteArray): Pair<BigInteger, BigInteger> {
+        val startR = if ((signature[1] and 0x80.toByte()) != 0.toByte()) 3 else 2
+        val lengthR = signature[startR + 1].toInt()
+        val startS = startR + 2 + lengthR
+        val lengthS = signature[startS + 1].toInt()
+        return Pair(
+            BigInteger(signature.copyOfRange(startR + 2, startR + 2 + lengthR)),
+            BigInteger(signature.copyOfRange(startS + 2, startS + 2 + lengthS))
+        )
+    }
 }
 
 internal class HasherImpl(
@@ -164,29 +184,6 @@ internal class SignerImpl(
             return signature
         }
 
-        val (r, s) = extractRS(signature)
-
-        val nLen = privateKey.ecCoupleComponentSize
-        val paddedSignature = ByteArray(2 * nLen)
-
-        val rBytes = r.toByteArray()
-        val sBytes = s.toByteArray()
-
-        // occasionally R/S bytes representation has leading zeroes, so make sure we trim them appropriately
-        rBytes.copyInto(paddedSignature, max(nLen - rBytes.size, 0), max(0, rBytes.size - nLen))
-        sBytes.copyInto(paddedSignature, max(2 * nLen - sBytes.size, nLen), max(0, sBytes.size - nLen))
-
-        return paddedSignature
-    }
-
-    private fun extractRS(signature: ByteArray): Pair<BigInteger, BigInteger> {
-        val startR = if ((signature[1] and 0x80.toByte()) != 0.toByte()) 3 else 2
-        val lengthR = signature[startR + 1].toInt()
-        val startS = startR + 2 + lengthR
-        val lengthS = signature[startS + 1].toInt()
-        return Pair(
-            BigInteger(signature.copyOfRange(startR + 2, startR + 2 + lengthR)),
-            BigInteger(signature.copyOfRange(startS + 2, startS + 2 + lengthS))
-        )
+        return Crypto.normalizeSignature(signature, privateKey.ecCoupleComponentSize)
     }
 }
