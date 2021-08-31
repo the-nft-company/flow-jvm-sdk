@@ -45,7 +45,7 @@ jobs:
       - name: Test
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          ./gradlew --no-daemon --max-workers=2 --warning-mode=all test --continue
+          ./gradlew --no-daemon --max-workers=2 --warning-mode=all test --continue --stacktrace
         if: "!contains(github.event.head_commit.message, '[i am bad and i hate unit tests]')"
 
       - name: Publish Unit Test Results
