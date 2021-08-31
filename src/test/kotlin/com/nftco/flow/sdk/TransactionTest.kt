@@ -3,8 +3,8 @@ package com.nftco.flow.sdk
 import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.test.FlowEmulatorTest
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import kotlin.random.Random
 
 @FlowEmulatorTest(flowJsonLocation = "flow/flow.json")
 class TransactionTest {
@@ -339,84 +339,26 @@ class TransactionTest {
         assertThat(testTx.id.base16Value).isEqualTo(expectedTransactionIdAfterSigning)
         assertThat(testTx.canonicalTransaction.bytesToHex()).isEqualTo(expectedCanonicalTransactionHex)
     }
-}
-
-class FlowIdTest {
 
     @Test
-    fun `Can create FlowId from a hex string`() {
-        assertThat(FlowId("0x01").bytes).isEqualTo("0000000000000000000000000000000000000000000000000000000000000001".hexToBytes())
-        assertThat(FlowId("01").base16Value).isEqualTo("0000000000000000000000000000000000000000000000000000000000000001")
-        assertThat(FlowId("00").base16Value).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000")
-        assertThat(FlowId("01").base16Value).isEqualTo("0000000000000000000000000000000000000000000000000000000000000001")
-        assertThat(FlowId("10").base16Value).isEqualTo("0000000000000000000000000000000000000000000000000000000000000010")
-        assertThat(FlowId("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e").base16Value).isEqualTo("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e")
-    }
+    fun `bytes arrays are properly handled`() {
+        val accessAPI = TestUtils.newEmulatorAccessApi()
 
-    @Test
-    fun `Can create FlowId from a byte array`() {
-        assertThat(FlowId.of("01".hexToBytes()).bytes).isEqualTo("0000000000000000000000000000000000000000000000000000000000000001".hexToBytes())
-        assertThat(FlowId.of("0x01".hexToBytes()).base16Value).isEqualTo("0000000000000000000000000000000000000000000000000000000000000001")
-        assertThat(FlowId.of(byteArrayOf()).base16Value).isEqualTo("0000000000000000000000000000000000000000000000000000000000000000")
-        assertThat(FlowId.of("01".hexToBytes()).base16Value).isEqualTo("0000000000000000000000000000000000000000000000000000000000000001")
-        assertThat(FlowId.of("10".hexToBytes()).base16Value).isEqualTo("0000000000000000000000000000000000000000000000000000000000000010")
-        assertThat(FlowId.of("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e".hexToBytes()).base16Value).isEqualTo("5e6ef76c524dd131bbab5f9965493b7830bb784561ca6391b320ec60fa5c395e")
-    }
-
-    @Test
-    fun `Throws error creating FlowId from invalid input`() {
-        assertThatThrownBy { FlowId.of("0x1".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowId.of("x".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowId.of("1".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowId.of("0k".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowId.of("0".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowId.of("0000000000000000000000000000000000000000000000000000000000000001234".hexToBytes()).bytes }
-        assertThatThrownBy { FlowId("0x1").base16Value }
-        assertThatThrownBy { FlowId("x").base16Value }
-        assertThatThrownBy { FlowId("1").base16Value }
-        assertThatThrownBy { FlowId("0").base16Value }
-        assertThatThrownBy { FlowId("0000000000000000000000000000000000000000000000000000000000000001234").bytes }
-    }
-}
-
-class FlowAddressTest {
-
-    @Test
-    fun `Can create FlowAddress from a hex string`() {
-        assertThat(FlowAddress("0x01").base16Value).isEqualTo("0000000000000001")
-        assertThat(FlowAddress("01").bytes).isEqualTo("0000000000000001".hexToBytes())
-        assertThat(FlowAddress("00").base16Value).isEqualTo("0000000000000000")
-        assertThat(FlowAddress("01").base16Value).isEqualTo("0000000000000001")
-        assertThat(FlowAddress("10").base16Value).isEqualTo("0000000000000010")
-        assertThat(FlowAddress("0x18eb4ee6b3c026d3").base16Value).isEqualTo("18eb4ee6b3c026d3")
-        assertThat(FlowAddress("0x18eb4ee6b3c026d3").formatted).isEqualTo("0x18eb4ee6b3c026d3")
-        assertThat(FlowAddress("18eb4ee6b3c026d3").formatted).isEqualTo("0x18eb4ee6b3c026d3")
-    }
-
-    @Test
-    fun `Can create FlowAddress from a byte array`() {
-        assertThat(FlowAddress.of("0x01".hexToBytes()).base16Value).isEqualTo("0000000000000001")
-        assertThat(FlowAddress.of("01".hexToBytes()).bytes).isEqualTo("0000000000000001".hexToBytes())
-        assertThat(FlowAddress.of("00".hexToBytes()).base16Value).isEqualTo("0000000000000000")
-        assertThat(FlowAddress.of("01".hexToBytes()).base16Value).isEqualTo("0000000000000001")
-        assertThat(FlowAddress.of("10".hexToBytes()).base16Value).isEqualTo("0000000000000010")
-        assertThat(FlowAddress.of("0x18eb4ee6b3c026d3".hexToBytes()).base16Value).isEqualTo("18eb4ee6b3c026d3")
-        assertThat(FlowAddress.of("0x18eb4ee6b3c026d3".hexToBytes()).formatted).isEqualTo("0x18eb4ee6b3c026d3")
-        assertThat(FlowAddress.of("18eb4ee6b3c026d3".hexToBytes()).formatted).isEqualTo("0x18eb4ee6b3c026d3")
-    }
-
-    @Test
-    fun `Throws error creating FlowAddress from invalid input`() {
-        assertThatThrownBy { FlowAddress.of("0x1".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowAddress.of("x".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowAddress.of("0k".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowAddress.of("1".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowAddress.of("0".hexToBytes()).base16Value }
-        assertThatThrownBy { FlowAddress.of("18eb4ee6b3c026d31".hexToBytes()).bytes }
-        assertThatThrownBy { FlowAddress("0x1").base16Value }
-        assertThatThrownBy { FlowAddress("x").base16Value }
-        assertThatThrownBy { FlowAddress("1").base16Value }
-        assertThatThrownBy { FlowAddress("0").base16Value }
-        assertThatThrownBy { FlowAddress("18eb4ee6b3c026d31").bytes }
+        accessAPI.simpleFlowTransaction(TestUtils.MAIN_ACCOUNT_ADDRESS, TestUtils.MAIN_ACCOUNT_SIGNER) {
+            script {
+                """
+                    transaction(bytes: [UInt8]) {
+                        prepare(signer: AuthAccount) {
+                            log(bytes)
+                        }
+                    }
+                """.trimIndent()
+            }
+            arguments {
+                arg { byteArray(Random.nextBytes(2048)) }
+            }
+        }.send()
+            .waitForSeal()
+            .throwOnError()
     }
 }

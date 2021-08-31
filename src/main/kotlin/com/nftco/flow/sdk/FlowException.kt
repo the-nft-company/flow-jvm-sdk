@@ -5,4 +5,8 @@ class FlowException : RuntimeException {
     constructor(message: String) : super(message)
     constructor(message: String, cause: Throwable) : super(message, cause)
     constructor(cause: Throwable) : super(cause)
+
+    val executionErrorCode: Int? get() = message?.let { parseErrorCode(it) }
+
+    val executionError: FlowError? get() = executionErrorCode?.let { FlowError.forErrorCode(it) }
 }
