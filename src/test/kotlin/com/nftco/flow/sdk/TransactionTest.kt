@@ -1,12 +1,18 @@
 package com.nftco.flow.sdk
 
 import com.nftco.flow.sdk.crypto.Crypto
+import com.nftco.flow.sdk.test.FlowEmulatorCommand
 import com.nftco.flow.sdk.test.FlowEmulatorTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 
-@FlowEmulatorTest(flowJsonLocation = "flow/flow.json")
+@FlowEmulatorTest(
+    flowJsonLocation = "flow/flow.json",
+    postStartCommands = [
+        FlowEmulatorCommand("project deploy")
+    ]
+)
 class TransactionTest {
 
     private var transaction = FlowTransaction(

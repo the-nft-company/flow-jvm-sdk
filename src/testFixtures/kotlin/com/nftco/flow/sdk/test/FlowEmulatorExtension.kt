@@ -29,6 +29,8 @@ annotation class FlowEmulatorTest(
 
     val httpPort: Int = 8182,
 
+    val postStartCommands: Array<FlowEmulatorCommand> = [],
+
     /**
      * Location of flow.json, can also be in the classpath or
      * a directory containing flow.json.
@@ -36,6 +38,18 @@ annotation class FlowEmulatorTest(
     val flowJsonLocation: String = "flow.json",
 
     val pidFilename: String = "flow-emulator.pid"
+)
+
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+@Inherited
+@API(status = API.Status.STABLE, since = "5.0")
+annotation class FlowEmulatorCommand(
+    val value: String = "flow",
+    val expectedExitValue: Int = 0,
+    val throwOnError: Boolean = true,
+    val timeout: Long = 10,
+    val unit: TimeUnit = TimeUnit.SECONDS
 )
 
 class FlowEmulatorExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExceptionHandler {
@@ -52,6 +66,7 @@ class FlowEmulatorExtension : BeforeEachCallback, AfterEachCallback, TestExecuti
                 host = config.host,
                 port = config.port,
                 httpPort = config.httpPort,
+                postStartCommands = config.postStartCommands,
                 flowJsonLocation = config.flowJsonLocation.trim().takeIf { it.isNotEmpty() },
                 pidFilename = config.pidFilename
             )
@@ -101,6 +116,7 @@ fun runFlow(
     port: Int = 3570,
     httpPort: Int = 8081,
     flowJsonLocation: String? = null,
+    postStartCommands: Array<FlowEmulatorCommand> = emptyArray(),
     classLoader: ClassLoader = FlowEmulatorExtension::class.java.classLoader,
     pidFilename: String = "flow-emulator.pid"
 ): Pair<Process, File> {
@@ -206,5 +222,20 @@ fun runFlow(
         }
     }
 
+    // run commands
+    for (postStartCommand in postStartCommands) {
+        val exec = "$cmd ${postStartCommand.value} -n emulator $configFile"
+        val process = ProcessBuilder()
+            .command(exec.split(" "))
+            .inheritIO()
+            .start()
+        if (!process.waitFor(postStartCommand.timeout, postStartCommand.unit) && postStartCommand.throwOnError) {
+            throw IllegalStateException("Waiting for command failed; $exec")
+        } else if (process.exitValue() != postStartCommand.expectedExitValue && postStartCommand.throwOnError) {
+            throw IllegalStateException("Expected exit value ${postStartCommand.expectedExitValue} but got ${process.exitValue()} for command: $exec")
+        }
+    }
+
+    // we're g2g
     return ret to pidFile
 }

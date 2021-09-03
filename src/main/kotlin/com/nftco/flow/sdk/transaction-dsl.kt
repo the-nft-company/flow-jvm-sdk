@@ -155,9 +155,9 @@ class TransactionBuilder {
     fun script(script: FlowScript) {
         this.script = script
     }
-    fun script(code: String, chain: FlowChainId = _chainId) = script(FlowScript(addressRegistry.processScript(code, chain)))
-    fun script(code: ByteArray, chain: FlowChainId = _chainId) = script(String(code), chain)
-    fun script(chain: FlowChainId = _chainId, code: () -> String) = this.script(code(), chain)
+    fun script(code: String, chain: FlowChainId = _chainId, addresses: Map<String, FlowAddress> = mapOf()) = script(FlowScript(addressRegistry.processScript(code, chain, addresses)))
+    fun script(code: ByteArray, chain: FlowChainId = _chainId, addresses: Map<String, FlowAddress> = mapOf()) = script(String(code), chain, addresses)
+    fun script(chain: FlowChainId = _chainId, addresses: Map<String, FlowAddress> = mapOf(), code: () -> String) = this.script(code(), chain, addresses)
 
     var arguments: MutableList<FlowArgument>
         get() { return _arguments }

@@ -25,10 +25,13 @@ class AddressRegistry {
     }
 
     @JvmOverloads
-    fun processScript(script: String, chainId: FlowChainId = defaultChainId): String {
+    fun processScript(script: String, chainId: FlowChainId = defaultChainId, addresses: Map<String, FlowAddress> = mapOf()): String {
         var ret = script
         SCRIPT_TOKEN_MAP[chainId]?.forEach {
-            ret = ret.replace(it.key, "0x${it.value.base16Value}")
+            ret = ret.replace(it.key, it.value.formatted)
+        }
+        addresses.forEach {
+            ret = ret.replace(it.key, it.value.formatted)
         }
         return ret
     }

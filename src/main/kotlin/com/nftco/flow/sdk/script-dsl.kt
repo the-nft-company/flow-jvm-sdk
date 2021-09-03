@@ -37,16 +37,17 @@ class ScriptBuilder {
     fun script(script: FlowScript) {
         this.script = script
     }
-    fun script(code: String, chain: FlowChainId = _chainId) = script(
+    fun script(script: String, chainId: FlowChainId = _chainId, addresses: Map<String, FlowAddress> = mapOf()) = script(
         FlowScript(
             addressRegistry.processScript(
-                code,
-                chain
+                script = script,
+                chainId = chainId,
+                addresses = addresses
             )
         )
     )
-    fun script(code: ByteArray, chain: FlowChainId = _chainId) = script(String(code), chain)
-    fun script(chain: FlowChainId = _chainId, code: () -> String) = this.script(code(), chain)
+    fun script(code: ByteArray, chainId: FlowChainId = _chainId, addresses: Map<String, FlowAddress> = mapOf()) = script(String(code), chainId, addresses)
+    fun script(chainId: FlowChainId = _chainId, addresses: Map<String, FlowAddress> = mapOf(), code: () -> String) = this.script(code(), chainId, addresses)
 
     var arguments: MutableList<Field<*>>
         get() { return _arguments }
