@@ -1,6 +1,10 @@
 package com.nftco.flow.sdk.test
 
+import com.nftco.flow.sdk.AsyncFlowAccessApi
 import com.nftco.flow.sdk.Flow
+import com.nftco.flow.sdk.FlowAccessApi
+import com.nftco.flow.sdk.impl.AsyncFlowAccessApiImpl
+import com.nftco.flow.sdk.impl.FlowAccessApiImpl
 import org.apiguardian.api.API
 import org.junit.jupiter.api.extension.*
 import java.io.File
@@ -52,10 +56,21 @@ annotation class FlowEmulatorCommand(
     val unit: TimeUnit = TimeUnit.SECONDS
 )
 
+@Target(
+    AnnotationTarget.FIELD
+)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+@Inherited
+@API(status = API.Status.STABLE, since = "5.0")
+annotation class FlowTestClient
+
 class FlowEmulatorExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExceptionHandler {
 
     var process: Process? = null
     var pidFile: File? = null
+    var accessApi: FlowAccessApiImpl? = null
+    var asyncAccessApi: AsyncFlowAccessApiImpl? = null
 
     override fun beforeEach(context: ExtensionContext) {
         if (context.requiredTestClass.isAnnotationPresent(FlowEmulatorTest::class.java)) {
@@ -72,6 +87,37 @@ class FlowEmulatorExtension : BeforeEachCallback, AfterEachCallback, TestExecuti
             )
             this.process = process
             this.pidFile = pidFile
+            this.accessApi = Flow.newAccessApi(
+                host = config.host,
+                port = config.port
+            ) as FlowAccessApiImpl
+            this.asyncAccessApi = Flow.newAsyncAccessApi(
+                host = config.host,
+                port = config.port
+            ) as AsyncFlowAccessApiImpl
+
+            val tests = (
+                context.testInstances.map { it.allInstances.toSet() }.orElseGet { emptySet() }
+                    + context.testInstance.map { setOf(it) }.orElseGet { emptySet() }
+                )
+
+            tests.map { it to it.javaClass.fields }
+                .flatMap { it.second.map { f -> it.first to f } }
+                .filter { it.second.isAnnotationPresent(FlowTestClient::class.java) }
+                .forEach {
+                    if (it.second.type.equals(FlowAccessApi::class.java)) {
+                        it.second.isAccessible = true
+                        it.second.set(it.first, accessApi)
+                    } else if (it.second.type.equals(AsyncFlowAccessApi::class.java)) {
+                        it.second.isAccessible = true
+                        it.second.set(it.first, asyncAccessApi)
+                    } else {
+                        throw IllegalArgumentException(
+                            "field ${it.second} is not of type FlowAccessApi or AsyncFlowAccessAPi"
+                        )
+                    }
+                }
+
             Runtime.getRuntime().addShutdownHook(
                 Thread(this::shutdownEmulator)
             )
@@ -89,6 +135,16 @@ class FlowEmulatorExtension : BeforeEachCallback, AfterEachCallback, TestExecuti
     }
 
     private fun shutdownEmulator() {
+        val api = accessApi
+        if (api != null) {
+            api.close()
+            this.accessApi = null
+        }
+        val asyncApi = asyncAccessApi
+        if (asyncApi != null) {
+            asyncApi.close()
+            this.asyncAccessApi = null
+        }
         val proc = process
         if (proc != null) {
             proc.destroy()
@@ -206,7 +262,7 @@ fun runFlow(
         pidFile.writeBytes(ret.pid().toString().toByteArray())
     }
 
-    val api = Flow.newAccessApi(host = host, port = port)
+    val api = Flow.newAccessApi(host = host, port = port) as FlowAccessApiImpl
     while (true) {
         val elapsed = System.currentTimeMillis() - start
         try {
@@ -221,6 +277,7 @@ fun runFlow(
             throw IllegalStateException("Flow process died after $elapsed milliseconds")
         }
     }
+    api.close()
 
     // run commands
     for (postStartCommand in postStartCommands) {

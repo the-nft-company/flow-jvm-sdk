@@ -4,8 +4,6 @@ import com.nftco.flow.sdk.crypto.Crypto
 
 object TestUtils {
 
-    fun newEmulatorAccessApi(): FlowAccessApi = Flow.newAccessApi("localhost", 3570)
-
     fun newMainnetAccessApi(): FlowAccessApi = Flow.newAccessApi(MAINNET_HOSTNAME)
 
     fun newTestnetAccessApi(): FlowAccessApi = Flow.newAccessApi(TESTNET_HOSTNAME)

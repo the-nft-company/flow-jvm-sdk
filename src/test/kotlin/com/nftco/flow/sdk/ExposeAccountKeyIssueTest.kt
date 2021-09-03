@@ -3,11 +3,15 @@ package com.nftco.flow.sdk
 import com.nftco.flow.sdk.cadence.AddressField
 import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.test.FlowEmulatorTest
+import com.nftco.flow.sdk.test.FlowTestClient
 import org.junit.jupiter.api.Assertions.*
 import java.math.BigDecimal
 
 @FlowEmulatorTest(flowJsonLocation = "flow/flow.json")
 class ExposeAccountKeyIssueTest {
+
+    @FlowTestClient
+    lateinit var flow: FlowAccessApi
 
     // Ignoring for now
     // @Test
@@ -20,8 +24,6 @@ class ExposeAccountKeyIssueTest {
             chainId = FlowChainId.EMULATOR,
             addressRegistry = addressRegistry
         )
-
-        val flow = TestUtils.newEmulatorAccessApi()
 
         // create the account
 

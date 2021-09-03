@@ -3,6 +3,7 @@ package com.nftco.flow.sdk
 import com.nftco.flow.sdk.cadence.*
 import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.test.FlowEmulatorTest
+import com.nftco.flow.sdk.test.FlowTestClient
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -45,9 +46,11 @@ class TestClassConverterJson : JsonCadenceConverter<TestClass> {
 @FlowEmulatorTest(flowJsonLocation = "flow/flow.json")
 class ScriptTest {
 
+    @FlowTestClient
+    lateinit var accessAPI: FlowAccessApi
+
     @Test
     fun `Can execute a script`() {
-        val accessAPI = TestUtils.newEmulatorAccessApi()
 
         val result = accessAPI.simpleFlowScript {
             script {
@@ -65,7 +68,6 @@ class ScriptTest {
 
     @Test
     fun `Can input and export arguments`() {
-        val accessAPI = TestUtils.newEmulatorAccessApi()
         val address = "e467b9dd11fa00df"
 
         val result = accessAPI.simpleFlowScript {
@@ -108,7 +110,6 @@ class ScriptTest {
 
     @Test
     fun `Test domain tags`() {
-        val accessAPI = TestUtils.newEmulatorAccessApi()
 
         val pairA = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val signerA = Crypto.getSigner(pairA.private, HashAlgorithm.SHA3_256)

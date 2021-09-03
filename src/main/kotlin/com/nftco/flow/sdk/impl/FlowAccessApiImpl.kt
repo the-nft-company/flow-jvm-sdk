@@ -17,10 +17,19 @@ import com.nftco.flow.sdk.FlowScriptResponse
 import com.nftco.flow.sdk.FlowSnapshot
 import com.nftco.flow.sdk.FlowTransaction
 import com.nftco.flow.sdk.FlowTransactionResult
+import io.grpc.ManagedChannel
+import java.io.Closeable
 
 class FlowAccessApiImpl(
     private val api: AccessAPIGrpc.AccessAPIBlockingStub
-) : FlowAccessApi {
+) : FlowAccessApi, Closeable {
+
+    override fun close() {
+        val chan = api.channel
+        if (chan is ManagedChannel) {
+            chan.shutdownNow()
+        }
+    }
 
     override fun ping() {
         api.ping(

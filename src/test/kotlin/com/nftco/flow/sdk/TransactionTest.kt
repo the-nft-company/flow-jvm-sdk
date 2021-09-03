@@ -3,6 +3,7 @@ package com.nftco.flow.sdk
 import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.test.FlowEmulatorCommand
 import com.nftco.flow.sdk.test.FlowEmulatorTest
+import com.nftco.flow.sdk.test.FlowTestClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
@@ -14,6 +15,9 @@ import kotlin.random.Random
     ]
 )
 class TransactionTest {
+
+    @FlowTestClient
+    lateinit var accessAPI: FlowAccessApi
 
     private var transaction = FlowTransaction(
         script = FlowScript("import 0xsomething \n {}"),
@@ -121,7 +125,6 @@ class TransactionTest {
 
     @Test
     fun `Can create an account using the transaction DSL`() {
-        val accessAPI = TestUtils.newEmulatorAccessApi()
 
         val latestBlockId = accessAPI.getLatestBlockHeader().id
 
@@ -183,7 +186,6 @@ class TransactionTest {
 
     @Test
     fun `Can create an account using the simpleTransaction DSL`() {
-        val accessAPI = TestUtils.newEmulatorAccessApi()
 
         val newAccountKeyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val newAccountPublicKey = FlowAccountKey(
@@ -348,7 +350,6 @@ class TransactionTest {
 
     @Test
     fun `bytes arrays are properly handled`() {
-        val accessAPI = TestUtils.newEmulatorAccessApi()
 
         accessAPI.simpleFlowTransaction(TestUtils.MAIN_ACCOUNT_ADDRESS, TestUtils.MAIN_ACCOUNT_SIGNER) {
             script {

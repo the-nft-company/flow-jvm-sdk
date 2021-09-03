@@ -5,27 +5,23 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.google.protobuf.ByteString
+import com.nftco.flow.sdk.*
+import io.grpc.ManagedChannel
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.access.AccessAPIGrpc
-import com.nftco.flow.sdk.AsyncFlowAccessApi
-import com.nftco.flow.sdk.FlowAccount
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowBlock
-import com.nftco.flow.sdk.FlowBlockHeader
-import com.nftco.flow.sdk.FlowChainId
-import com.nftco.flow.sdk.FlowCollection
-import com.nftco.flow.sdk.FlowEventResult
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowScript
-import com.nftco.flow.sdk.FlowScriptResponse
-import com.nftco.flow.sdk.FlowSnapshot
-import com.nftco.flow.sdk.FlowTransaction
-import com.nftco.flow.sdk.FlowTransactionResult
+import java.io.Closeable
 import java.util.concurrent.CompletableFuture
 
 class AsyncFlowAccessApiImpl(
     private val api: AccessAPIGrpc.AccessAPIFutureStub
-) : AsyncFlowAccessApi {
+) : AsyncFlowAccessApi, Closeable {
+
+    override fun close() {
+        val chan = api.channel
+        if (chan is ManagedChannel) {
+            chan.shutdownNow()
+        }
+    }
 
     override fun ping(): CompletableFuture<Unit> {
         return completableFuture(
