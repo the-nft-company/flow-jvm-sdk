@@ -50,11 +50,9 @@ fun FlowAccessApi.simpleFlowTransaction(address: FlowAddress, signer: Signer, ga
         payerAddress(payerAccount.address)
         authorizer(payerAccount.address)
         envelopSignature {
-            PendingSignature(
-                address = payerAccount.address,
-                keyIndex = keyIndex,
-                signer = signer
-            )
+            address(payerAccount.address)
+            keyIndex(keyIndex)
+            signer(signer)
         }
         block(this)
     }
@@ -305,7 +303,11 @@ class TransactionBuilder {
         this.envelopeSignatures = builder.build()
     }
     fun envelopSignature(envelopSignature: PendingSignature) = this._envelopeSignatures.add(envelopSignature)
-    fun envelopSignature(envelopSignature: () -> PendingSignature) = envelopSignature(envelopSignature())
+    fun envelopSignature(envelopSignature: FlowTransactionSignatureBuilder.() -> Unit) {
+        val builder = FlowTransactionSignatureBuilder()
+        envelopSignature(builder)
+        envelopSignature(builder.build())
+    }
     fun envelopSignature(signature: FlowTransactionSignature) {
         envelopSignature(PendingSignature(prepared = signature))
     }
@@ -513,10 +515,22 @@ class FlowAddressCollectionBuilder {
     fun build(): List<FlowAddress> = _values
 }
 
-class FlowTransactionProposalKeyBuilder {
+class FlowTransactionProposalKeyBuilder(
+    val api: FlowAccessApi? = null
+) {
     private var _address: FlowAddress? = null
     private var _keyIndex: Int? = null
     private var _sequenceNumber: Long? = null
+
+    fun usingKeyAtAddress(address: FlowAddress, publicKey: String) {
+        require(api != null) { "Builder not created with an API instance" }
+        val account = requireNotNull(api.getAccountAtLatestBlock(address)) { "Account for address not found" }
+        val keyIndex = account.getKeyIndex(publicKey)
+        require(keyIndex != -1) { "PublicKey not found for account" }
+        address(address)
+        keyIndex(keyIndex)
+        sequenceNumber(account.keys[keyIndex].sequenceNumber)
+    }
 
     var address: FlowAddress
         get() { return _address!! }
