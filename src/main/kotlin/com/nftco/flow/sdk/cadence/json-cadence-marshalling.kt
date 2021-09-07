@@ -138,6 +138,7 @@ class JsonCadenceBuilder {
     fun dictionaryOfNamedPairs(block: JsonCadenceBuilder.() -> Iterable<Pair<String, Field<*>>>): DictionaryField = DictionaryField(block().map { DictionaryFieldEntry(StringField(it.first), it.second) })
     fun <K, V> dictionary(value: Map<K, V>, mapper: JsonCadenceBuilder.(Map.Entry<K, V>) -> Pair<Field<*>, Field<*>>): DictionaryField = DictionaryField(value.map { DictionaryFieldEntry(mapper(it)) })
     fun <V> dictionaryOfNamed(value: Map<String, V>, mapper: JsonCadenceBuilder.(Map.Entry<String, V>) -> Pair<String, Field<*>>): DictionaryField = DictionaryField(value.map { DictionaryFieldEntry(mapper(it).let { p -> string(p.first) to p.second }) })
+    fun address(value: FlowAddress): AddressField = AddressField(value.formatted)
     fun address(value: String): AddressField = AddressField(value)
     fun address(value: ByteArray): AddressField = AddressField(value)
     fun path(value: PathValue): PathField = PathField(value)
