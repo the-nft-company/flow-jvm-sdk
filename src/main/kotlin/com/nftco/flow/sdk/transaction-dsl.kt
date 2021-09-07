@@ -131,7 +131,9 @@ class FlowTransactionStub(
     }
 }
 
-class TransactionBuilder {
+class TransactionBuilder(
+    val api: FlowAccessApi? = null
+) {
     var addressRegistry: AddressRegistry = Flow.DEFAULT_ADDRESS_REGISTRY
     private var _chainId: FlowChainId = Flow.DEFAULT_CHAIN_ID
     private var _script: FlowScript? = null
@@ -215,7 +217,7 @@ class TransactionBuilder {
         set(value) { _proposalKey = value }
 
     fun proposalKey(proposalKey: FlowTransactionProposalKeyBuilder.() -> Unit) {
-        val builder = FlowTransactionProposalKeyBuilder()
+        val builder = FlowTransactionProposalKeyBuilder(this.api)
         proposalKey(builder)
         this.proposalKey = builder.build()
     }
