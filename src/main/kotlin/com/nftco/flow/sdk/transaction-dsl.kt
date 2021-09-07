@@ -433,6 +433,27 @@ class FlowTransactionSignatureCollectionBuilder {
         signature(builder)
         signature(builder.build())
     }
+    fun signature(signature: FlowTransactionSignature) {
+        signature(PendingSignature(prepared = signature))
+    }
+    fun signature(address: FlowAddress, keyIndex: Int, signature: FlowSignature) {
+        signature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signature = signature
+            )
+        )
+    }
+    fun signature(address: FlowAddress, keyIndex: Int, signer: Signer) {
+        signature(
+            PendingSignature(
+                address = address,
+                keyIndex = keyIndex,
+                signer = signer
+            )
+        )
+    }
     fun build(): MutableList<PendingSignature> = _values
 }
 
