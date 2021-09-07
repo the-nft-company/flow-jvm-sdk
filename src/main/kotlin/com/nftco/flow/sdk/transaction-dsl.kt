@@ -27,32 +27,37 @@ fun flowTransaction(block: TransactionBuilder.() -> Unit): FlowTransaction {
     return builder.build()
 }
 
-fun FlowAccessApi.simpleFlowTransaction(address: FlowAddress, signer: Signer, gasLimit: Long = 100, keyIndex: Int = 0, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
+fun FlowAccessApi.flowTransaction(block: TransactionBuilder.() -> Unit): FlowTransactionStub {
     val api = this
     val referenceBlockId = api.getLatestBlockHeader().id
-    val payerAccount = checkNotNull(api.getAccountAtLatestBlock(address)) { "Account not found for address: ${address.base16Value}" }
-
     val builder = TransactionBuilder()
     builder.referenceBlockId = referenceBlockId
-    builder.gasLimit = gasLimit
-    builder.proposalKey = FlowTransactionProposalKey(
-        address = payerAccount.address,
-        keyIndex = payerAccount.keys[keyIndex].id,
-        sequenceNumber = payerAccount.keys[keyIndex].sequenceNumber.toLong()
-    )
-    builder.payerAddress = payerAccount.address
-    builder.authorizer(payerAccount.address)
-    builder.envelopSignature(
-        PendingSignature(
-            address = payerAccount.address,
-            keyIndex = keyIndex,
-            signer = signer
-        )
-    )
-
     block(builder)
-
     return FlowTransactionStub(api, builder)
+}
+
+fun FlowAccessApi.simpleFlowTransaction(address: FlowAddress, signer: Signer, gasLimit: Long = 100, keyIndex: Int = 0, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
+    val api = this
+    val payerAccount = checkNotNull(api.getAccountAtLatestBlock(address)) { "Account not found for address: ${address.base16Value}" }
+
+    return this.flowTransaction {
+        gasLimit(gasLimit)
+        proposalKey {
+            address(payerAccount.address)
+            keyIndex(payerAccount.keys[keyIndex].id)
+            sequenceNumber(payerAccount.keys[keyIndex].sequenceNumber.toLong())
+        }
+        payerAddress(payerAccount.address)
+        authorizer(payerAccount.address)
+        envelopSignature {
+            PendingSignature(
+                address = payerAccount.address,
+                keyIndex = keyIndex,
+                signer = signer
+            )
+        }
+        block(this)
+    }
 }
 
 class FlowTransactionStub(
