@@ -1,8 +1,7 @@
 package com.nftco.flow.sdk.test
 
 import com.nftco.flow.sdk.*
-import com.nftco.flow.sdk.cadence.AddressField
-import com.nftco.flow.sdk.cadence.EventField
+import com.nftco.flow.sdk.cadence.StringField
 import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.crypto.KeyPair
 import com.nftco.flow.sdk.impl.AsyncFlowAccessApiImpl
@@ -13,6 +12,8 @@ import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.TestExecutionExceptionHandler
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import java.lang.annotation.Inherited
 import java.lang.reflect.Field
 import java.math.BigDecimal
@@ -56,8 +57,47 @@ annotation class FlowTestAccount(
     val hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256,
     val publicKey: String = "",
     val privateKey: String = "",
-    val balance: Double = 0.01
+    val balance: Double = 0.01,
+    val contracts: Array<FlowTestContractDeployment> = []
 )
+
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+@Inherited
+@API(status = API.Status.STABLE, since = "5.0")
+annotation class FlowTestContractDeployment(
+    val name: String,
+    val code: String = "",
+    val codeClasspathLocation: String = "",
+    val codeFileLocation: String = "",
+    val gasLimit: Double = 9999.0,
+    val arguments: Array<TestContractArg> = []
+)
+
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+@Inherited
+@API(status = API.Status.STABLE, since = "5.0")
+annotation class TestContractArg(
+    val name: String,
+    val value: String
+)
+
+data class ContractDeployment(
+    val name: String,
+    val code: String,
+    val args: Map<String, com.nftco.flow.sdk.cadence.Field<*>>
+) {
+    companion object {
+        fun from(name: String, code: () -> InputStream, args: Map<String, com.nftco.flow.sdk.cadence.Field<*>> = mapOf()): ContractDeployment {
+            return ContractDeployment(
+                name = name,
+                code = code().use { String(it.readAllBytes()) },
+                args = args
+            )
+        }
+    }
+}
 
 data class TestAccount(
     val address: String,
@@ -176,64 +216,17 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
                 )
             }
 
-            val result = this.accessApi!!.simpleFlowTransaction(
-                address = emulator.serviceAccount.flowAddress,
-                signer = emulator.serviceAccount.signer,
-                keyIndex = emulator.serviceAccount.keyIndex
-            ) {
-                script {
-                    """
-                    import FlowToken from 0xFLOWTOKEN
-                    import FungibleToken from 0xFUNGIBLETOKEN
-                    
-                    transaction(startingBalance: UFix64, publicKey: String, signatureAlgorithm: UInt8, hashAlgorithm: UInt8) {
-                        prepare(signer: AuthAccount) {
-
-                            let newAccount = AuthAccount(payer: signer)
-                            
-                            let provider = signer.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)
-                                ?? panic("Could not borrow FlowToken.Vault reference")
-                            
-                            let newVault = newAccount
-                                .getCapability(/public/flowTokenReceiver)
-                                .borrow<&{FungibleToken.Receiver}>()
-                                ?? panic("Could not borrow FungibleToken.Receiver reference")
-
-                            let coin <- provider.withdraw(amount: startingBalance)
-                            newVault.deposit(from: <- coin)
-                            
-                            newAccount.keys.add(
-                                publicKey: PublicKey(
-                                    publicKey: publicKey.decodeHex(),
-                                    signatureAlgorithm: SignatureAlgorithm(rawValue: signatureAlgorithm)!
-                                ),
-                                hashAlgorithm: HashAlgorithm(rawValue: hashAlgorithm)!,
-                                weight: UFix64(1000)
-                            )
-                        }
-                    }
-                """
-                }
-                gasLimit(1000)
-                arguments {
-                    arg { ufix64(annotation.balance) }
-                    arg { string(keyPair.public.hex) }
-                    arg { uint8(annotation.signAlgo.index) }
-                    arg { uint8(annotation.hashAlgo.index) }
-                }
-            }.sendAndWaitForSeal()
-                .throwOnError()
-
-            val address = result.events
-                .find { it.type == "flow.AccountCreated" }
-                ?.payload
-                ?.let { (it.jsonCadence as EventField).value }
-                ?.getRequiredField<AddressField>("address")
-                ?.value
-                ?: throw FlowException("Couldn't find AccountCreated event with address for account that was created")
+            val address = FlowTestUtil.createAccount(
+                api = accessApi!!,
+                serviceAccount = emulator.serviceAccount,
+                publicKey = keyPair.public.hex,
+                signAlgo = annotation.signAlgo,
+                hashAlgo = annotation.hashAlgo,
+                balance = BigDecimal(annotation.balance)
+            )
 
             val testAccount = TestAccount(
-                address = address, // TODO: is this a safe assumption?
+                address = address.formatted,
                 privateKey = keyPair.private.hex,
                 publicKey = keyPair.public.hex,
                 signAlgo = annotation.signAlgo,
@@ -244,6 +237,33 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
 
             field.isAccessible = true
             field.set(instance, testAccount)
+
+            // deploy contracts
+            for (deployable in annotation.contracts) {
+
+                FlowTestUtil.deployContracts(
+                    api = accessApi!!,
+                    account = testAccount,
+                    gasLimit = BigDecimal(deployable.gasLimit),
+                    ContractDeployment(
+                        name = deployable.name,
+                        code = if (deployable.code.isNotEmpty()) {
+                            deployable.code
+                        } else if (deployable.codeFileLocation.isNotEmpty()) {
+                            File(deployable.codeFileLocation).inputStream()
+                                .use { String(it.readAllBytes()) }
+                        } else if (deployable.codeClasspathLocation.isNotEmpty()) {
+                            instance.javaClass
+                                .getResourceAsStream(deployable.codeClasspathLocation)
+                                ?.use { String(it.readAllBytes()) }
+                                ?: throw IOException("Unable to load ${deployable.codeClasspathLocation}")
+                        } else {
+                            throw IllegalArgumentException("Code for deployable contrract must be defined")
+                        },
+                        args = deployable.arguments.associate { it.name to StringField(it.value) }
+                    )
+                )
+            }
         }
 
         Runtime.getRuntime().addShutdownHook(

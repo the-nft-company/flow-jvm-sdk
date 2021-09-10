@@ -58,7 +58,7 @@ class FlowEmulatorProjectTestExtension : AbstractFlowEmulatorExtension() {
         val config = context.requiredTestClass.getAnnotation(FlowEmulatorProjectTest::class.java)
         val port = config.port.takeUnless { it < 0 } ?: findFreePort("localhost")
         val httpPort = config.httpPort.takeUnless { it < 0 } ?: findFreePort("localhost")
-        val ret = runFlow(
+        val ret = FlowTestUtil.runFlow(
             executable = config.executable,
             arguments = config.arguments.trim().takeIf { it.isNotEmpty() },
             host = config.host,

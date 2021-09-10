@@ -65,7 +65,7 @@ class FlowEmulatorTestExtension : AbstractFlowEmulatorExtension() {
         """.trimIndent()
             .replace("\n", " ")
 
-        val ret = runFlow(
+        val ret = FlowTestUtil.runFlow(
             executable = config.executable,
             arguments = args,
             host = config.host,
