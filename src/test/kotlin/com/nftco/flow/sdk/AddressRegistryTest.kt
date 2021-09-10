@@ -11,6 +11,7 @@ internal class AddressRegistryTest {
     @BeforeEach
     fun setup() {
         Flow.configureDefaults()
+        registry.defaultChainId = FlowChainId.MAINNET
         registry
             .clear()
             .registerDefaults()
