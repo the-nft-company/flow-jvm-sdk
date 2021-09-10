@@ -3,15 +3,20 @@ package com.nftco.flow.sdk
 import com.nftco.flow.sdk.cadence.AddressField
 import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.test.FlowEmulatorTest
+import com.nftco.flow.sdk.test.FlowServiceAccountCredentials
 import com.nftco.flow.sdk.test.FlowTestClient
+import com.nftco.flow.sdk.test.TestAccount
 import org.junit.jupiter.api.Assertions.*
 import java.math.BigDecimal
 
-@FlowEmulatorTest(flowJsonLocation = "flow/flow.json")
+@FlowEmulatorTest
 class ExposeAccountKeyIssueTest {
 
     @FlowTestClient
     lateinit var flow: FlowAccessApi
+
+    @FlowServiceAccountCredentials
+    lateinit var serviceAccount: TestAccount
 
     // Ignoring for now
     // @Test
@@ -34,8 +39,8 @@ class ExposeAccountKeyIssueTest {
         val signer1 = Crypto.getSigner(pair1.private, hashAlgorithm1)
 
         val createAccountResult = flow.simpleFlowTransaction(
-            TestUtils.MAIN_ACCOUNT_ADDRESS,
-            TestUtils.MAIN_ACCOUNT_SIGNER
+            serviceAccount.flowAddress,
+            serviceAccount.signer
         ) {
             script {
                 """

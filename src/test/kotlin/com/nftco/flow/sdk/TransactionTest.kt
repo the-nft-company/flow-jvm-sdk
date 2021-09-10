@@ -1,23 +1,22 @@
 package com.nftco.flow.sdk
 
 import com.nftco.flow.sdk.crypto.Crypto
-import com.nftco.flow.sdk.test.FlowEmulatorCommand
 import com.nftco.flow.sdk.test.FlowEmulatorTest
+import com.nftco.flow.sdk.test.FlowServiceAccountCredentials
 import com.nftco.flow.sdk.test.FlowTestClient
+import com.nftco.flow.sdk.test.TestAccount
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 
-@FlowEmulatorTest(
-    flowJsonLocation = "flow/flow.json",
-    postStartCommands = [
-        FlowEmulatorCommand("project deploy")
-    ]
-)
+@FlowEmulatorTest
 class TransactionTest {
 
     @FlowTestClient
     lateinit var accessAPI: FlowAccessApi
+
+    @FlowServiceAccountCredentials
+    lateinit var serviceAccount: TestAccount
 
     private var transaction = FlowTransaction(
         script = FlowScript("import 0xsomething \n {}"),
@@ -70,15 +69,13 @@ class TransactionTest {
 
         assertThat(payloadEnvelope).isEqualTo(payloadExpectedHex.hexToBytes())
 
-        val address = TestUtils.MAIN_ACCOUNT_ADDRESS
-
         val fooSignature = byteArrayOf(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)
         val barSignature = byteArrayOf(3, 3, 3)
 
         val signedTx = transaction.copy(
             payloadSignatures = listOf(
-                FlowTransactionSignature(address, 0, 0, FlowSignature(fooSignature)),
-                FlowTransactionSignature(address, 4, 5, FlowSignature(barSignature))
+                FlowTransactionSignature(serviceAccount.flowAddress, 0, 0, FlowSignature(fooSignature)),
+                FlowTransactionSignature(serviceAccount.flowAddress, 4, 5, FlowSignature(barSignature))
             )
         )
 
@@ -128,7 +125,7 @@ class TransactionTest {
 
         val latestBlockId = accessAPI.getLatestBlockHeader().id
 
-        val payerAccount = accessAPI.getAccountAtLatestBlock(TestUtils.MAIN_ACCOUNT_ADDRESS)!!
+        val payerAccount = accessAPI.getAccountAtLatestBlock(serviceAccount.flowAddress)!!
 
         val newAccountKeyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val newAccountPublicKey = FlowAccountKey(
@@ -173,7 +170,7 @@ class TransactionTest {
                 signature {
                     address = payerAccount.address
                     keyIndex = 0
-                    signer = TestUtils.MAIN_ACCOUNT_SIGNER
+                    signer = serviceAccount.signer
                 }
             }
         }
@@ -195,7 +192,7 @@ class TransactionTest {
             weight = 1000
         )
 
-        val result = accessAPI.simpleFlowTransaction(TestUtils.MAIN_ACCOUNT_ADDRESS, TestUtils.MAIN_ACCOUNT_SIGNER) {
+        val result = accessAPI.simpleFlowTransaction(serviceAccount.flowAddress, serviceAccount.signer) {
             script {
                 """
                     transaction(publicKey: String) {
@@ -351,7 +348,7 @@ class TransactionTest {
     @Test
     fun `bytes arrays are properly handled`() {
 
-        accessAPI.simpleFlowTransaction(TestUtils.MAIN_ACCOUNT_ADDRESS, TestUtils.MAIN_ACCOUNT_SIGNER) {
+        accessAPI.simpleFlowTransaction(serviceAccount.flowAddress, serviceAccount.signer) {
             script {
                 """
                     transaction(bytes: [UInt8]) {

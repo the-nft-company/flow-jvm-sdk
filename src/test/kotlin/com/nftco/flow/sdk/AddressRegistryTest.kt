@@ -10,6 +10,7 @@ internal class AddressRegistryTest {
 
     @BeforeEach
     fun setup() {
+        Flow.configureDefaults()
         registry
             .clear()
             .registerDefaults()

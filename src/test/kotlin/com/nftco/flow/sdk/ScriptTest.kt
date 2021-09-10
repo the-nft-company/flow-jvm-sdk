@@ -2,7 +2,7 @@ package com.nftco.flow.sdk
 
 import com.nftco.flow.sdk.cadence.*
 import com.nftco.flow.sdk.crypto.Crypto
-import com.nftco.flow.sdk.test.FlowEmulatorTest
+import com.nftco.flow.sdk.test.FlowEmulatorProjectTest
 import com.nftco.flow.sdk.test.FlowTestClient
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -43,7 +43,7 @@ class TestClassConverterJson : JsonCadenceConverter<TestClass> {
     }
 }
 
-@FlowEmulatorTest(flowJsonLocation = "flow/flow.json")
+@FlowEmulatorProjectTest(flowJsonLocation = "flow/flow.json")
 class ScriptTest {
 
     @FlowTestClient

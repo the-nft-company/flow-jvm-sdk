@@ -102,13 +102,21 @@ dependencies {
 
 Write your blockchain tests:
 ```kotlin
-@FlowEmulatorTest(flowJsonLocation = "flow/flow.json", port = 3570)
+@FlowEmulatorTest
 class TransactionTest {
+
+    @FlowTestClient
+    lateinit var accessAPI: FlowAccessApi
+
+    @FlowServiceAccountCredentials
+    lateinit var serviceAccount: TestAccount
 
     @Test
     fun `Test something on the emnulator`() {
-        val accessAPI = Flow.newAccessApi("localhost", 3570)
-        val result = accessAPI.simpleFlowTransaction(ACCOUNT_ADDRESS, ACCOUNT_SIGNER) {
+        val result = accessAPI.simpleFlowTransaction(
+            serviceAccount.flowAddress,
+            serviceAccount.signer
+        ) {
             script {
                 """
                     transaction(publicKey: String) {
@@ -129,6 +137,22 @@ class TransactionTest {
     
 }
 ```
+
+There are two ways to test using the emaultor:
+
+- `@FlowEmulatorProjectTest` - this uses a `flow.json` file that has your configuration in it
+- `@FlowEmulatorTest` - this creates a fresh and temporary flow configuration for each test
+
+Also, the following annotations are available in tests as helpers:
+
+- `@FlowTestClient` - used to inject a `FlowAccessApi` or `AsyncFlowAccessApi` into your tests
+- `@FlowServiceAccountCredentials` - used to inject a `TestAccount` instance into your tests that contain
+  the flow service account credentials
+- `@FlowTestAccount` - used to automatically create an account in the emulator and inject a `TestAccount` instance
+  containing the new account's credentials.
+
+See [ProjectTestExtensionsTest](src/test/kotlin/com/nftco/flow/sdk/ProjectTestExtensionsTest.kt) and
+[TestExtensionsTest](src/test/kotlin/com/nftco/flow/sdk/TestExtensionsTest.kt) for examples.
 
 ## Contribute to this SDK
 
