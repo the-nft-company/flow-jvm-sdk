@@ -11,8 +11,8 @@ import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.TestExecutionExceptionHandler
+import java.io.ByteArrayInputStream
 import java.io.File
-import java.io.IOException
 import java.io.InputStream
 import java.lang.annotation.Inherited
 import java.lang.reflect.Field
@@ -67,10 +67,11 @@ annotation class FlowTestAccount(
 @API(status = API.Status.STABLE, since = "5.0")
 annotation class FlowTestContractDeployment(
     val name: String,
+    val addToRegistry: Boolean = true,
     val code: String = "",
     val codeClasspathLocation: String = "",
     val codeFileLocation: String = "",
-    val gasLimit: Double = 9999.0,
+    val gasLimit: Int = 1000,
     val arguments: Array<TestContractArg> = []
 )
 
@@ -175,7 +176,7 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
         withAnnotatedTestFields(context, FlowTestClient::class.java) { instance, field, annotation ->
             if (field.type.equals(FlowAccessApi::class.java)) {
                 field.isAccessible = true
-                field.set(instance, accessApi)
+                field.set(instance, this.accessApi!!)
             } else if (field.type.equals(AsyncFlowAccessApi::class.java)) {
                 field.isAccessible = true
                 field.set(instance, asyncAccessApi)
@@ -217,7 +218,7 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
             }
 
             val address = FlowTestUtil.createAccount(
-                api = accessApi!!,
+                api = this.accessApi!!,
                 serviceAccount = emulator.serviceAccount,
                 publicKey = keyPair.public.hex,
                 signAlgo = annotation.signAlgo,
@@ -240,29 +241,29 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
 
             // deploy contracts
             for (deployable in annotation.contracts) {
-
                 FlowTestUtil.deployContracts(
-                    api = accessApi!!,
+                    api = this.accessApi!!,
                     account = testAccount,
-                    gasLimit = BigDecimal(deployable.gasLimit),
-                    ContractDeployment(
+                    gasLimit = deployable.gasLimit,
+                    ContractDeployment.from(
                         name = deployable.name,
-                        code = if (deployable.code.isNotEmpty()) {
-                            deployable.code
-                        } else if (deployable.codeFileLocation.isNotEmpty()) {
-                            File(deployable.codeFileLocation).inputStream()
-                                .use { String(it.readAllBytes()) }
-                        } else if (deployable.codeClasspathLocation.isNotEmpty()) {
-                            instance.javaClass
-                                .getResourceAsStream(deployable.codeClasspathLocation)
-                                ?.use { String(it.readAllBytes()) }
-                                ?: throw IOException("Unable to load ${deployable.codeClasspathLocation}")
-                        } else {
-                            throw IllegalArgumentException("Code for deployable contrract must be defined")
+                        code = {
+                            if (deployable.codeFileLocation.isNotEmpty()) {
+                                File(deployable.codeFileLocation).inputStream()
+                            } else if (deployable.codeClasspathLocation.isNotEmpty()) {
+                                instance.javaClass.getResourceAsStream(deployable.codeClasspathLocation)
+                            } else {
+                                ByteArrayInputStream(deployable.code.toByteArray())
+                            }
                         },
                         args = deployable.arguments.associate { it.name to StringField(it.value) }
                     )
-                )
+                ).sendAndWaitForSeal()
+                    .throwOnError()
+
+                if (deployable.addToRegistry) {
+                    Flow.DEFAULT_ADDRESS_REGISTRY.register(deployable.name, testAccount.flowAddress, FlowChainId.EMULATOR)
+                }
             }
         }
 
@@ -282,7 +283,7 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
     }
 
     private fun shutdownEmulator() {
-        val api = accessApi
+        val api = this.accessApi
         if (api != null) {
             api.close()
             this.accessApi = null

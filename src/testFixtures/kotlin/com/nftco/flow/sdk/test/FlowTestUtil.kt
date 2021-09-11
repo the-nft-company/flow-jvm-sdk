@@ -16,7 +16,7 @@ object FlowTestUtil {
     fun deployContracts(
         api: FlowAccessApi,
         account: TestAccount,
-        gasLimit: BigDecimal = BigDecimal(9_999),
+        gasLimit: Int = 1000,
         vararg contracts: ContractDeployment
     ): FlowTransactionStub {
         val contractList = contracts.toList()
