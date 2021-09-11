@@ -17,7 +17,7 @@ object FlowTestUtil {
         api: FlowAccessApi,
         account: TestAccount,
         gasLimit: Int = 1000,
-        vararg contracts: ContractDeployment
+        vararg contracts: TestContractDeployment
     ): FlowTransactionStub {
         val contractList = contracts.toList()
         val contractArgs = contractList

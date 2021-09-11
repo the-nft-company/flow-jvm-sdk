@@ -84,14 +84,14 @@ annotation class TestContractArg(
     val value: String
 )
 
-data class ContractDeployment(
+data class TestContractDeployment(
     val name: String,
     val code: String,
     val args: Map<String, com.nftco.flow.sdk.cadence.Field<*>>
 ) {
     companion object {
-        fun from(name: String, code: () -> InputStream, args: Map<String, com.nftco.flow.sdk.cadence.Field<*>> = mapOf()): ContractDeployment {
-            return ContractDeployment(
+        fun from(name: String, code: () -> InputStream, args: Map<String, com.nftco.flow.sdk.cadence.Field<*>> = mapOf()): TestContractDeployment {
+            return TestContractDeployment(
                 name = name,
                 code = code().use { String(it.readAllBytes()) },
                 args = args
@@ -111,7 +111,7 @@ data class TestAccount(
 ) {
     val signer: Signer
         get() = Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(privateKey),
+            privateKey = Crypto.decodePrivateKey(privateKey, signAlgo),
             hashAlgo = hashAlgo
         )
 
@@ -173,7 +173,7 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
             port = emulator.port
         ) as AsyncFlowAccessApiImpl
 
-        withAnnotatedTestFields(context, FlowTestClient::class.java) { instance, field, annotation ->
+        withAnnotatedTestFields(context, FlowTestClient::class.java) { instance, field, _ ->
             if (field.type.equals(FlowAccessApi::class.java)) {
                 field.isAccessible = true
                 field.set(instance, this.accessApi!!)
@@ -245,7 +245,7 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
                     api = this.accessApi!!,
                     account = testAccount,
                     gasLimit = deployable.gasLimit,
-                    ContractDeployment.from(
+                    TestContractDeployment.from(
                         name = deployable.name,
                         code = {
                             if (deployable.codeFileLocation.isNotEmpty()) {
