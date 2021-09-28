@@ -2,30 +2,23 @@ package com.nftco.flow.sdk.crypto
 
 import com.nftco.flow.sdk.*
 import com.nftco.flow.sdk.Signer
-import org.bouncycastle.jce.ECNamedCurveTable
-import org.bouncycastle.jce.ECPointUtil
-import org.bouncycastle.jce.interfaces.ECPrivateKey
-import org.bouncycastle.jce.interfaces.ECPublicKey
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jce.spec.ECNamedCurveSpec
-import org.bouncycastle.jce.spec.ECPrivateKeySpec
 import java.math.BigInteger
 import java.security.*
+import java.security.interfaces.ECPrivateKey
+import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
+import java.security.spec.ECParameterSpec
+import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
 import kotlin.experimental.and
 import kotlin.math.max
 
-object Crypto {
-
-    init {
-        Security.addProvider(BouncyCastleProvider())
-    }
+object AndroidCrypto {
 
     @JvmStatic
     @JvmOverloads
     fun generateKeyPair(algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): KeyPair {
-        val generator = KeyPairGenerator.getInstance("EC", "BC")
+        val generator = KeyPairGenerator.getInstance("EC")
         generator.initialize(ECGenParameterSpec(algo.curve), SecureRandom())
         val keyPair = generator.generateKeyPair()
         val privateKey = keyPair.private
@@ -34,12 +27,12 @@ object Crypto {
             private = PrivateKey(
                 key = keyPair.private,
                 ecCoupleComponentSize = if (privateKey is ECPrivateKey) {
-                    privateKey.parameters.n.bitLength() / 8
+                    privateKey.params.order.bitLength() / 8
                 } else {
                     0
                 },
                 hex = if (privateKey is ECPrivateKey) {
-                    privateKey.d.toByteArray().bytesToHex()
+                    privateKey.s.toByteArray().bytesToHex()
                 } else {
                     throw IllegalArgumentException("PrivateKey must be an ECPublicKey")
                 }
@@ -47,7 +40,7 @@ object Crypto {
             public = PublicKey(
                 key = publicKey,
                 hex = if (publicKey is ECPublicKey) {
-                    (publicKey.q.xCoord.encoded + publicKey.q.yCoord.encoded).bytesToHex()
+                    (publicKey.params.generator.affineX.toByteArray() + publicKey.params.generator.affineY.toByteArray()).bytesToHex()
                 } else {
                     throw IllegalArgumentException("PublicKey must be an ECPublicKey")
                 }
@@ -58,19 +51,21 @@ object Crypto {
     @JvmStatic
     @JvmOverloads
     fun decodePrivateKey(key: String, algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): PrivateKey {
-        val ecParameterSpec = ECNamedCurveTable.getParameterSpec(algo.curve)
-        val keyFactory = KeyFactory.getInstance(algo.algorithm, "BC")
-        val ecPrivateKeySpec = ECPrivateKeySpec(BigInteger(key, 16), ecParameterSpec)
+        val parameters = AlgorithmParameters.getInstance("EC")
+        parameters.init(ECGenParameterSpec(algo.curve))
+        val params = parameters.getParameterSpec(ECParameterSpec::class.java)
+        val keyFactory = KeyFactory.getInstance(algo.algorithm)
+        val ecPrivateKeySpec = ECPrivateKeySpec(BigInteger(key, 16), params)
         val pk = keyFactory.generatePrivate(ecPrivateKeySpec)
         return PrivateKey(
             key = pk,
             ecCoupleComponentSize = if (pk is ECPrivateKey) {
-                pk.parameters.n.bitLength() / 8
+                pk.params.order.bitLength() / 8
             } else {
                 0
             },
             hex = if (pk is ECPrivateKey) {
-                pk.d.toByteArray().bytesToHex()
+                pk.s.toByteArray().bytesToHex()
             } else {
                 throw IllegalArgumentException("PrivateKey must be an ECPublicKey")
             }
@@ -80,12 +75,11 @@ object Crypto {
     @JvmStatic
     @JvmOverloads
     fun decodePublicKey(key: String, algo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256): PublicKey {
-        val ecParameterSpec = ECNamedCurveTable.getParameterSpec(algo.curve)
-        val keyFactory = KeyFactory.getInstance("EC", "BC")
-        val params = ECNamedCurveSpec(
-            algo.curve,
-            ecParameterSpec.curve, ecParameterSpec.g, ecParameterSpec.n
-        )
+        val parameters = AlgorithmParameters.getInstance("EC")
+        parameters.init(ECGenParameterSpec(algo.curve))
+        val keyFactory = KeyFactory.getInstance("EC")
+        val params = parameters.getParameterSpec(ECParameterSpec::class.java)
+        // can't use this ECPointUtil class because it's BC
         val point = ECPointUtil.decodePoint(params.curve, byteArrayOf(0x04) + key.hexToBytes())
         val pubKeySpec = ECPublicKeySpec(point, params)
         val publicKey = keyFactory.generatePublic(pubKeySpec)
@@ -102,13 +96,13 @@ object Crypto {
     @JvmStatic
     @JvmOverloads
     fun getSigner(privateKey: PrivateKey, hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256): Signer {
-        return SignerImpl(privateKey, hashAlgo)
+        return AndroidSignerImpl(privateKey, hashAlgo)
     }
 
     @JvmStatic
     @JvmOverloads
     fun getHasher(hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256): Hasher {
-        return HasherImpl(hashAlgo)
+        return AndroidHasherImpl(hashAlgo)
     }
 
     @JvmStatic
@@ -141,7 +135,7 @@ object Crypto {
     }
 }
 
-internal class HasherImpl(
+internal class AndroidHasherImpl(
     private val hashAlgo: HashAlgorithm
 ) : Hasher {
 
@@ -151,10 +145,10 @@ internal class HasherImpl(
     }
 }
 
-internal class SignerImpl(
+internal class AndroidSignerImpl(
     private val privateKey: PrivateKey,
     private val hashAlgo: HashAlgorithm,
-    override val hasher: Hasher = HasherImpl(hashAlgo)
+    override val hasher: Hasher = AndroidHasherImpl(hashAlgo)
 ) : Signer {
 
     override fun sign(bytes: ByteArray): ByteArray {
