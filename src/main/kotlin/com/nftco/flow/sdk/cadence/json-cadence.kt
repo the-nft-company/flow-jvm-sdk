@@ -45,6 +45,7 @@ const val TYPE_RESOURCE = "Resource"
 const val TYPE_EVENT = "Event"
 const val TYPE_CONTRACT = "Contract"
 const val TYPE_ENUM = "Enum"
+const val TYPE_TYPE = "Type"
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -87,7 +88,8 @@ const val TYPE_ENUM = "Enum"
         Type(value = ResourceField::class, name = TYPE_RESOURCE),
         Type(value = EventField::class, name = TYPE_EVENT),
         Type(value = ContractField::class, name = TYPE_CONTRACT),
-        Type(value = EnumField::class, name = TYPE_ENUM)
+        Type(value = EnumField::class, name = TYPE_ENUM),
+        Type(value = TypeField::class, name = TYPE_TYPE)
     ]
 )
 abstract class Field<T> constructor(
@@ -198,3 +200,5 @@ open class ResourceField(value: CompositeValue) : CompositeField(TYPE_RESOURCE, 
 open class EventField(value: CompositeValue) : CompositeField(TYPE_EVENT, value)
 open class ContractField(value: CompositeValue) : CompositeField(TYPE_CONTRACT, value)
 open class EnumField(value: CompositeValue) : CompositeField(TYPE_ENUM, value)
+open class TypeValue(val staticType: String)
+open class TypeField(value: TypeValue) : Field<TypeValue>(TYPE_TYPE, value)
