@@ -23,8 +23,8 @@ SDK to your project using Maven or Gradle.
 ```xml
 <repositories>
   <repository>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
+    <id>sontatype snapshots</id>
+    <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
   </repository>
 </repositories>
 
@@ -40,7 +40,7 @@ SDK to your project using Maven or Gradle.
 ```groovy
 repositories {
     ...
-    maven { url 'https://jitpack.io' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 dependencies {
@@ -58,7 +58,7 @@ plugins {
 
 repositories {
     ...
-    maven { url 'https://jitpack.io' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/o' }
 }
 
 dependencies {
@@ -89,7 +89,7 @@ plugins {
 }
 
 repositories {
-    maven { url 'https://jitpack.io' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 dependencies {

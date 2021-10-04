@@ -33,7 +33,7 @@ object FlowTestUtil {
             }
             .toList()
         val contractAdds = contractList
-            .mapIndexed { i, c ->
+            .mapIndexed { i, _ ->
                 """
                     signer.contracts.add(
                         name: names[$i], code: codes[$i].utf8${contractAddArgs[i]}
