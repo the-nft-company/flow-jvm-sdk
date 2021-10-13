@@ -21,10 +21,14 @@ SDK to your project using Maven or Gradle.
 ### Maven
 
 ```xml
+<!--
+    the following repository is required because the trusted data framework
+    is not available on maven central.
+ -->
 <repositories>
   <repository>
-    <id>sontatype snapshots</id>
-    <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
   </repository>
 </repositories>
 
@@ -40,7 +44,11 @@ SDK to your project using Maven or Gradle.
 ```groovy
 repositories {
     ...
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    /*
+        the following repository is required because the trusted data framework
+        is not available on maven central.
+    */
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -58,7 +66,11 @@ plugins {
 
 repositories {
     ...
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/o' }
+    /*
+        the following repository is required because the trusted data framework
+        is not available on maven central.
+    */
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -89,7 +101,11 @@ plugins {
 }
 
 repositories {
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    /*
+        the following repository is required because the trusted data framework
+        is not available on maven central.
+    */
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
