@@ -17,7 +17,7 @@ object Flow {
 
     const val DEFAULT_USER_AGENT = "Flow JVM SDK"
 
-    const val DEFAULT_MAX_MESSAGE_SIZE = 20971520
+    const val DEFAULT_MAX_MESSAGE_SIZE = 16777216
 
     var OBJECT_MAPPER: ObjectMapper
 
