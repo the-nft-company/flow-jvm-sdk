@@ -62,7 +62,7 @@ object Flow {
         var channelBuilder = ManagedChannelBuilder
             .forAddress(host, port)
             .userAgent(userAgent)
-            .maxInboundMessageSize(maxMessageSize);
+            .maxInboundMessageSize(maxMessageSize)
 
         channelBuilder = if (secure) {
             channelBuilder.useTransportSecurity()
