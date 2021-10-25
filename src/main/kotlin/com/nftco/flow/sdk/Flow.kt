@@ -17,6 +17,8 @@ object Flow {
 
     const val DEFAULT_USER_AGENT = "Flow JVM SDK"
 
+    const val DEFAULT_MAX_MESSAGE_SIZE = 16777216
+
     var OBJECT_MAPPER: ObjectMapper
 
     var DEFAULT_CHAIN_ID: FlowChainId = FlowChainId.MAINNET
@@ -43,23 +45,24 @@ object Flow {
 
     @JvmStatic
     @JvmOverloads
-    fun newAccessApi(host: String, port: Int = 9000, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): FlowAccessApi {
-        val channel = openChannel(host, port, secure, userAgent)
+    fun newAccessApi(host: String, port: Int = 9000, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT, maxMessageSize: Int = DEFAULT_MAX_MESSAGE_SIZE): FlowAccessApi {
+        val channel = openChannel(host, port, secure, userAgent, maxMessageSize)
         return FlowAccessApiImpl(AccessAPIGrpc.newBlockingStub(channel))
     }
 
     @JvmStatic
     @JvmOverloads
-    fun newAsyncAccessApi(host: String, port: Int = 9000, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT): AsyncFlowAccessApi {
-        val channel = openChannel(host, port, secure, userAgent)
+    fun newAsyncAccessApi(host: String, port: Int = 9000, secure: Boolean = false, userAgent: String = DEFAULT_USER_AGENT, maxMessageSize: Int = DEFAULT_MAX_MESSAGE_SIZE): AsyncFlowAccessApi {
+        val channel = openChannel(host, port, secure, userAgent, maxMessageSize)
         return AsyncFlowAccessApiImpl(AccessAPIGrpc.newFutureStub(channel))
     }
 
     @JvmStatic
-    private fun openChannel(host: String, port: Int, secure: Boolean, userAgent: String): ManagedChannel {
+    private fun openChannel(host: String, port: Int, secure: Boolean, userAgent: String, maxMessageSize: Int): ManagedChannel {
         var channelBuilder = ManagedChannelBuilder
             .forAddress(host, port)
             .userAgent(userAgent)
+            .maxInboundMessageSize(maxMessageSize)
 
         channelBuilder = if (secure) {
             channelBuilder.useTransportSecurity()
