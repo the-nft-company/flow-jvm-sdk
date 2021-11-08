@@ -8,6 +8,7 @@ import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.entities.*
 import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
+import java.io.Serializable
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDateTime
@@ -120,7 +121,7 @@ data class FlowAccount(
     val code: FlowCode,
     val keys: List<FlowAccountKey>,
     val contracts: Map<String, FlowCode>
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: AccountOuterClass.Account): FlowAccount = FlowAccount(
@@ -166,7 +167,7 @@ data class FlowAccountKey(
     val weight: Int,
     val sequenceNumber: Int = -1,
     val revoked: Boolean = false
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: AccountOuterClass.AccountKey): FlowAccountKey = FlowAccountKey(
@@ -207,7 +208,7 @@ data class FlowEventResult(
     val blockHeight: Long,
     val blockTimestamp: LocalDateTime,
     val events: List<FlowEvent>
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: Access.EventsResponse.Result): FlowEventResult = FlowEventResult(
@@ -236,7 +237,7 @@ data class FlowEvent(
     val transactionIndex: Int,
     val eventIndex: Int,
     val payload: FlowEventPayload
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: EventOuterClass.Event): FlowEvent = FlowEvent(
@@ -272,7 +273,7 @@ data class FlowTransactionResult(
     val statusCode: Int,
     val errorMessage: String,
     val events: List<FlowEvent>
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: Access.TransactionResultResponse): FlowTransactionResult = FlowTransactionResult(
@@ -360,7 +361,7 @@ data class FlowTransaction(
     val authorizers: List<FlowAddress>,
     val payloadSignatures: List<FlowTransactionSignature> = emptyList(),
     val envelopeSignatures: List<FlowTransactionSignature> = emptyList()
-) {
+) : Serializable {
 
     private val payload: Payload
         get() = Payload(
@@ -570,7 +571,7 @@ data class FlowTransactionProposalKey(
     val address: FlowAddress,
     val keyIndex: Int,
     val sequenceNumber: Long
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: TransactionOuterClass.Transaction.ProposalKey): FlowTransactionProposalKey =
@@ -595,7 +596,7 @@ data class FlowTransactionSignature(
     val signerIndex: Int,
     val keyIndex: Int,
     val signature: FlowSignature
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: TransactionOuterClass.Transaction.Signature): FlowTransactionSignature =
@@ -620,7 +621,7 @@ data class FlowBlockHeader(
     val id: FlowId,
     val parentId: FlowId,
     val height: Long
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: BlockHeaderOuterClass.BlockHeader): FlowBlockHeader = FlowBlockHeader(
@@ -647,7 +648,7 @@ data class FlowBlock(
     val collectionGuarantees: List<FlowCollectionGuarantee>,
     val blockSeals: List<FlowBlockSeal>,
     val signatures: List<FlowSignature>
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: BlockOuterClass.Block) = FlowBlock(
@@ -677,7 +678,7 @@ data class FlowBlock(
 data class FlowCollectionGuarantee(
     val id: FlowId,
     val signatures: List<FlowSignature>
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: CollectionOuterClass.CollectionGuarantee) = FlowCollectionGuarantee(
@@ -699,7 +700,7 @@ data class FlowBlockSeal(
     val executionReceiptId: FlowId,
     val executionReceiptSignatures: List<FlowSignature>,
     val resultApprovalSignatures: List<FlowSignature>
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: BlockSealOuterClass.BlockSeal) = FlowBlockSeal(
@@ -723,7 +724,7 @@ data class FlowBlockSeal(
 data class FlowCollection(
     val id: FlowId,
     val transactionIds: List<FlowId>
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(value: CollectionOuterClass.Collection) = FlowCollection(
@@ -748,7 +749,7 @@ interface BytesHolder {
     val integerValue: BigInteger get() = BigInteger(base16Value, 16)
 }
 
-data class FlowAddress private constructor(override val bytes: ByteArray) : BytesHolder {
+data class FlowAddress private constructor(override val bytes: ByteArray) : Serializable, BytesHolder {
     companion object {
         @JvmStatic
         fun of(bytes: ByteArray): FlowAddress = FlowAddress(fixedSize(bytes, FLOW_ADDRESS_SIZE_BYTES))
@@ -769,7 +770,7 @@ data class FlowAddress private constructor(override val bytes: ByteArray) : Byte
     }
 }
 
-data class FlowArgument(override val bytes: ByteArray) : BytesHolder {
+data class FlowArgument(override val bytes: ByteArray) : Serializable, BytesHolder {
 
     constructor(jsonCadence: Field<*>) : this(Flow.encodeJsonCadence(jsonCadence))
 
@@ -795,7 +796,7 @@ data class FlowArgument(override val bytes: ByteArray) : BytesHolder {
     }
 }
 
-data class FlowScript(override val bytes: ByteArray) : BytesHolder {
+data class FlowScript(override val bytes: ByteArray) : Serializable, BytesHolder {
     constructor(script: String) : this(script.encodeToByteArray())
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -810,7 +811,7 @@ data class FlowScript(override val bytes: ByteArray) : BytesHolder {
     }
 }
 
-data class FlowScriptResponse(override val bytes: ByteArray) : BytesHolder {
+data class FlowScriptResponse(override val bytes: ByteArray) : Serializable, BytesHolder {
 
     constructor(jsonCadence: Field<*>) : this(Flow.encodeJsonCadence(jsonCadence))
 
@@ -836,7 +837,7 @@ data class FlowScriptResponse(override val bytes: ByteArray) : BytesHolder {
     }
 }
 
-data class FlowSignature(override val bytes: ByteArray) : BytesHolder {
+data class FlowSignature(override val bytes: ByteArray) : Serializable, BytesHolder {
     constructor(hex: String) : this(hex.hexToBytes())
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -851,7 +852,7 @@ data class FlowSignature(override val bytes: ByteArray) : BytesHolder {
     }
 }
 
-data class FlowId private constructor(override val bytes: ByteArray) : BytesHolder {
+data class FlowId private constructor(override val bytes: ByteArray) : Serializable, BytesHolder {
     companion object {
         @JvmStatic
         fun of(bytes: ByteArray): FlowId = FlowId(fixedSize(bytes, FLOW_ID_SIZE_BYTES))
@@ -870,7 +871,7 @@ data class FlowId private constructor(override val bytes: ByteArray) : BytesHold
     }
 }
 
-data class FlowCode(override val bytes: ByteArray) : BytesHolder {
+data class FlowCode(override val bytes: ByteArray) : Serializable, BytesHolder {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -884,7 +885,7 @@ data class FlowCode(override val bytes: ByteArray) : BytesHolder {
     }
 }
 
-data class FlowPublicKey(override val bytes: ByteArray) : BytesHolder {
+data class FlowPublicKey(override val bytes: ByteArray) : Serializable, BytesHolder {
     constructor(hex: String) : this(hex.hexToBytes())
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -899,7 +900,7 @@ data class FlowPublicKey(override val bytes: ByteArray) : BytesHolder {
     }
 }
 
-data class FlowSnapshot(override val bytes: ByteArray) : BytesHolder {
+data class FlowSnapshot(override val bytes: ByteArray) : Serializable, BytesHolder {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -913,7 +914,7 @@ data class FlowSnapshot(override val bytes: ByteArray) : BytesHolder {
     }
 }
 
-data class FlowEventPayload(override val bytes: ByteArray) : BytesHolder {
+data class FlowEventPayload(override val bytes: ByteArray) : Serializable, BytesHolder {
 
     constructor(jasonCadence: Field<*>) : this(Flow.encodeJsonCadence(jasonCadence))
 

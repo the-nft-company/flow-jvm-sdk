@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.nftco.flow.sdk.Flow
 import com.nftco.flow.sdk.bytesToHex
+import java.io.Serializable
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -95,7 +96,7 @@ const val TYPE_TYPE = "Type"
 abstract class Field<T> constructor(
     val type: String,
     val value: T?
-) {
+) : Serializable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Field<*>) return false
@@ -167,7 +168,7 @@ open class DictionaryField(value: Array<DictionaryFieldEntry>) : Field<Array<Dic
         }
     }
 }
-open class DictionaryFieldEntry(val key: Field<*>, val value: Field<*>) {
+open class DictionaryFieldEntry(val key: Field<*>, val value: Field<*>) : Serializable {
     constructor(pair: Pair<Field<*>, Field<*>>) : this(pair.first, pair.second)
 }
 
@@ -175,10 +176,10 @@ open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.
     constructor(bytes: ByteArray) : this(bytes.bytesToHex())
 }
 
-open class PathValue(val domain: String, val identifier: String)
+open class PathValue(val domain: String, val identifier: String) : Serializable
 open class PathField(value: PathValue) : Field<PathValue>(TYPE_PATH, value)
 
-open class CapabilityValue(val path: String, val address: String, val borrowType: String)
+open class CapabilityValue(val path: String, val address: String, val borrowType: String) : Serializable
 open class CapabilityField(value: CapabilityValue) : Field<CapabilityValue>(TYPE_CAPABILITY, value)
 
 open class CompositeField(type: String, value: CompositeValue) : Field<CompositeValue>(type, value) {
@@ -186,8 +187,8 @@ open class CompositeField(type: String, value: CompositeValue) : Field<Composite
     operator fun <T : Field<*>> get(name: String): T? = value?.getField(name)
     operator fun contains(name: String): Boolean = value?.getField<Field<*>>(name) != null
 }
-open class CompositeAttribute(val name: String, val value: Field<*>)
-open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>) {
+open class CompositeAttribute(val name: String, val value: Field<*>) : Serializable
+open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>) : Serializable {
     @Suppress("UNCHECKED_CAST")
     fun <T : Field<*>> getField(name: String): T? = fields.find { it.name == name }?.value as T?
     fun <T : Field<*>> getRequiredField(name: String): T = getField(name) ?: throw IllegalStateException("Value for $name not found")
@@ -200,5 +201,5 @@ open class ResourceField(value: CompositeValue) : CompositeField(TYPE_RESOURCE, 
 open class EventField(value: CompositeValue) : CompositeField(TYPE_EVENT, value)
 open class ContractField(value: CompositeValue) : CompositeField(TYPE_CONTRACT, value)
 open class EnumField(value: CompositeValue) : CompositeField(TYPE_ENUM, value)
-open class TypeValue(val staticType: String)
+open class TypeValue(val staticType: String) : Serializable
 open class TypeField(value: TypeValue) : Field<TypeValue>(TYPE_TYPE, value)
