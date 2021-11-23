@@ -88,7 +88,7 @@ object FlowTestUtil {
                     import FlowToken from 0xFLOWTOKEN
                     import FungibleToken from 0xFUNGIBLETOKEN
                     
-                    transaction(startingBalance: UFix64, publicKey: String, signAlgorithm: UInt8, hashAlgorithm: UInt8) {
+                    transaction(startingBalance: UFix64, publicKey: String, signatureAlgorithm: UInt8, hashAlgorithm: UInt8) {
                         prepare(signer: AuthAccount) {
 
                             let newAccount = AuthAccount(payer: signer)
@@ -107,7 +107,7 @@ object FlowTestUtil {
                             newAccount.keys.add(
                                 publicKey: PublicKey(
                                     publicKey: publicKey.decodeHex(),
-                                    signAlgorithm: SignatureAlgorithm(rawValue: signAlgorithm)!
+                                    signatureAlgorithm: SignatureAlgorithm(rawValue: signatureAlgorithm)!
                                 ),
                                 hashAlgorithm: HashAlgorithm(rawValue: hashAlgorithm)!,
                                 weight: UFix64(1000)
