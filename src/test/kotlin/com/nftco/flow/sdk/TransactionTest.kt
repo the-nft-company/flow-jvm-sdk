@@ -168,7 +168,7 @@ class TransactionTest {
 
             payerAddress = payerAccount.address
 
-            authorizations {
+            signatures {
                 signature {
                     address = payerAccount.address
                     keyIndex = 0
