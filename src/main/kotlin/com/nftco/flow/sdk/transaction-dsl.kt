@@ -294,9 +294,8 @@ class TransactionBuilder(
         get() { return _signatures }
         set(value) {
             _signatures.clear()
-            _signatures.addAll(value)
             _authorizers.clear()
-            _authorizers.addAll(_signatures.mapNotNull { it.address })
+            value.forEach(this::signature)
         }
 
     fun signatures(signatures: FlowTransactionSignatureCollectionBuilder.() -> Unit) {
@@ -304,7 +303,14 @@ class TransactionBuilder(
         signatures(builder)
         this.signatures = builder.build()
     }
-    fun signature(signature: PendingSignature) = this._signatures.add(signature)
+    fun signature(signature: PendingSignature) {
+        this._signatures.add(signature)
+        if (signature.address != null) {
+            this._authorizers.add(signature.address)
+        } else if (signature.prepared?.address != null) {
+            this._authorizers.add(signature.prepared.address)
+        }
+    }
     fun signature(signature: () -> PendingSignature) = signature(signature())
     fun signature(address: FlowAddress, keyIndex: Number, signature: FlowSignature) {
         signature(
