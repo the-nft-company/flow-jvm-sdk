@@ -34,7 +34,7 @@ class TestClassConverterJson : JsonCadenceConverter<TestClass> {
                     listOf(
                         "address" to address(value.address.base16Value),
                         "balance" to ufix64(value.balance),
-                        "signatureAlgorithm" to enum(value.hashAlgorithm),
+                        "signAlgorithm" to enum(value.hashAlgorithm),
                         "isValid" to boolean(value.isValid)
                     )
                 }
@@ -167,7 +167,7 @@ class ScriptTest {
                         keyList.add(
                           PublicKey(
                             publicKey: rawPublicKey.decodeHex(),
-                            signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
+                            signAlgorithm: SignatureAlgorithm.ECDSA_P256
                           ),
                           hashAlgorithm: HashAlgorithm.SHA3_256,
                           weight: weights[i],

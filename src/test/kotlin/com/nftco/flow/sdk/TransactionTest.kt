@@ -33,6 +33,12 @@ class TransactionTest {
     )
 
     @Test
+    fun `wut`() {
+        val account = TestUtils.newTestnetAccessApi().getAccountAtLatestBlock(FlowAddress("0x6bd3869f2631beb3"))
+        val x = account?.keys?.isEmpty()
+    }
+
+    @Test
     fun `Can sign transactions`() {
 
         val pk1 = Crypto.getSigner(Crypto.generateKeyPair().private)
@@ -162,11 +168,7 @@ class TransactionTest {
 
             payerAddress = payerAccount.address
 
-            authorizers {
-                address(payerAccount.address)
-            }
-
-            envelopeSignatures {
+            authorizations {
                 signature {
                     address = payerAccount.address
                     keyIndex = 0

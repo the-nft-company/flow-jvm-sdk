@@ -142,6 +142,7 @@ class TransactionBuilder(
     private var _gasLimit: Long? = null
     private var _proposalKey: FlowTransactionProposalKey? = null
     private var _payerAddress: FlowAddress? = null
+    private var _authorizations: MutableList<PendingSignature> = mutableListOf()
     private var _authorizers: MutableList<FlowAddress> = mutableListOf()
     private var _payloadSignatures: MutableList<PendingSignature> = mutableListOf()
     private var _envelopeSignatures: MutableList<PendingSignature> = mutableListOf()
@@ -216,10 +217,35 @@ class TransactionBuilder(
         get() { return _proposalKey!! }
         set(value) { _proposalKey = value }
 
+    fun proposalKey(proposalKey: FlowTransactionProposalKey) {
+        this.proposalKey = proposalKey
+    }
+    fun proposalKey(address: FlowAddress, keyIndex: Number, sequenceNumber: Number) {
+        proposalKey(
+            FlowTransactionProposalKey(
+                address = address,
+                keyIndex = keyIndex.toInt(),
+                sequenceNumber = sequenceNumber.toLong()
+            )
+        )
+    }
+    fun proposalKey(address: FlowAddress, publicKey: String) {
+        require(api != null) { "Builder not created with an API instance" }
+        val account = requireNotNull(api.getAccountAtLatestBlock(address)) { "Account for address not found" }
+        val keyIndex = account.getKeyIndex(publicKey)
+        require(keyIndex != -1) { "PublicKey not found for account" }
+        proposalKey(
+            FlowTransactionProposalKey(
+                address = address,
+                keyIndex = keyIndex,
+                sequenceNumber = account.keys[keyIndex].sequenceNumber.toLong()
+            )
+        )
+    }
     fun proposalKey(proposalKey: FlowTransactionProposalKeyBuilder.() -> Unit) {
         val builder = FlowTransactionProposalKeyBuilder(this.api)
         proposalKey(builder)
-        this.proposalKey = builder.build()
+        proposalKey(builder.build())
     }
 
     var payerAddress: FlowAddress
@@ -252,6 +278,21 @@ class TransactionBuilder(
     fun authorizer(address: String) = authorizer(FlowAddress(address))
     fun authorizer(address: ByteArray) = authorizer(FlowAddress.of(address))
     fun authorizer(authorizer: () -> FlowAddress) = authorizer(authorizer())
+
+    var authorizations: List<PendingSignature>
+        get() { return _authorizations }
+        set(value) {
+            _authorizations.clear()
+            _authorizations.addAll(value)
+            _authorizers.clear()
+            _authorizers.addAll(_authorizations.mapNotNull { it.address })
+        }
+
+    fun authorizations(authorizations: FlowTransactionSignatureCollectionBuilder.() -> Unit) {
+        val builder = FlowTransactionSignatureCollectionBuilder()
+        authorizations(builder)
+        this.authorizations = builder.build()
+    }
 
     var payloadSignatures: List<PendingSignature>
         get() { return _payloadSignatures }
@@ -343,12 +384,23 @@ class TransactionBuilder(
             authorizers = _authorizers
         )
 
-        for (pending in payloadSignatures) {
-            tx = pending.applyAsPayloadSignature(tx)
-        }
+        if (authorizations.isNotEmpty() && (payloadSignatures.isNotEmpty() || envelopeSignatures.isNotEmpty())) {
+            throw IllegalStateException("Cannot use authorizations with payloadSignatures and/or envelopeSignatures")
+        } else if (authorizations.isNotEmpty()) {
+            for (pending in authorizations.filter { it.address != payerAddress }) {
+                tx = pending.applyAsPayloadSignature(tx)
+            }
+            for (pending in authorizations.filter { it.address == payerAddress }) {
+                tx = pending.applyAsEnvelopeSignature(tx)
+            }
+        } else {
+            for (pending in payloadSignatures) {
+                tx = pending.applyAsPayloadSignature(tx)
+            }
 
-        for (pending in envelopeSignatures) {
-            tx = pending.applyAsEnvelopeSignature(tx)
+            for (pending in envelopeSignatures) {
+                tx = pending.applyAsEnvelopeSignature(tx)
+            }
         }
 
         return tx
