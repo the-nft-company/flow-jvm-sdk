@@ -29,29 +29,16 @@ fun flowTransaction(block: TransactionBuilder.() -> Unit): FlowTransaction {
 }
 
 fun FlowAccessApi.flowTransaction(referenceBlockId: FlowId = this.getLatestBlockHeader().id, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
-    val builder = TransactionBuilder()
+    val builder = TransactionBuilder(this)
     builder.referenceBlockId = referenceBlockId
     block(builder)
     return FlowTransactionStub(this, builder)
 }
 
 fun FlowAccessApi.simpleFlowTransaction(address: FlowAddress, signer: Signer, gasLimit: Number = 100, keyIndex: Number = 0, block: TransactionBuilder.() -> Unit): FlowTransactionStub {
-    val api = this
-    val payerAccount = checkNotNull(api.getAccountAtLatestBlock(address)) { "Account not found for address: ${address.base16Value}" }
     return this.flowTransaction {
         gasLimit(gasLimit)
-        proposalKey {
-            address(payerAccount.address)
-            keyIndex(payerAccount.keys[keyIndex.toInt()].id)
-            sequenceNumber(payerAccount.keys[keyIndex.toInt()].sequenceNumber.toLong())
-        }
-        payerAddress(payerAccount.address)
-        authorizer(payerAccount.address)
-        envelopSignature {
-            address(payerAccount.address)
-            keyIndex(keyIndex)
-            signer(signer)
-        }
+        proposeAndPay(address, keyIndex, signer)
         block(this)
     }
 }
@@ -259,10 +246,22 @@ class TransactionBuilder(
         proposalKey(builder.build())
     }
 
+    fun proposeAndPay(address: FlowAddress, keyIndex: Number, signer: Signer, sequenceNumber: Number) {
+        proposalKey(address, keyIndex, sequenceNumber)
+        payerAddress(address)
+        signature(address, keyIndex, signer)
+    }
+
+    fun proposeAndPay(address: FlowAddress, keyIndex: Number, signer: Signer) {
+        require(api != null) { "Builder not created with an API instance" }
+        val account = requireNotNull(api.getAccountAtLatestBlock(address)) { "Account for address not found" }
+        require(keyIndex.toInt() < account.keys.size) { "keyIndex out of bounds" }
+        proposeAndPay(address, keyIndex, signer, account.keys[keyIndex.toInt()].sequenceNumber)
+    }
+
     var payerAddress: FlowAddress
         get() { return _payerAddress!! }
         set(value) { _payerAddress = value }
-
     fun payerAddress(payerAddress: FlowAddress) {
         this.payerAddress = payerAddress
     }
@@ -276,7 +275,9 @@ class TransactionBuilder(
             _authorizers.clear()
             _authorizers.addAll(value)
         }
-
+    fun addAuthorizers(authorizers: MutableList<FlowAddress>) {
+        this._authorizers.addAll(authorizers)
+    }
     fun authorizers(authorizers: MutableList<FlowAddress>) {
         this.authorizers = authorizers
     }
@@ -298,6 +299,11 @@ class TransactionBuilder(
             value.forEach(this::signature)
         }
 
+    fun addSignatures(signatures: FlowTransactionSignatureCollectionBuilder.() -> Unit) {
+        val builder = FlowTransactionSignatureCollectionBuilder()
+        signatures(builder)
+        builder.build().forEach(this::signature)
+    }
     fun signatures(signatures: FlowTransactionSignatureCollectionBuilder.() -> Unit) {
         val builder = FlowTransactionSignatureCollectionBuilder()
         signatures(builder)
@@ -337,9 +343,13 @@ class TransactionBuilder(
             _payloadSignatures.clear()
             _payloadSignatures.addAll(value)
         }
-
     fun payloadSignatures(payloadSignatures: MutableList<PendingSignature>) {
         this.payloadSignatures = payloadSignatures
+    }
+    fun addPayloadSignatures(payloadSignatures: FlowTransactionSignatureCollectionBuilder.() -> Unit) {
+        val builder = FlowTransactionSignatureCollectionBuilder()
+        payloadSignatures(builder)
+        this._payloadSignatures.addAll(builder.build())
     }
     fun payloadSignatures(payloadSignatures: FlowTransactionSignatureCollectionBuilder.() -> Unit) {
         val builder = FlowTransactionSignatureCollectionBuilder()
@@ -373,26 +383,30 @@ class TransactionBuilder(
             _envelopeSignatures.clear()
             _envelopeSignatures.addAll(value)
         }
-
     fun envelopeSignatures(envelopeSignatures: MutableList<PendingSignature>) {
         this.envelopeSignatures = envelopeSignatures
+    }
+    fun addEnvelopeSignatures(envelopeSignatures: FlowTransactionSignatureCollectionBuilder.() -> Unit) {
+        val builder = FlowTransactionSignatureCollectionBuilder()
+        envelopeSignatures(builder)
+        this._envelopeSignatures.addAll(builder.build())
     }
     fun envelopeSignatures(envelopeSignatures: FlowTransactionSignatureCollectionBuilder.() -> Unit) {
         val builder = FlowTransactionSignatureCollectionBuilder()
         envelopeSignatures(builder)
         this.envelopeSignatures = builder.build()
     }
-    fun envelopSignature(envelopSignature: PendingSignature) = this._envelopeSignatures.add(envelopSignature)
-    fun envelopSignature(envelopSignature: FlowTransactionSignatureBuilder.() -> Unit) {
+    fun envelopeSignature(envelopeSignature: PendingSignature) = this._envelopeSignatures.add(envelopeSignature)
+    fun envelopeSignature(envelopeSignature: FlowTransactionSignatureBuilder.() -> Unit) {
         val builder = FlowTransactionSignatureBuilder()
-        envelopSignature(builder)
-        envelopSignature(builder.build())
+        envelopeSignature(builder)
+        envelopeSignature(builder.build())
     }
-    fun envelopSignature(signature: FlowTransactionSignature) {
-        envelopSignature(PendingSignature(prepared = signature))
+    fun envelopeSignature(signature: FlowTransactionSignature) {
+        envelopeSignature(PendingSignature(prepared = signature))
     }
-    fun envelopSignature(address: FlowAddress, keyIndex: Number, signature: FlowSignature) {
-        envelopSignature(
+    fun envelopeSignature(address: FlowAddress, keyIndex: Number, signature: FlowSignature) {
+        envelopeSignature(
             PendingSignature(
                 address = address,
                 keyIndex = keyIndex,
@@ -400,8 +414,8 @@ class TransactionBuilder(
             )
         )
     }
-    fun envelopSignature(address: FlowAddress, keyIndex: Number, signer: Signer) {
-        envelopSignature(
+    fun envelopeSignature(address: FlowAddress, keyIndex: Number, signer: Signer) {
+        envelopeSignature(
             PendingSignature(
                 address = address,
                 keyIndex = keyIndex,
