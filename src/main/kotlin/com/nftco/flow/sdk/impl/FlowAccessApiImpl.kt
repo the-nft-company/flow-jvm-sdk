@@ -204,6 +204,7 @@ class FlowAccessApiImpl(
     override fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId, arguments: Iterable<ByteString>): FlowScriptResponse {
         val ret = api.executeScriptAtBlockID(
             Access.ExecuteScriptAtBlockIDRequest.newBuilder()
+                .setBlockId(blockId.byteStringValue)
                 .setScript(script.byteStringValue)
                 .addAllArguments(arguments)
                 .build()
@@ -214,6 +215,7 @@ class FlowAccessApiImpl(
     override fun executeScriptAtBlockHeight(script: FlowScript, height: Long, arguments: Iterable<ByteString>): FlowScriptResponse {
         val ret = api.executeScriptAtBlockHeight(
             Access.ExecuteScriptAtBlockHeightRequest.newBuilder()
+                .setBlockHeight(height)
                 .setScript(script.byteStringValue)
                 .addAllArguments(arguments)
                 .build()
