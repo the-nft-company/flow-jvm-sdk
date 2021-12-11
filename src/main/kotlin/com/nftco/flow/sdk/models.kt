@@ -312,15 +312,15 @@ data class FlowTransactionResult(
 }
 
 internal class Payload(
-    val script: ByteArray,
-    val arguments: List<ByteArray>,
-    val referenceBlockId: ByteArray,
-    val gasLimit: Long,
-    val proposalKeyAddress: ByteArray,
-    val proposalKeyIndex: Long,
-    val proposalKeySequenceNumber: Long,
-    val payer: ByteArray,
-    val authorizers: List<ByteArray>
+    @RLP(0) val script: ByteArray,
+    @RLP(1) val arguments: List<ByteArray>,
+    @RLP(2) val referenceBlockId: ByteArray,
+    @RLP(3) val gasLimit: Long,
+    @RLP(4) val proposalKeyAddress: ByteArray,
+    @RLP(5) val proposalKeyIndex: Long,
+    @RLP(6) val proposalKeySequenceNumber: Long,
+    @RLP(7) val payer: ByteArray,
+    @RLP(8) val authorizers: List<ByteArray>
 ) {
     // no-arg constructor required for decoding
     constructor() : this(byteArrayOf(), listOf(), byteArrayOf(), 0, byteArrayOf(), 0, 0, byteArrayOf(), listOf())
@@ -343,9 +343,9 @@ internal class TransactionEnvelope(
 )
 
 internal class EnvelopeSignature(
-    val signerIndex: Int,
-    val keyIndex: Int,
-    val signature: ByteArray
+    @RLP(0) val signerIndex: Int,
+    @RLP(1) val keyIndex: Int,
+    @RLP(2) val signature: ByteArray
 ) {
     // no-arg constructor required for decoding
     constructor() : this(0, 0, byteArrayOf())
