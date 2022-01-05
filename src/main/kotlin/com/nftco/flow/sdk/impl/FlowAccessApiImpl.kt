@@ -1,23 +1,10 @@
 package com.nftco.flow.sdk.impl
 
 import com.google.protobuf.ByteString
+import com.nftco.flow.sdk.*
+import io.grpc.ManagedChannel
 import org.onflow.protobuf.access.Access
 import org.onflow.protobuf.access.AccessAPIGrpc
-import com.nftco.flow.sdk.FlowAccessApi
-import com.nftco.flow.sdk.FlowAccount
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowBlock
-import com.nftco.flow.sdk.FlowBlockHeader
-import com.nftco.flow.sdk.FlowChainId
-import com.nftco.flow.sdk.FlowCollection
-import com.nftco.flow.sdk.FlowEventResult
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowScript
-import com.nftco.flow.sdk.FlowScriptResponse
-import com.nftco.flow.sdk.FlowSnapshot
-import com.nftco.flow.sdk.FlowTransaction
-import com.nftco.flow.sdk.FlowTransactionResult
-import io.grpc.ManagedChannel
 import java.io.Closeable
 
 class FlowAccessApiImpl(
@@ -204,6 +191,7 @@ class FlowAccessApiImpl(
     override fun executeScriptAtBlockId(script: FlowScript, blockId: FlowId, arguments: Iterable<ByteString>): FlowScriptResponse {
         val ret = api.executeScriptAtBlockID(
             Access.ExecuteScriptAtBlockIDRequest.newBuilder()
+                .setBlockId(blockId.byteStringValue)
                 .setScript(script.byteStringValue)
                 .addAllArguments(arguments)
                 .build()
@@ -214,6 +202,7 @@ class FlowAccessApiImpl(
     override fun executeScriptAtBlockHeight(script: FlowScript, height: Long, arguments: Iterable<ByteString>): FlowScriptResponse {
         val ret = api.executeScriptAtBlockHeight(
             Access.ExecuteScriptAtBlockHeightRequest.newBuilder()
+                .setBlockHeight(height)
                 .setScript(script.byteStringValue)
                 .addAllArguments(arguments)
                 .build()

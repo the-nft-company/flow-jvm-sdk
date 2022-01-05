@@ -243,6 +243,7 @@ class AsyncFlowAccessApiImpl(
         return completableFuture(
             api.executeScriptAtBlockID(
                 Access.ExecuteScriptAtBlockIDRequest.newBuilder()
+                    .setBlockId(blockId.byteStringValue)
                     .setScript(script.byteStringValue)
                     .addAllArguments(arguments)
                     .build()
@@ -260,6 +261,7 @@ class AsyncFlowAccessApiImpl(
         return completableFuture(
             api.executeScriptAtBlockHeight(
                 Access.ExecuteScriptAtBlockHeightRequest.newBuilder()
+                    .setBlockHeight(height)
                     .setScript(script.byteStringValue)
                     .addAllArguments(arguments)
                     .build()
