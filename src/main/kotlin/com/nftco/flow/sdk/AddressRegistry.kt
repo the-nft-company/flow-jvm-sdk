@@ -43,6 +43,7 @@ class AddressRegistry {
 
     @JvmOverloads
     fun register(contract: String, address: FlowAddress, chainId: FlowChainId = defaultChainId): AddressRegistry {
+        assert(contract.startsWith("0x")) { "Import alias must start with '0x' prefix, but found `$contract`" }
         SCRIPT_TOKEN_MAP.computeIfAbsent(chainId) { mutableMapOf() }[contract] = address
         return this
     }
