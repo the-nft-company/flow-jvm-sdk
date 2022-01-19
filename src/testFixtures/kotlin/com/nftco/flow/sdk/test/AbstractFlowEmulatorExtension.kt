@@ -67,6 +67,7 @@ annotation class FlowTestAccount(
 @API(status = API.Status.STABLE, since = "5.0")
 annotation class FlowTestContractDeployment(
     val name: String,
+    val alias: String = "",
     val addToRegistry: Boolean = true,
     val code: String = "",
     val codeClasspathLocation: String = "",
@@ -158,6 +159,7 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
     override fun beforeEach(context: ExtensionContext) {
 
         Flow.configureDefaults(chainId = FlowChainId.EMULATOR)
+        Flow.DEFAULT_ADDRESS_REGISTRY.defaultChainId = FlowChainId.EMULATOR
 
         val emulator = launchEmulator(context)
         this.process = emulator.process
@@ -262,7 +264,8 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
                     .throwOnError()
 
                 if (deployable.addToRegistry) {
-                    Flow.DEFAULT_ADDRESS_REGISTRY.register(deployable.name, testAccount.flowAddress, FlowChainId.EMULATOR)
+                    val alias = deployable.alias.ifEmpty { "0x${deployable.name.uppercase()}" }
+                    Flow.DEFAULT_ADDRESS_REGISTRY.register(alias, testAccount.flowAddress, FlowChainId.EMULATOR)
                 }
             }
         }
