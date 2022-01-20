@@ -14,7 +14,10 @@ open class TestClass(
     val address: FlowAddress,
     val balance: BigDecimal,
     val hashAlgorithm: HashAlgorithm,
-    val isValid: Boolean
+    val isValid: Boolean,
+    val type: String,
+    val capabilityAddress: FlowAddress,
+    val capabilityType: String,
 )
 
 class TestClassConverterJson : JsonCadenceConverter<TestClass> {
@@ -23,7 +26,10 @@ class TestClassConverterJson : JsonCadenceConverter<TestClass> {
             address = FlowAddress(address("address")),
             balance = bigDecimal("balance"),
             hashAlgorithm = enum("hashAlgorithm"),
-            isValid = boolean("isValid")
+            isValid = boolean("isValid"),
+            type = type("type"),
+            capabilityAddress = FlowAddress(capabilityAddress("capability")),
+            capabilityType = capabilityType("capability"),
         )
     }
 
@@ -78,12 +84,16 @@ class ScriptTest {
                         pub let balance: UFix64
                         pub let hashAlgorithm: HashAlgorithm
                         pub let isValid: Bool
+                        pub let type: Type
+                        pub let capability: Capability
                         
-                        init(address: Address, balance: UFix64, hashAlgorithm: HashAlgorithm, isValid: Bool) {
+                        init(address: Address, balance: UFix64, hashAlgorithm: HashAlgorithm, isValid: Bool, type: Type, capability: Capability) {
                             self.address = address
                             self.balance = balance
                             self.hashAlgorithm = hashAlgorithm
                             self.isValid = isValid
+                            self.type = type
+                            self.capability = capability
                         }
                     }
                     
@@ -92,7 +102,9 @@ class ScriptTest {
                             address: address,
                             balance: UFix64(1234),
                             hashAlgorithm: HashAlgorithm.SHA3_256,
-                            isValid: true
+                            isValid: true,
+                            type: Type<TestClass>(),
+                            capability: getAccount(address).getCapability<&AnyResource>(/public/path)
                         )
                     }
                 """
@@ -106,6 +118,9 @@ class ScriptTest {
         assertEquals(BigDecimal("1234"), struct.balance.stripTrailingZeros())
         assertEquals(HashAlgorithm.SHA3_256, struct.hashAlgorithm)
         assertTrue(struct.isValid)
+        assertTrue("TestClass" in struct.type)
+        assertEquals(address, struct.capabilityAddress.base16Value)
+        assertEquals("&AnyResource", struct.capabilityType)
     }
 
     @Test
