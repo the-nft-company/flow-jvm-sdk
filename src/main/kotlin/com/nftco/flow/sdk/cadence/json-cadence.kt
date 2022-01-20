@@ -179,7 +179,7 @@ open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.
 open class PathValue(val domain: String, val identifier: String) : Serializable
 open class PathField(value: PathValue) : Field<PathValue>(TYPE_PATH, value)
 
-open class CapabilityValue(val path: String, val address: String, val borrowType: String) : Serializable
+open class CapabilityValue(val path: PathField, val address: String, val borrowType: String) : Serializable
 open class CapabilityField(value: CapabilityValue) : Field<CapabilityValue>(TYPE_CAPABILITY, value)
 
 open class CompositeField(type: String, value: CompositeValue) : Field<CompositeValue>(type, value) {
