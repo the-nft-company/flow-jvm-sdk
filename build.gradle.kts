@@ -38,26 +38,6 @@ repositories {
     maven { url = uri("https://jitpack.io") }
 }
 
-dependencies {
-    api("org.jetbrains.kotlin:kotlin-reflect:1.5.10")
-    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.0")
-
-    api("org.onflow:flow:0.21")
-
-    api("com.github.TrustedDataFramework:java-rlp:1.1.20")
-
-    api("org.bouncycastle:bcpkix-jdk15on:1.69")
-
-    api(platform("com.fasterxml.jackson:jackson-bom:2.12.2"))
-    api("com.fasterxml.jackson.core:jackson-core")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin")
-
-    testApi("org.junit.jupiter:junit-jupiter:5.8.2")
-    testApi("org.assertj:assertj-core:3.21.0")
-
-    testFixturesImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-}
-
 tasks {
 
     test {
@@ -95,6 +75,9 @@ tasks {
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        registerFeature("ktor") {
+            usingSourceSet(sourceSets["main"])
+        }
     }
 
     jacocoTestReport {
@@ -202,4 +185,30 @@ tasks {
         }
         sign(publishing.publications)
     }
+}
+
+dependencies {
+    api("org.jetbrains.kotlin:kotlin-reflect:1.5.10")
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.0")
+
+    api("org.onflow:flow:0.21")
+
+    api("com.github.TrustedDataFramework:java-rlp:1.1.20")
+
+    api("org.bouncycastle:bcpkix-jdk15on:1.69")
+
+    api(platform("com.fasterxml.jackson:jackson-bom:2.12.2"))
+    api("com.fasterxml.jackson.core:jackson-core")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    "ktorApi"("io.ktor:ktor-client-core:1.6.7")
+    "ktorApi"("io.ktor:ktor-client-cio:1.6.7")
+    "ktorApi"("io.ktor:ktor-client-serialization:1.6.7")
+    "ktorApi"("io.ktor:ktor-client-jackson:1.6.7")
+    "ktorApi"("io.ktor:ktor-client-logging:1.6.7")
+
+    testApi("org.junit.jupiter:junit-jupiter:5.8.2")
+    testApi("org.assertj:assertj-core:3.21.0")
+
+    testFixturesImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
