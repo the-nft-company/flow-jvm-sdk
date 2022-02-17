@@ -144,7 +144,8 @@ object FlowTestUtil {
         arguments: String? = null,
         host: String = "localhost",
         port: Int = 3570,
-        httpPort: Int = 8081,
+        restPort: Int = 8889,
+        adminPort: Int = 8081,
         flowJsonLocation: String? = null,
         postStartCommands: Array<FlowEmulatorCommand> = emptyArray(),
         classLoader: ClassLoader = AbstractFlowEmulatorExtension::class.java.classLoader,
@@ -177,12 +178,10 @@ object FlowTestUtil {
         pidFile.delete()
 
         // is it a file?
-        if (flowJson == null) {
-            flowJson = flowJsonLocation?.let(::File)
-                ?.takeIf { it.exists() }
-                ?.takeIf { it.isFile }
-                ?.absolutePath
-        }
+        flowJson = flowJsonLocation?.let(::File)
+            ?.takeIf { it.exists() }
+            ?.takeIf { it.isFile }
+            ?.absolutePath
 
         // is it in the classpath?
         if (flowJson == null) {
@@ -228,7 +227,7 @@ object FlowTestUtil {
                 ?: throw IOException("flow command not found")
         }
 
-        val emulatorCommand = "$cmd emulator $arguments --port $port --http-port $httpPort $configFile"
+        val emulatorCommand = "$cmd emulator $arguments --port $port --rest-port $restPort --admin-port $adminPort $configFile"
 
         val start = System.currentTimeMillis()
         var proc = ProcessBuilder()

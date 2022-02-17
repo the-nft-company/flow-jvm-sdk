@@ -44,7 +44,8 @@ class FlowEmulatorTestExtension : AbstractFlowEmulatorExtension() {
 
         val config = context.requiredTestClass.getAnnotation(FlowEmulatorTest::class.java)
         val port = findFreePort(config.host)
-        val httpPort = findFreePort(config.host)
+        val restPort = findFreePort(config.host)
+        val adminPort = findFreePort(config.host)
         val serviceKeyPair = Crypto.generateKeyPair(config.signAlgo)
         val serviceAccount = TestAccount(
             address = "0xf8d6e0586b0a20c7", // TODO: is this a safe assumption?
@@ -70,7 +71,8 @@ class FlowEmulatorTestExtension : AbstractFlowEmulatorExtension() {
             arguments = args,
             host = config.host,
             port = port,
-            httpPort = httpPort,
+            restPort = restPort,
+            adminPort = adminPort,
             postStartCommands = config.postStartCommands,
             flowJsonLocation = null,
             pidFilename = config.pidFilename
@@ -81,7 +83,8 @@ class FlowEmulatorTestExtension : AbstractFlowEmulatorExtension() {
             pidFile = ret.second,
             host = config.host,
             port = port,
-            httpPort = httpPort,
+            restPort = restPort,
+            adminPort = adminPort,
             serviceAccount = serviceAccount
         )
     }
