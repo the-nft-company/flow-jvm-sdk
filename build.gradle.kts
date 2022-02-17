@@ -2,7 +2,7 @@
 
 val javaTargetVersion = "1.8"
 val defaultGroupId = "com.nftco"
-val defaultVersion = "0.7.0-SNAPSHOT"
+val defaultVersion = "0.7.1-SNAPSHOT"
 
 // other variables
 
@@ -20,7 +20,7 @@ version = when {
 }
 
 plugins {
-    id("org.jetbrains.dokka") version "1.4.20"
+    id("org.jetbrains.dokka") version "1.6.10"
     kotlin("jvm") version "1.5.10"
     idea
     jacoco
