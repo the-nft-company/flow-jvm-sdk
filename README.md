@@ -154,7 +154,7 @@ class TransactionTest {
 }
 ```
 
-There are two ways to test using the emaultor:
+There are two ways to test using the emulator:
 
 - `@FlowEmulatorProjectTest` - this uses a `flow.json` file that has your configuration in it
 - `@FlowEmulatorTest` - this creates a fresh and temporary flow configuration for each test
