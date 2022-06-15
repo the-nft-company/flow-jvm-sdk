@@ -1,6 +1,6 @@
 // configuration variables
 
-val javaTargetVersion = "1.8"
+val javaTargetVersion = "9"
 val defaultGroupId = "com.nftco"
 val defaultVersion = "0.7.1-SNAPSHOT"
 
@@ -20,11 +20,11 @@ version = when {
 }
 
 plugins {
-    id("org.jetbrains.dokka") version "1.6.10"
-    kotlin("jvm") version "1.5.10"
+//    id("org.jetbrains.dokka") version "1.6.10"
+    kotlin("jvm") version "1.7.0"
     idea
     jacoco
-    signing
+//    signing
     `java-library`
     `java-test-fixtures`
     `maven-publish`
@@ -39,21 +39,21 @@ repositories {
 }
 
 dependencies {
-    api("org.jetbrains.kotlin:kotlin-reflect:1.5.10")
-    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.0")
+    api("org.jetbrains.kotlin:kotlin-reflect:1.7.0")
+//    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.20")
 
     api("org.onflow:flow:0.21")
 
     api("com.github.TrustedDataFramework:java-rlp:1.1.20")
 
-    api("org.bouncycastle:bcpkix-jdk15on:1.69")
+    api("org.bouncycastle:bcpkix-jdk15on:1.70")
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.12.2"))
     api("com.fasterxml.jackson.core:jackson-core")
     api("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     testApi("org.junit.jupiter:junit-jupiter:5.8.2")
-    testApi("org.assertj:assertj-core:3.21.0")
+    testApi("org.assertj:assertj-core:3.23.1")
 
     testFixturesImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
@@ -72,20 +72,20 @@ tasks {
     }
 
     compileKotlin {
-        sourceCompatibility = javaTargetVersion
-        targetCompatibility = javaTargetVersion
+//        sourceCompatibility = javaTargetVersion
+//        targetCompatibility = javaTargetVersion
 
         kotlinOptions {
             jvmTarget = javaTargetVersion
-            apiVersion = "1.5"
-            languageVersion = "1.5"
+            apiVersion = "1.7"
+            languageVersion = "1.7"
             freeCompilerArgs = listOf("-Xjsr305=strict", "-Xopt-in=kotlin.RequiresOptIn")
         }
     }
 
     compileTestKotlin {
-        sourceCompatibility = javaTargetVersion
-        targetCompatibility = javaTargetVersion
+//        sourceCompatibility = javaTargetVersion
+//        targetCompatibility = javaTargetVersion
 
         kotlinOptions {
             jvmTarget = javaTargetVersion
@@ -93,8 +93,8 @@ tasks {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_1_9
+        targetCompatibility = JavaVersion.VERSION_1_9
     }
 
     jacocoTestReport {
@@ -125,11 +125,13 @@ tasks {
         )
     }
 
+/*
     val documentationJar by creating(Jar::class) {
         dependsOn(dokkaHtml)
         archiveClassifier.set("javadoc")
         from(dokkaHtml.get().outputs)
     }
+*/
 
     val sourcesJar by creating(Jar::class) {
         dependsOn(classes)
@@ -138,7 +140,7 @@ tasks {
     }
 
     artifacts {
-        add("archives", documentationJar)
+//        add("archives", documentationJar)
         add("archives", sourcesJar)
     }
 
@@ -165,7 +167,7 @@ tasks {
         publications {
             create<MavenPublication>("mavenJava") {
                 from(project.components["java"])
-                artifact(documentationJar)
+//                artifact(documentationJar)
                 artifact(sourcesJar)
 
                 pom {
@@ -194,6 +196,7 @@ tasks {
         }
     }
 
+/*
     signing {
         if (getProp("signing.key") != null) {
             useInMemoryPgpKeys(getProp("signing.key"), getProp("signing.password"))
@@ -202,4 +205,5 @@ tasks {
         }
         sign(publishing.publications)
     }
+*/
 }

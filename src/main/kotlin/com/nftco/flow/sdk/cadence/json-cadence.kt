@@ -3,6 +3,7 @@ package com.nftco.flow.sdk.cadence
 // This files contains types for the JSON-Cadence Data Interchange Format
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -201,5 +202,10 @@ open class ResourceField(value: CompositeValue) : CompositeField(TYPE_RESOURCE, 
 open class EventField(value: CompositeValue) : CompositeField(TYPE_EVENT, value)
 open class ContractField(value: CompositeValue) : CompositeField(TYPE_CONTRACT, value)
 open class EnumField(value: CompositeValue) : CompositeField(TYPE_ENUM, value)
-open class TypeValue(val staticType: String) : Serializable
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+open class StaticType(val kind: String, val typeID: String?) : Serializable
+
+open class TypeValue(val staticType: StaticType) : Serializable
+
 open class TypeField(value: TypeValue) : Field<TypeValue>(TYPE_TYPE, value)

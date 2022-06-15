@@ -93,7 +93,7 @@ data class TestContractDeployment(
         fun from(name: String, code: () -> InputStream, args: Map<String, com.nftco.flow.sdk.cadence.Field<*>> = mapOf()): TestContractDeployment {
             return TestContractDeployment(
                 name = name,
-                code = code().use { String(it.readAllBytes()) },
+                code = code().use { String(it.readBytes()) },
                 args = args
             )
         }
