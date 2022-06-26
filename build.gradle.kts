@@ -2,7 +2,7 @@
 
 val javaTargetVersion = "1.8"
 val defaultGroupId = "com.nftco"
-val defaultVersion = "0.6.0-SNAPSHOT"
+val defaultVersion = "0.7.1-SNAPSHOT"
 
 // other variables
 
@@ -20,7 +20,7 @@ version = when {
 }
 
 plugins {
-    id("org.jetbrains.dokka") version "1.4.20"
+    id("org.jetbrains.dokka") version "1.6.10"
     kotlin("jvm") version "1.5.10"
     idea
     jacoco
@@ -40,22 +40,22 @@ repositories {
 
 dependencies {
     api("org.jetbrains.kotlin:kotlin-reflect:1.5.10")
-    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.0")
 
     api("org.onflow:flow:0.21")
 
     api("com.github.TrustedDataFramework:java-rlp:1.1.20")
 
-    api("org.bouncycastle:bcpkix-jdk15on:1.68")
+    api("org.bouncycastle:bcpkix-jdk15on:1.69")
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.12.2"))
     api("com.fasterxml.jackson.core:jackson-core")
     api("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    testApi("org.junit.jupiter:junit-jupiter:5.7.1")
-    testApi("org.assertj:assertj-core:3.19.0")
+    testApi("org.junit.jupiter:junit-jupiter:5.8.2")
+    testApi("org.assertj:assertj-core:3.21.0")
 
-    testFixturesImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+    testFixturesImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
 
 tasks {

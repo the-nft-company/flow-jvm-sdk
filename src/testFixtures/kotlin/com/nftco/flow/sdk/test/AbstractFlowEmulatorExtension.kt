@@ -130,7 +130,8 @@ data class Emulator(
     val pidFile: File,
     val host: String,
     val port: Int,
-    val httpPort: Int,
+    val restPort: Int,
+    val adminPort: Int,
     val serviceAccount: TestAccount
 )
 

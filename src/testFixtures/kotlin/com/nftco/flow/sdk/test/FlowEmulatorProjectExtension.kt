@@ -29,8 +29,8 @@ annotation class FlowEmulatorProjectTest(
     val host: String = "localhost",
 
     val port: Int = -1,
-
-    val httpPort: Int = -1,
+    val restPort: Int = -1,
+    val adminPort: Int = -1,
 
     val postStartCommands: Array<FlowEmulatorCommand> = [],
 
@@ -57,13 +57,15 @@ class FlowEmulatorProjectTestExtension : AbstractFlowEmulatorExtension() {
         }
         val config = context.requiredTestClass.getAnnotation(FlowEmulatorProjectTest::class.java)
         val port = config.port.takeUnless { it < 0 } ?: findFreePort("localhost")
-        val httpPort = config.httpPort.takeUnless { it < 0 } ?: findFreePort("localhost")
+        val restPort = config.restPort.takeUnless { it < 0 } ?: findFreePort("localhost")
+        val adminPort = config.adminPort.takeUnless { it < 0 } ?: findFreePort("localhost")
         val ret = FlowTestUtil.runFlow(
             executable = config.executable,
             arguments = config.arguments.trim().takeIf { it.isNotEmpty() },
             host = config.host,
             port = port,
-            httpPort = httpPort,
+            restPort = restPort,
+            adminPort = adminPort,
             postStartCommands = config.postStartCommands,
             flowJsonLocation = config.flowJsonLocation.trim().takeIf { it.isNotEmpty() },
             pidFilename = config.pidFilename
@@ -73,7 +75,8 @@ class FlowEmulatorProjectTestExtension : AbstractFlowEmulatorExtension() {
             pidFile = ret.second,
             host = config.host,
             port = port,
-            httpPort = httpPort,
+            restPort = restPort,
+            adminPort = adminPort,
             serviceAccount = TestAccount(
                 address = config.serviceAccountAddress,
                 privateKey = config.serviceAccountPrivateKey,

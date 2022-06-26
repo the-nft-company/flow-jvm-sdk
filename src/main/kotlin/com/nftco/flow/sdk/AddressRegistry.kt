@@ -14,6 +14,8 @@ class AddressRegistry {
         const val LOCKED_TOKENS = "0xLOCKEDTOKENS"
         const val STAKING_PROXY = "0xSTAKINGPROXY"
         const val NON_FUNGIBLE_TOKEN = "0xNONFUNGIBLETOKEN"
+        const val NFT_STOREFRONT = "0xNFTSTOREFRONT"
+        const val TOKEN_FORWARDING = "0xTOKENFORWARDING"
     }
 
     private val SCRIPT_TOKEN_MAP: MutableMap<FlowChainId, MutableMap<String, FlowAddress>> = mutableMapOf()
@@ -75,7 +77,8 @@ class AddressRegistry {
                 FLOW_TABLE_STAKING to FlowAddress("0x9eca2b38b18b5dfe"),
                 LOCKED_TOKENS to FlowAddress("0x95e019a17d0e23d7"),
                 STAKING_PROXY to FlowAddress("0x7aad92e5a0715d21"),
-                NON_FUNGIBLE_TOKEN to FlowAddress("0x631e88ae7f1d7c20")
+                NON_FUNGIBLE_TOKEN to FlowAddress("0x631e88ae7f1d7c20"),
+                NFT_STOREFRONT to FlowAddress("0x94b06cfca1d8a476")
             ),
             FlowChainId.MAINNET to mutableMapOf(
                 FUNGIBLE_TOKEN to FlowAddress("0xf233dcee88fe0abe"),
@@ -84,7 +87,9 @@ class AddressRegistry {
                 FLOW_TABLE_STAKING to FlowAddress("0x8624b52f9ddcd04a"),
                 LOCKED_TOKENS to FlowAddress("0x8d0e87b65159ae63"),
                 STAKING_PROXY to FlowAddress("0x62430cf28c26d095"),
-                NON_FUNGIBLE_TOKEN to FlowAddress("0x1d7e57aa55817448")
+                NON_FUNGIBLE_TOKEN to FlowAddress("0x1d7e57aa55817448"),
+                NFT_STOREFRONT to FlowAddress("0x4eb8a10cb9f87357"),
+                TOKEN_FORWARDING to FlowAddress("0xe544175ee0461c4b")
             ),
         ).forEach { chain ->
             chain.value.forEach {
