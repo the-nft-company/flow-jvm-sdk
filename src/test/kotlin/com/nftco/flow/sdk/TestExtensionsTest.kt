@@ -80,6 +80,25 @@ class TestExtensionsTest {
     @FlowTestAccount
     lateinit var account4: TestAccount
 
+    @FlowTestAccount(
+        signAlgo = SignatureAlgorithm.ECDSA_SECP256k1,
+        balance = 420.0,
+        contracts = [
+            FlowTestContractDeployment(
+                name = "ContractInterface",
+                code = "pub contract interface ContractInterface { }"
+            ),
+            FlowTestContractDeployment(
+                name = "ContractSuccessor",
+                code = """
+                    import ContractInterface from 0xCONTRACTINTERFACE
+                    pub contract ContractSuccessor : ContractInterface { init() { } }
+                """
+            ),
+        ]
+    )
+    lateinit var account5: TestAccount
+
     @Test
     fun `Test extensions work`() {
         accessAPI.ping()
@@ -90,14 +109,16 @@ class TestExtensionsTest {
         assertTrue(account2.isValid)
         assertTrue(account3.isValid)
         assertTrue(account4.isValid)
+        assertTrue(account5.isValid)
 
         val addresses = setOf(
             account0.flowAddress,
             account1.flowAddress,
             account2.flowAddress,
             account3.flowAddress,
-            account4.flowAddress
+            account4.flowAddress,
+            account5.flowAddress,
         )
-        assertEquals(5, addresses.size)
+        assertEquals(6, addresses.size)
     }
 }
