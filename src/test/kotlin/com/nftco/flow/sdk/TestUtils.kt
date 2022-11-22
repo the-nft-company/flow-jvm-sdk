@@ -6,6 +6,9 @@ object TestUtils {
 
     fun newTestnetAccessApi(): FlowAccessApi = Flow.newAccessApi(TESTNET_HOSTNAME)
 
+    fun newSandboxAccessApi(): FlowAccessApi = Flow.newAccessApi(SANDBOXNET_HOSTNAME)
+
     val MAINNET_HOSTNAME = "access.mainnet.nodes.onflow.org"
     val TESTNET_HOSTNAME = "access.devnet.nodes.onflow.org"
+    val SANDBOXNET_HOSTNAME = "access.sandboxnet.nodes.onflow.org"
 }
