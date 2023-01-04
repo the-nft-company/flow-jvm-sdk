@@ -170,7 +170,7 @@ object FlowTestUtil {
             // only happen when debugging unit tests in the IDE.
             try {
                 val pid = String(pidFile.readBytes()).toLong()
-                ProcessHandle.of(pid).ifPresent { it.destroyForcibly() }
+//                ProcessHandle.of(pid).ifPresent { it.destroyForcibly() }
             } catch (e: Throwable) {
                 println("Error forcibly killing a zombie emulator process, tests may fail")
             }
@@ -239,7 +239,7 @@ object FlowTestUtil {
         val ret = proc.start()
 
         if (ret.isAlive) {
-            pidFile.writeBytes(ret.pid().toString().toByteArray())
+//            pidFile.writeBytes(ret.pid().toString().toByteArray())
         }
 
         val api = Flow.newAccessApi(host = host, port = port) as FlowAccessApiImpl
