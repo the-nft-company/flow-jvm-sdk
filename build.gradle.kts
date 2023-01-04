@@ -1,8 +1,8 @@
 // configuration variables
 
 val javaTargetVersion = "1.8"
-val defaultGroupId = "com.nftco"
-val defaultVersion = "0.7.4-SNAPSHOT"
+val defaultGroupId = "com.nftco,outblock"
+val defaultVersion = "0.7.5-SNAPSHOT"
 
 // other variables
 
@@ -179,9 +179,9 @@ tasks {
                     url.set("https://onflow.org")
                     description.set("The Flow Blockchain JVM SDK")
                     scm {
-                        url.set("https://github.com/onflow/flow")
-                        connection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
-                        developerConnection.set("scm:git:git@github.com/onflow/flow-jvm-sdk.git")
+                        url.set("https://github.com/Outblock/flow-jvm-sdk")
+                        connection.set("scm:git@github.com:Outblock/flow-jvm-sdk.git")
+                        developerConnection.set("scm:git@github.com:Outblock/flow-jvm-sdk.git")
                     }
                     developers {
                         developer {
