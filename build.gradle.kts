@@ -1,7 +1,7 @@
 // configuration variables
 
 val javaTargetVersion = "1.8"
-val defaultGroupId = "com.nftco,outblock"
+val defaultGroupId = "com.nftco.outblock"
 val defaultVersion = "0.7.5-SNAPSHOT"
 
 // other variables
