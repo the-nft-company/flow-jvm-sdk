@@ -1,7 +1,5 @@
 package com.nftco.flow.sdk
 
-import com.nftco.flow.sdk.cadence.CapabilityValue
-import com.nftco.flow.sdk.cadence.toMap
 import kotlinx.serialization.Serializable
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
@@ -70,7 +68,6 @@ class JsonCadenceTest {
                 }
                 """.trimIndent()
             }
-
         }
         val data = result.jsonCadence.decode<Boolean>()
         Assertions.assertThat(data).isEqualTo(true)
@@ -86,7 +83,6 @@ class JsonCadenceTest {
                 }
                 """.trimIndent()
             }
-
         }
 
         val data = result.jsonCadence.decode<List<ULong>>()
@@ -104,7 +100,6 @@ class JsonCadenceTest {
                 }
                 """.trimIndent()
             }
-
         }
 
         val data = result.jsonCadence.decode<Double>()
