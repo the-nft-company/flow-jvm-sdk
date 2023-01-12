@@ -105,7 +105,7 @@ class TransactionTest {
     @Test
     fun `Can connect to sandboxnet`() {
 
-        val accessAPI = TestUtils.newSandboxAccessApi()
+        val accessAPI = TestUtils.newSandboxnetAccessApi()
         accessAPI.ping()
 
         val address = FlowAddress("4e8e130b4fb9aee2")
