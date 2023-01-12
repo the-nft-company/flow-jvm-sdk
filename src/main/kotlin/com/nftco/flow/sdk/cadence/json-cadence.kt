@@ -219,7 +219,7 @@ abstract class Field<T> constructor(
             // TODO: Handle type decode
             is TypeField -> { value?.let { toMap(it) } }
 
-            else ->  {
+            else -> {
                 throw Exception(" Can't find right class ")
             }
         }
@@ -252,7 +252,7 @@ fun Any?.toJsonElement(): JsonElement = when (this) {
 
 fun <T : Any> toMap(obj: T): Map<String, Any?> {
     return (obj::class as KClass<T>).memberProperties.associate { prop ->
-        prop.name to prop.get(obj)?.let {value ->
+        prop.name to prop.get(obj)?.let { value ->
             if (value::class.isData) {
                 toMap(value)
             } else {

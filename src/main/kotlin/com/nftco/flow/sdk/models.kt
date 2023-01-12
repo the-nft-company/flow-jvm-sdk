@@ -950,4 +950,4 @@ data class FlowEventPayload(override val bytes: ByteArray) : Serializable, Bytes
 fun FlowEventPayload.decodeToAny() = jsonCadence.decodeToAny()
 
 @kotlin.jvm.Throws
-inline fun <reified T>FlowEventPayload.decode(): T = jsonCadence.decode()
+inline fun <reified T> FlowEventPayload.decode(): T = jsonCadence.decode()
