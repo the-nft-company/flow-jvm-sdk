@@ -21,7 +21,7 @@ version = when {
 
 plugins {
     id("org.jetbrains.dokka") version "1.6.10"
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.7.10"
     idea
     jacoco
     signing
@@ -30,12 +30,14 @@ plugins {
     `maven-publish`
     id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
     id("org.jmailen.kotlinter") version "3.4.0"
+    id("kotlinx-serialization") version "1.8.0"
 }
 
 repositories {
     gradlePluginPortal()
     mavenCentral()
     maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://kotlin.bintray.com/kotlinx") }
 }
 
 dependencies {
@@ -45,6 +47,8 @@ dependencies {
     api("org.onflow:flow:0.21")
 
     api("com.github.TrustedDataFramework:java-rlp:1.1.20")
+
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
     api("org.bouncycastle:bcpkix-jdk15on:1.69")
 
@@ -72,8 +76,6 @@ tasks {
     }
 
     compileKotlin {
-        sourceCompatibility = javaTargetVersion
-        targetCompatibility = javaTargetVersion
 
         kotlinOptions {
             jvmTarget = javaTargetVersion
@@ -84,8 +86,6 @@ tasks {
     }
 
     compileTestKotlin {
-        sourceCompatibility = javaTargetVersion
-        targetCompatibility = javaTargetVersion
 
         kotlinOptions {
             jvmTarget = javaTargetVersion
