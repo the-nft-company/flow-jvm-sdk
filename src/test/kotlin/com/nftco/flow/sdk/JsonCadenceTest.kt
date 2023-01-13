@@ -8,6 +8,13 @@ class JsonCadenceTest {
 
     @Serializable
     data class StorageInfo(
+        val capacity: Int,
+        val used: Int,
+        val available: Int
+    )
+
+    @Serializable
+    data class StorageInfoComplex(
         val capacity: ULong,
         val used: ULong,
         val available: ULong,
@@ -183,7 +190,7 @@ class JsonCadenceTest {
             arg { address("0x84221fe0294044d7") }
         }
 
-        val data = result.decode<Map<String, List<StorageInfo>>>()
+        val data = result.decode<Map<String, List<StorageInfoComplex>>>()
         Assertions.assertThat(data["test"]!!.first().foo.bar).isEqualTo(1)
     }
 }
