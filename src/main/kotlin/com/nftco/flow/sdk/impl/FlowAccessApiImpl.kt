@@ -25,9 +25,10 @@ class FlowAccessApiImpl(
         )
     }
 
-    override fun getLatestBlockHeader(): FlowBlockHeader {
+    override fun getLatestBlockHeader(sealed: Boolean): FlowBlockHeader {
         val ret = api.getLatestBlockHeader(
             Access.GetLatestBlockHeaderRequest.newBuilder()
+                .setIsSealed(sealed)
                 .build()
         )
         return FlowBlockHeader.of(ret.block)
