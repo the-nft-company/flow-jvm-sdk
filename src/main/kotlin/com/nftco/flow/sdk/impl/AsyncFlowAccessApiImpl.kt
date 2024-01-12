@@ -34,10 +34,11 @@ class AsyncFlowAccessApiImpl(
         }
     }
 
-    override fun getLatestBlockHeader(): CompletableFuture<FlowBlockHeader> {
+    override fun getLatestBlockHeader(sealed: Boolean): CompletableFuture<FlowBlockHeader> {
         return completableFuture(
             api.getLatestBlockHeader(
                 Access.GetLatestBlockHeaderRequest.newBuilder()
+                    .setIsSealed(sealed)
                     .build()
             )
         ).thenApply {
