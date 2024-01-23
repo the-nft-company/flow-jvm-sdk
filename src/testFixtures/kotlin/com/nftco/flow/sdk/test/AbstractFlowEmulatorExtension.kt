@@ -117,9 +117,9 @@ data class TestAccount(
 
     val flowAddress: FlowAddress get() = FlowAddress(address)
 
-    val isValid: Boolean get() = !address.isEmpty()
-        && !privateKey.isEmpty()
-        && !publicKey.isEmpty()
+    val isValid: Boolean get() = address.isNotEmpty()
+        && privateKey.isNotEmpty()
+        && publicKey.isNotEmpty()
         && signAlgo != SignatureAlgorithm.UNKNOWN
         && hashAlgo != HashAlgorithm.UNKNOWN
         && keyIndex >= 0
@@ -137,10 +137,10 @@ data class Emulator(
 
 abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExceptionHandler {
 
-    var process: Process? = null
-    var pidFile: File? = null
-    var accessApi: FlowAccessApiImpl? = null
-    var asyncAccessApi: AsyncFlowAccessApiImpl? = null
+    private var process: Process? = null
+    private var pidFile: File? = null
+    private var accessApi: FlowAccessApiImpl? = null
+    private var asyncAccessApi: AsyncFlowAccessApiImpl? = null
 
     protected abstract fun launchEmulator(context: ExtensionContext): Emulator
 

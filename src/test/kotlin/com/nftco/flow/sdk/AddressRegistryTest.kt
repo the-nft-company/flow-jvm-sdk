@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 
 internal class AddressRegistryTest {
 
-    val registry = AddressRegistry()
+    private val registry = AddressRegistry()
 
     @BeforeEach
     fun setup() {
