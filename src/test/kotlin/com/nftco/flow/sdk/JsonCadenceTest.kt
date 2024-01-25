@@ -30,12 +30,8 @@ class JsonCadenceTest {
 
     @Test
     fun `Can parse new JSON Cadence`() {
-<<<<<<< HEAD
-        val tx = flow.getTransactionResultById(FlowId("663869d910278d7b6caf793396f6f2c5b91aace7180c2c70cfb3b0b6efd7a049"))!!
-=======
         val flow = TestUtils.newMainnetAccessApi()
         val tx = flow.getTransactionResultById(FlowId("273f68ffe175a0097db60bc7cf5e92c5a775d189af3f5636f5432c1206be771a"))!!
->>>>>>> 331c6fb (Fix test cases not able to fetch transactions from Mainnet)
         val events = tx.events.map { it.payload.jsonCadence }
         Assertions.assertThat(events).hasSize(7)
     }
