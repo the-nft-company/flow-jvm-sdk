@@ -102,6 +102,19 @@ class TransactionTest {
         assertThat(account.keys).isNotEmpty
     }
 
+    @Test
+    fun `Can connect to sandboxnet`() {
+
+        val accessAPI = TestUtils.newSandboxnetAccessApi()
+        accessAPI.ping()
+
+        val address = FlowAddress("4e8e130b4fb9aee2")
+        val account = accessAPI.getAccountAtLatestBlock(address)
+        assertThat(account).isNotNull
+        println(account!!)
+        assertThat(account.keys).isNotEmpty
+    }
+
     // ignored for now because for whatever reason it can't find this transaction
     @Test
     fun `Can parse events`() {

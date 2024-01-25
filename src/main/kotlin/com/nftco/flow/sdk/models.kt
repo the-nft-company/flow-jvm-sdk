@@ -39,7 +39,8 @@ enum class FlowChainId(
     MAINNET("flow-mainnet"),
     TESTNET("flow-testnet"),
     CANARYNET("flow-canarynet"),
-    EMULATOR("flow-emulator");
+    EMULATOR("flow-emulator"),
+    SANDBOXNET("flow-sandboxnet");
 
     companion object {
         @JvmStatic
