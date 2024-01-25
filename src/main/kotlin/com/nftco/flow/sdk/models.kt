@@ -837,6 +837,12 @@ data class FlowScriptResponse(override val bytes: ByteArray) : Serializable, Byt
     }
 }
 
+@kotlin.jvm.Throws
+fun FlowScriptResponse.decodeToAny() = jsonCadence.decodeToAny()
+
+@kotlin.jvm.Throws
+inline fun <reified T> FlowScriptResponse.decode(): T = jsonCadence.decode()
+
 data class FlowSignature(override val bytes: ByteArray) : Serializable, BytesHolder {
     constructor(hex: String) : this(hex.hexToBytes())
     override fun equals(other: Any?): Boolean {
@@ -939,3 +945,9 @@ data class FlowEventPayload(override val bytes: ByteArray) : Serializable, Bytes
         return bytes.contentHashCode()
     }
 }
+
+@kotlin.jvm.Throws
+fun FlowEventPayload.decodeToAny() = jsonCadence.decodeToAny()
+
+@kotlin.jvm.Throws
+inline fun <reified T> FlowEventPayload.decode(): T = jsonCadence.decode()
