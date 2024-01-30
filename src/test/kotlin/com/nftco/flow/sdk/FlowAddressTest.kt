@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 
 class FlowAddressTest {
-
     @Test
     fun `Can create FlowAddress from a hex string`() {
         Assertions.assertThat(FlowAddress("0x01").base16Value).isEqualTo("0000000000000001")

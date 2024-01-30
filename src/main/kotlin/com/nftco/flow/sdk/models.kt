@@ -59,6 +59,7 @@ enum class SignatureAlgorithm(
     UNKNOWN("unknown", "unknown", "unknown", -1, 0),
     ECDSA_P256("ECDSA", "P-256", "ECDSA_P256", 2, 1),
     ECDSA_SECP256k1("ECDSA", "secp256k1", "ECDSA_secp256k1", 3, 2);
+
     companion object {
         @JvmStatic
         fun fromCode(code: Int): SignatureAlgorithm = values()
@@ -82,6 +83,7 @@ enum class HashAlgorithm(
     SHA2_384("SHA-384", 384, "SHA384withECDSA", 1, 2),
     SHA3_256("SHA3-256", 256, "SHA3-256withECDSA", 3, 3),
     SHA3_384("SHA3-384", 384, "SHA3-384withECDSA", 3, 4);
+
     companion object {
         @JvmStatic
         fun fromCode(code: Int): HashAlgorithm = values()
@@ -94,7 +96,6 @@ enum class HashAlgorithm(
 }
 
 interface Signer {
-
     val hasher: Hasher
 
     fun sign(bytes: ByteArray): ByteArray
@@ -362,7 +363,6 @@ data class FlowTransaction(
     val payloadSignatures: List<FlowTransactionSignature> = emptyList(),
     val envelopeSignatures: List<FlowTransactionSignature> = emptyList()
 ) : Serializable {
-
     private val payload: Payload
         get() = Payload(
             script = script.bytes,
@@ -647,7 +647,7 @@ data class FlowBlock(
     val timestamp: LocalDateTime,
     val collectionGuarantees: List<FlowCollectionGuarantee>,
     val blockSeals: List<FlowBlockSeal>,
-    val signatures: List<FlowSignature>
+    val signatures: List<FlowSignature>,
 ) : Serializable {
     companion object {
         @JvmStatic
@@ -771,7 +771,6 @@ data class FlowAddress private constructor(override val bytes: ByteArray) : Seri
 }
 
 data class FlowArgument(override val bytes: ByteArray) : Serializable, BytesHolder {
-
     constructor(jsonCadence: Field<*>) : this(Flow.encodeJsonCadence(jsonCadence))
 
     private var _jsonCadence: Field<*>? = null
@@ -812,7 +811,6 @@ data class FlowScript(override val bytes: ByteArray) : Serializable, BytesHolder
 }
 
 data class FlowScriptResponse(override val bytes: ByteArray) : Serializable, BytesHolder {
-
     constructor(jsonCadence: Field<*>) : this(Flow.encodeJsonCadence(jsonCadence))
 
     private var _jsonCadence: Field<*>? = null
@@ -921,7 +919,6 @@ data class FlowSnapshot(override val bytes: ByteArray) : Serializable, BytesHold
 }
 
 data class FlowEventPayload(override val bytes: ByteArray) : Serializable, BytesHolder {
-
     constructor(jasonCadence: Field<*>) : this(Flow.encodeJsonCadence(jasonCadence))
 
     private var _jsonCadence: Field<*>? = null

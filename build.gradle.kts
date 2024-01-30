@@ -94,9 +94,9 @@ tasks {
     jacocoTestReport {
         dependsOn(test)
         reports {
-            html.isEnabled = true
-            xml.isEnabled = true
-            csv.isEnabled = false
+            html.required = true
+            xml.required = true
+            csv.required = false
         }
     }
 
