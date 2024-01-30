@@ -2,7 +2,6 @@ package com.nftco.flow.sdk
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.UnsafeByteOperations
-import com.nftco.flow.sdk.Flow.decodeJsonCadence
 import com.nftco.flow.sdk.cadence.EventField
 import com.nftco.flow.sdk.cadence.Field
 import org.onflow.protobuf.access.Access
@@ -778,7 +777,7 @@ data class FlowArgument(override val bytes: ByteArray) : Serializable, BytesHold
     val jsonCadence: Field<*>
         get() {
             if (_jsonCadence == null) {
-                _jsonCadence = decodeJsonCadence(bytes)
+                _jsonCadence = Flow.decodeJsonCadence(bytes)
             }
             return _jsonCadence!!
         }
@@ -818,7 +817,7 @@ data class FlowScriptResponse(override val bytes: ByteArray) : Serializable, Byt
     val jsonCadence: Field<*>
         get() {
             if (_jsonCadence == null) {
-                _jsonCadence = decodeJsonCadence(bytes)
+                _jsonCadence = Flow.decodeJsonCadence(bytes)
             }
             return _jsonCadence!!
         }
@@ -835,6 +834,9 @@ data class FlowScriptResponse(override val bytes: ByteArray) : Serializable, Byt
         return bytes.contentHashCode()
     }
 }
+
+@kotlin.jvm.Throws
+fun FlowScriptResponse.decodeToAny() { jsonCadence.decodeToAny() }
 
 @kotlin.jvm.Throws
 inline fun <reified T> FlowScriptResponse.decode(): T = jsonCadence.decode()
@@ -923,7 +925,7 @@ data class FlowEventPayload(override val bytes: ByteArray) : Serializable, Bytes
     val jsonCadence: Field<*>
         get() {
             if (_jsonCadence == null) {
-                _jsonCadence = decodeJsonCadence(bytes)
+                _jsonCadence = Flow.decodeJsonCadence(bytes)
             }
             return _jsonCadence!!
         }
@@ -941,3 +943,8 @@ data class FlowEventPayload(override val bytes: ByteArray) : Serializable, Bytes
     }
 }
 
+@kotlin.jvm.Throws
+fun FlowEventPayload.decodeToAny() { jsonCadence.decodeToAny() }
+
+@kotlin.jvm.Throws
+inline fun <reified T> FlowEventPayload.decode(): T = jsonCadence.decode()

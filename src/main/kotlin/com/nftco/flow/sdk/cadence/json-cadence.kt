@@ -14,10 +14,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.nftco.flow.sdk.Flow
+import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.bytesToHex
+import kotlinx.serialization.json.*
+import kotlinx.serialization.serializer
 import java.io.Serializable
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.reflect.full.createType
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.KClass
 
 // https://docs.onflow.org/cadence/json-cadence-spec/#types
 
@@ -140,6 +146,7 @@ const val TYPE_CONTRACT_INTERFACE = "ContractInterface"
         Type(value = TypeField::class, name = TYPE_TYPE)
     ]
 )
+
 abstract class Field<T> constructor(
     val type: String,
     val value: T?
@@ -154,6 +161,104 @@ abstract class Field<T> constructor(
         var result = type.hashCode()
         result = 31 * result + (value?.hashCode() ?: 0)
         return result
+    }
+
+    @kotlin.jvm.Throws
+    fun decodeToAny(): Any? {
+        return when (this) {
+            is StringField -> { value }
+            is BooleanField -> { value }
+            is VoidField -> { null }
+            is OptionalField -> { value?.decodeToAny() }
+            is IntNumberField -> { toInt() }
+            is UIntNumberField -> { toUInt() }
+
+            is Int8NumberField -> { toInt() }
+            is UInt8NumberField -> { toUInt() }
+            is Int16NumberField -> { toInt() }
+            is UInt16NumberField -> { toUInt() }
+
+            is Int32NumberField -> { toInt() }
+            is UInt32NumberField -> { toUInt() }
+            is Int64NumberField -> { toLong() }
+            is UInt64NumberField -> { toULong() }
+
+            is Int128NumberField -> { toBigInteger() }
+            is UInt128NumberField -> { toBigInteger() }
+
+            is Int256NumberField -> { toBigInteger() }
+            is UInt256NumberField -> { toBigInteger() }
+
+            is Word8NumberField -> { toUInt() }
+            is Word16NumberField -> { toUInt() }
+            is Word32NumberField -> { toUInt() }
+            is Word64NumberField -> { toUInt() }
+
+            is Fix64NumberField -> { toDouble() }
+            is UFix64NumberField -> { toDouble() }
+
+            is ArrayField -> { value?.map { it.decodeToAny() } }
+            is AddressField -> { value?.let { FlowAddress(it) } }
+
+            // CompositeValue
+            is StructField -> { value?.toMap() }
+            is EnumField -> { value?.toMap() }
+            is ResourceField -> { value?.toMap() }
+            is EventField -> { value?.toMap() }
+            is ContractField -> { value?.let { toMap(it) } }
+
+            is DictionaryField -> {
+                this.value?.associate {
+                    it.key.decodeToAny() to it.value.decodeToAny()
+                }
+            }
+
+            is CapabilityField -> { value?.let { toMap(it) } }
+            is PathField -> { value?.let { toMap(it) } }
+
+            // TODO: Handle type decode
+            is TypeField -> { value?.let { toMap(it) } }
+
+            else -> {
+                throw Exception(" Can't find right class ")
+            }
+        }
+    }
+
+    @kotlin.jvm.Throws
+    inline fun <reified T> decode(): T {
+        val jsonElement = decodeToAny().toJsonElement()
+        return Json.decodeFromJsonElement(jsonElement)
+    }
+}
+
+fun CompositeValue.toMap(): Map<String, Any?> {
+    return this.fields.associate {
+        it.name to it.value.decodeToAny()
+    }
+}
+
+fun Any?.toJsonElement(): JsonElement = when (this) {
+    null -> JsonNull
+    is JsonElement -> this
+    is Number -> JsonPrimitive(this)
+    is Boolean -> JsonPrimitive(this)
+    is String -> JsonPrimitive(this)
+    is Array<*> -> JsonArray(map { it.toJsonElement() })
+    is List<*> -> JsonArray(map { it.toJsonElement() })
+    is Map<*, *> -> JsonObject(map { it.key.toString() to it.value.toJsonElement() }.toMap())
+    else -> Json.encodeToJsonElement(serializer(this::class.createType()), this)
+}
+
+fun <T : Any> toMap(obj: T): Map<String, Any?> {
+    return (obj::class as KClass<T>).memberProperties.associate { prop ->
+        prop.name to prop.get(obj)?.let { value ->
+            if (value::class.isData) {
+                toMap(value)
+            } else {
+                value
+            }
+        }
     }
 }
 
@@ -223,9 +328,11 @@ open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.
     constructor(bytes: ByteArray) : this(bytes.bytesToHex())
 }
 
+@kotlinx.serialization.Serializable
 open class PathValue(val domain: String, val identifier: String) : Serializable
 open class PathField(value: PathValue) : Field<PathValue>(TYPE_PATH, value)
 
+@kotlinx.serialization.Serializable
 open class CapabilityValue(val path: String, val address: String, val borrowType: String) : Serializable
 open class CapabilityField(value: CapabilityValue) : Field<CapabilityValue>(TYPE_CAPABILITY, value)
 
@@ -311,7 +418,7 @@ open class FunctionType(
 
 @JsonDeserialize(using = JsonDeserializer.None::class)
 open class ReferenceType(
-    val typeID: String?,
+    val typeID: String,
     val authorized: Boolean,
     val type: CadenceType
 ) : CadenceType(TYPE_REFERENCE)
@@ -342,11 +449,11 @@ class CadenceTypeDeserializer(vc: Class<*>?) : StdDeserializer<CadenceType>(vc) 
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): CadenceType {
         val node = p.codec.readTree<JsonNode>(p)
         if (!node.isObject) {
-            throw MismatchedInputException.from(p, node.nodeType::class.java, "Expected object for CadenceType, found ${node.nodeType} instead")
+            throw MismatchedInputException.from(p, "Expected object for CadenceType, found ${node.nodeType} instead")
         }
 
         val kind = node.get("kind")?.asText()
-            ?: throw MismatchedInputException.from(p, node.nodeType::class.java, "kind not specified for CadenceType")
+            ?: throw MismatchedInputException.from(p, "kind not specified for CadenceType")
         val type = node.get("type")
 
         if (type != null && type.isTextual && !type.textValue().isNullOrBlank()) {
@@ -390,16 +497,13 @@ class CadenceTypeDeserializer(vc: Class<*>?) : StdDeserializer<CadenceType>(vc) 
             TYPE_REFERENCE -> {
                 p.codec.treeToValue(node, ReferenceType::class.java)
             }
-            TYPE_RESTRICTION -> {
-                p.codec.treeToValue(node, RestrictionType::class.java)
-            }
             TYPE_CAPABILITY -> {
                 p.codec.treeToValue(node, CapabilityType::class.java)
             }
             TYPE_ENUM -> {
                 p.codec.treeToValue(node, EnumType::class.java)
             }
-            else -> throw MismatchedInputException.from(p, node.nodeType::class.java, "Unknown CadenceType kind: $kind")
+            else -> throw MismatchedInputException.from(p, "Unknown CadenceType kind: $kind")
         }
     }
 }
