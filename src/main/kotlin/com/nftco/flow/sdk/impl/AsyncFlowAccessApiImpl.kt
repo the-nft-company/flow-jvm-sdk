@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture
 class AsyncFlowAccessApiImpl(
     private val api: AccessAPIGrpc.AccessAPIFutureStub
 ) : AsyncFlowAccessApi, Closeable {
-
     override fun close() {
         val chan = api.channel
         if (chan is ManagedChannel) {

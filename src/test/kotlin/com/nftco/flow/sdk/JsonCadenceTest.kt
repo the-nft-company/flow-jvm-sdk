@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JsonCadenceTest {
-
     @Serializable
     data class StorageInfo(
         val capacity: Int,
