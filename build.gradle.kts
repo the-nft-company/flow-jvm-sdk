@@ -46,6 +46,8 @@ dependencies {
 
     api("com.github.TrustedDataFramework:java-rlp:1.1.20")
 
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+
     api("org.bouncycastle:bcpkix-jdk18on:1.76")
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.16.1"))
