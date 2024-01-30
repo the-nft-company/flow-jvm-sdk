@@ -325,40 +325,10 @@ class JsonCadenceBuilderTypeSerializationTest {
     }
 
     @Test
-    fun `test decode with partial type and missing type field`() {
-        val invalidJson = "{\"kind\": \"PartialCadenceType\"}"
-        assertThrows(MismatchedInputException::class.java) {
-            objectMapper.readValue(invalidJson, CadenceType::class.java)
-        }
-    }
-
-    @Test
-    fun `test decode with missing type field in simple type`() {
-        val invalidJson = "{\"kind\": \"String\"}"
-        assertThrows(MismatchedInputException::class.java) {
-            objectMapper.readValue(invalidJson, CadenceType::class.java)
-        }
-    }
-
-    @Test
-    fun `test decode with missing type field in non-simple type`() {
-        val invalidJson = "{\"kind\": \"CompositeType\"}"
-        assertThrows(MismatchedInputException::class.java) {
-            objectMapper.readValue(invalidJson, CadenceType::class.java)
-        }
-    }
-
-    @Test
-    fun `test decode with unsupported CompositeType kind`() {
+    fun `test decode with missing type field in composite type`() {
         val invalidJson = """
         {
-            "kind": "CompositeType",
-            "type": {
-                "type": "Struct",
-                "typeID": "1",
-                "initializers": [],
-                "fields": []
-            }
+            "kind": "Struct"
         }
         """.trimIndent()
         assertThrows(MismatchedInputException::class.java) {
@@ -367,7 +337,41 @@ class JsonCadenceBuilderTypeSerializationTest {
     }
 
     @Test
+    fun `test decode with missing type field in complex type`() {
+        val invalidJson = """
+        {
+            "kind": "Optional"
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with partial Cadence type and missing type field`() {
+        val invalidJson = "{\"kind\": \"PartialCadenceType\"}"
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
     fun `test decode with unknown CadenceType kind`() {
+        val invalidJson = """
+        {
+            "kind": "UnknownKind",
+            "type": {}
+        }
+        """.trimIndent()
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with unknown CadenceType kind 2`() {
         val invalidJson = "{\"kind\": \"UnknownKind\", \"type\": \"\"}"
         assertThrows(MismatchedInputException::class.java) {
             objectMapper.readValue(invalidJson, CadenceType::class.java)
