@@ -22,17 +22,11 @@ import java.math.BigDecimal
 @ExtendWith(FlowEmulatorTestExtension::class)
 @API(status = API.Status.STABLE, since = "5.0")
 annotation class FlowEmulatorTest(
-
     val executable: String = "flow",
-
     val host: String = "localhost",
-
     val postStartCommands: Array<FlowEmulatorCommand> = [],
-
     val pidFilename: String = "flow-emulator.pid",
-
     val signAlgo: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256,
-
     val hashAlgo: HashAlgorithm = HashAlgorithm.SHA3_256
 )
 

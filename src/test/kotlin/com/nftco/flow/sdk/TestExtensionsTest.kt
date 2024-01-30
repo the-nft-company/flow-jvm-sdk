@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 
 @FlowEmulatorTest
 class TestExtensionsTest {
-
     @FlowTestClient
     lateinit var accessAPI: FlowAccessApi
 

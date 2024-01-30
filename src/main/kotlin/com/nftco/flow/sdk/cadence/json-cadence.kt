@@ -418,7 +418,7 @@ open class FunctionType(
 
 @JsonDeserialize(using = JsonDeserializer.None::class)
 open class ReferenceType(
-    val typeID: String,
+    val typeID: String?,
     val authorized: Boolean,
     val type: CadenceType
 ) : CadenceType(TYPE_REFERENCE)
@@ -496,6 +496,9 @@ class CadenceTypeDeserializer(vc: Class<*>?) : StdDeserializer<CadenceType>(vc) 
             }
             TYPE_REFERENCE -> {
                 p.codec.treeToValue(node, ReferenceType::class.java)
+            }
+            TYPE_RESTRICTION -> {
+                p.codec.treeToValue(node, RestrictionType::class.java)
             }
             TYPE_CAPABILITY -> {
                 p.codec.treeToValue(node, CapabilityType::class.java)
