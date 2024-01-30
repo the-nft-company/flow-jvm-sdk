@@ -10,7 +10,6 @@ import java.io.Closeable
 class FlowAccessApiImpl(
     private val api: AccessAPIGrpc.AccessAPIBlockingStub
 ) : FlowAccessApi, Closeable {
-
     override fun close() {
         val chan = api.channel
         if (chan is ManagedChannel) {

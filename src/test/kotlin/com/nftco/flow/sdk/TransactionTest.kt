@@ -11,7 +11,6 @@ import kotlin.random.Random
 
 @FlowEmulatorTest
 class TransactionTest {
-
     @FlowTestClient
     lateinit var accessAPI: FlowAccessApi
 
@@ -40,7 +39,6 @@ class TransactionTest {
 
     @Test
     fun `Can sign transactions`() {
-
         val pk1 = Crypto.getSigner(Crypto.generateKeyPair().private)
         val pk2 = Crypto.getSigner(Crypto.generateKeyPair().private)
         val pk3 = Crypto.getSigner(Crypto.generateKeyPair().private)
@@ -64,7 +62,6 @@ class TransactionTest {
 
     @Test
     fun `Canonical transaction form is accurate`() {
-
         val payloadEnvelope = transaction.canonicalPayload
 
         // those values were generated from Go implementation for the same transaction input data
@@ -91,7 +88,6 @@ class TransactionTest {
 
     @Test
     fun `Can connect to mainnet`() {
-
         val accessAPI = TestUtils.newMainnetAccessApi()
         accessAPI.ping()
 
@@ -132,7 +128,6 @@ class TransactionTest {
 
     @Test
     fun `Can create an account using the transaction DSL`() {
-
         val latestBlockId = accessAPI.getLatestBlockHeader().id
 
         val payerAccount = accessAPI.getAccountAtLatestBlock(serviceAccount.flowAddress)!!
@@ -189,7 +184,6 @@ class TransactionTest {
 
     @Test
     fun `Can create an account using the simpleTransaction DSL`() {
-
         val newAccountKeyPair = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
         val newAccountPublicKey = FlowAccountKey(
             publicKey = FlowPublicKey(newAccountKeyPair.public.hex),
@@ -353,7 +347,6 @@ class TransactionTest {
 
     @Test
     fun `bytes arrays are properly handled`() {
-
         accessAPI.simpleFlowTransaction(serviceAccount.flowAddress, serviceAccount.signer) {
             script {
                 """

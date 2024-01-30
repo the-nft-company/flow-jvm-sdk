@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 internal class CryptoTest {
-
     @Test
     fun `Can generate KeyPair`() {
         val pair1 = Crypto.generateKeyPair(SignatureAlgorithm.ECDSA_P256)
