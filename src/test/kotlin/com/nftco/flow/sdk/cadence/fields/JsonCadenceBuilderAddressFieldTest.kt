@@ -22,7 +22,7 @@ class JsonCadenceBuilderAddressFieldTest {
         val addressValue = "0x0f7531409b1719ee"
         val addressField = AddressField(addressValue)
 
-        val result =  addressField.decodeToAny()
+        val result = addressField.decodeToAny()
         val expectedBytes = "15, 117, 49, 64, -101, 23, 25, -18".split(", ").map { it.toByte() }.toByteArray()
 
         assertThat(result).isInstanceOf(FlowAddress::class.java)
