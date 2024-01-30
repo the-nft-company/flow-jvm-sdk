@@ -23,6 +23,8 @@ ktlint_standard_spacing-between-declarations-with-annotations = disabled
 ktlint_standard_if-else-wrapping = disabled
 ktlint_standard_argument-list-wrapping = disabled
 ktlint_standard_value-argument-comment = disabled
+ktlint_standard_modifier-list-spacing = disabled
+ktlint_standard_annotation-spacing = disabled
 
 # Defines the imports layout. The layout can be composed by the following symbols:
 # "*" - wildcard. There must be at least one entry of a single wildcard to match all other imports. Matches anything after a specified symbol/import as well.
