@@ -1,8 +1,10 @@
 package com.nftco.flow.sdk.cadence
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderTypeSerializationTest {
@@ -277,7 +279,6 @@ class JsonCadenceBuilderTypeSerializationTest {
             arrayOf(FieldType("field", SimpleType(TYPE_STRING)))
         )
         assertCompositeTypeSerializationAndDeserialization(contractInterfaceType)
-
     }
 
     private fun assertCompositeTypeSerializationAndDeserialization(originalType: CompositeType) {
@@ -306,4 +307,70 @@ class JsonCadenceBuilderTypeSerializationTest {
         )
     }
 
+    // Exception handling
+    @Test
+    fun `test decode with invalid JSON`() {
+        val invalidJson = "{invalid: json}"
+        assertThrows(Exception::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with missing kind field`() {
+        val invalidJson = "{\"type\": \"String\"}"
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with partial type and missing type field`() {
+        val invalidJson = "{\"kind\": \"PartialCadenceType\"}"
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with missing type field in simple type`() {
+        val invalidJson = "{\"kind\": \"String\"}"
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with missing type field in non-simple type`() {
+        val invalidJson = "{\"kind\": \"CompositeType\"}"
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with unsupported CompositeType kind`() {
+        val invalidJson = """
+        {
+            "kind": "CompositeType",
+            "type": {
+                "type": "Struct",
+                "typeID": "1",
+                "initializers": [],
+                "fields": []
+            }
+        }
+        """.trimIndent()
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with unknown CadenceType kind`() {
+        val invalidJson = "{\"kind\": \"UnknownKind\", \"type\": \"\"}"
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CadenceType::class.java)
+        }
+    }
 }
