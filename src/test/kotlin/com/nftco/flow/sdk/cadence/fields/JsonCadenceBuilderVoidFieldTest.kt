@@ -1,8 +1,8 @@
 package com.nftco.flow.sdk.cadence.fields
 
 import com.nftco.flow.sdk.cadence.*
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderVoidFieldTest {
@@ -29,5 +29,14 @@ class JsonCadenceBuilderVoidFieldTest {
         val stringField = StringField("test")
 
         assertNotEquals(voidField, stringField)
+    }
+
+    @Test
+    fun `Test decoding VoidField returns null`() {
+        val voidField = VoidField()
+
+        val decodedValue: Any? = voidField.decodeToAny()
+
+        assertThat(decodedValue).isNull()
     }
 }
