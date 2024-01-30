@@ -307,6 +307,17 @@ open class UFix64NumberField(value: String) : NumberField(TYPE_UFIX64, value)
 
 open class ArrayField(value: Array<Field<*>>) : Field<Array<Field<*>>>(TYPE_ARRAY, value) {
     constructor(value: Iterable<Field<*>>) : this(value.toList().toTypedArray())
+
+    override fun hashCode(): Int {
+        return value?.contentHashCode() ?: 0
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        if (!super.equals(other)) return false
+        return true
+    }
 }
 
 open class DictionaryField(value: Array<DictionaryFieldEntry>) : Field<Array<DictionaryFieldEntry>>(TYPE_DICTIONARY, value) {
