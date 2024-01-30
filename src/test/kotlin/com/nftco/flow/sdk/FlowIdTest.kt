@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 
 class FlowIdTest {
-
     @Test
     fun `Can create FlowId from a hex string`() {
         Assertions.assertThat(FlowId("0x01").bytes).isEqualTo("0000000000000000000000000000000000000000000000000000000000000001".hexToBytes())

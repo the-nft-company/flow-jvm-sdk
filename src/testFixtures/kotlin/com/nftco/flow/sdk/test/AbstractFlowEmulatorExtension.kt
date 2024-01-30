@@ -137,7 +137,6 @@ data class Emulator(
 )
 
 abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCallback, TestExecutionExceptionHandler {
-
     var process: Process? = null
     var pidFile: File? = null
     var accessApi: FlowAccessApiImpl? = null
@@ -149,7 +148,7 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
         val tests = (
             context.testInstances.map { it.allInstances.toSet() }.orElseGet { emptySet() }
                 + context.testInstance.map { setOf(it) }.orElseGet { emptySet() }
-            )
+        )
 
         tests.map { it to it.javaClass.fields }
             .flatMap { it.second.map { f -> it.first to f } }
@@ -158,7 +157,6 @@ abstract class AbstractFlowEmulatorExtension : BeforeEachCallback, AfterEachCall
     }
 
     override fun beforeEach(context: ExtensionContext) {
-
         Flow.configureDefaults(chainId = FlowChainId.EMULATOR)
         Flow.DEFAULT_ADDRESS_REGISTRY.defaultChainId = FlowChainId.EMULATOR
 
