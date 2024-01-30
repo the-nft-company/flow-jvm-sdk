@@ -317,7 +317,7 @@ class JsonCadenceBuilderTypeSerializationTest {
     }
 
     @Test
-    fun `test decode with missing kind field`() {
+    fun `test decode with missing kind field in generic Cadence type`() {
         val invalidJson = "{\"type\": \"String\"}"
         assertThrows(MismatchedInputException::class.java) {
             objectMapper.readValue(invalidJson, CadenceType::class.java)
@@ -325,27 +325,115 @@ class JsonCadenceBuilderTypeSerializationTest {
     }
 
     @Test
-    fun `test decode with missing type field in composite type`() {
-        val invalidJson = """
-        {
-            "kind": "Struct"
-        }
-        """.trimIndent()
+    fun `test decode with missing kind field in simple type`() {
+        val invalidJson = "{\"type\": \"String\"}"
         assertThrows(MismatchedInputException::class.java) {
-            objectMapper.readValue(invalidJson, CadenceType::class.java)
+            objectMapper.readValue(invalidJson, SimpleType::class.java)
         }
     }
 
     @Test
     fun `test decode with missing type field in complex type`() {
-        val invalidJson = """
+        val invalidJsonOptional = """
         {
             "kind": "Optional"
         }
         """.trimIndent()
 
         assertThrows(MismatchedInputException::class.java) {
-            objectMapper.readValue(invalidJson, CadenceType::class.java)
+            objectMapper.readValue(invalidJsonOptional, OptionalType::class.java)
+        }
+
+        val invalidJsonVariableSizedArray = """
+        {
+            "kind": "VariableSizedArray"
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJsonVariableSizedArray, VariableSizedArrayType::class.java)
+        }
+
+        val invalidJsonConstantSizedArray = """
+        {
+            "kind": "ConstantSizedArray"
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJsonConstantSizedArray, ConstantSizedArrayType::class.java)
+        }
+
+        // Missing value field
+        val invalidJsonDictionary = """
+        {
+            "kind": "Dictionary",
+            "key": {"kind": "String"}
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJsonDictionary, DictionaryType::class.java)
+        }
+
+        // Missing typeID field
+        val invalidJsonFunction = """
+        {
+            "kind": "Function",
+            "parameters": [],
+            "`return`": {"kind": "String"}
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJsonFunction, FunctionType::class.java)
+        }
+
+        val invalidJsonReference = """
+        {
+            "kind": "Reference",
+            "typeID": "id",
+            "authorized": true
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJsonReference, ReferenceType::class.java)
+        }
+
+        val invalidJsonRestriction = """
+        {
+            "kind": "Restriction",
+            "typeID": "id",
+            "restrictions": []
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJsonRestriction, RestrictionType::class.java)
+        }
+
+        val invalidJsonCapability = """
+        {
+            "kind": "Capability"
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJsonCapability, CapabilityType::class.java)
+        }
+
+        val invalidJsonEnum = """
+        {
+            "kind": "Enum",
+            "typeID": "id",
+            "initializers": [],
+            "fields": []
+        }
+        """.trimIndent()
+
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJsonEnum, EnumType::class.java)
         }
     }
 
@@ -353,7 +441,37 @@ class JsonCadenceBuilderTypeSerializationTest {
     fun `test decode with partial Cadence type and missing type field`() {
         val invalidJson = "{\"kind\": \"PartialCadenceType\"}"
         assertThrows(MismatchedInputException::class.java) {
-            objectMapper.readValue(invalidJson, CadenceType::class.java)
+            objectMapper.readValue(invalidJson, PartialCadenceType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with missing type field in composite type`() {
+        val invalidJson = """
+        {
+            "kind": "Struct",
+            "typeID": "id",
+            "initializers": [],
+            "fields":[]
+        }
+        """.trimIndent()
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CompositeType::class.java)
+        }
+    }
+
+    @Test
+    fun `test decode with missing typeID field in composite type`() {
+        val invalidJson = """
+        {
+            "kind": "Struct",
+            "type": "Composite",
+            "initializers": [],
+            "fields":[]
+        }
+        """.trimIndent()
+        assertThrows(MismatchedInputException::class.java) {
+            objectMapper.readValue(invalidJson, CompositeType::class.java)
         }
     }
 
