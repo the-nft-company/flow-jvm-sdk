@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class JsonCadenceBuilderAddressFieldTest {
-
     @Test
     fun `test decoding AddressField with decodeToAny`() {
         val addressValue = "0x0f7531409b1719ee"
