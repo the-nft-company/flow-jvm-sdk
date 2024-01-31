@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderVoidFieldTest {
-
     @Test
     fun `Test equality of VoidField instances`() {
         val voidField1 = VoidField()

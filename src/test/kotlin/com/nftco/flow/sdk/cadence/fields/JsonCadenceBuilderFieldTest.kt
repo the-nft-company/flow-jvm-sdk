@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderFieldTest {
-
     private val objectMapper = ObjectMapper()
     @Test
     fun `Test equality for Field with the same type and value`() {

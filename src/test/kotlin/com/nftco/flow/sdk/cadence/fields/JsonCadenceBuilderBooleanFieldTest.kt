@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderBooleanFieldTest {
-
     @Test
     fun `Test equality for BooleanField`() {
         val bool1 = BooleanField(true)

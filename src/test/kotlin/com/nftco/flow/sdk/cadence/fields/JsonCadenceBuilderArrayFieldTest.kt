@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderArrayFieldTest {
-
     @Test
     fun `Test equality for ArrayField`() {
         val array1 = ArrayField(arrayOf(StringField("abc"), IntNumberField("42")))

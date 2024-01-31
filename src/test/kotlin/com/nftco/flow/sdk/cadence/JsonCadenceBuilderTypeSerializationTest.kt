@@ -8,9 +8,8 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderTypeSerializationTest {
-
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
-    //
+
     // Simple types
     @Test
     fun `Test simple type serialization and deserialization`() {
