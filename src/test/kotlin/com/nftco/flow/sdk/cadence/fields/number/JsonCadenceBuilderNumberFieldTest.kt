@@ -8,7 +8,6 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 class JsonCadenceBuilderNumberFieldTest {
-
     @Test
     fun `Test creating NumberField with valid values`() {
         val intField = NumberField(TYPE_INT, "42")

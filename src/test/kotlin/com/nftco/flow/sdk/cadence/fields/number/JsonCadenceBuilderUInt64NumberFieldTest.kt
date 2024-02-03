@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderUInt64NumberFieldTest {
-
     @Test
     fun `Test decoding of UInt64NumberField with valid value`() {
         val uint64Field = UInt64NumberField("12345678901234567890")

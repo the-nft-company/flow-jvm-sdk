@@ -13,6 +13,12 @@ class JsonCadenceBuilderUInt8NumberFieldTest {
     }
 
     @Test
+    fun `Test decoding of UInt8NumberField with maximum value`() {
+        val uint8Field = UInt8NumberField("255")
+        assertEquals(255U, uint8Field.decodeToAny())
+    }
+
+    @Test
     fun `Test hashCode on UInt8NumberField`() {
         val uint8Field1 = UInt8NumberField("123")
         val uint8Field2 = UInt8NumberField("123")

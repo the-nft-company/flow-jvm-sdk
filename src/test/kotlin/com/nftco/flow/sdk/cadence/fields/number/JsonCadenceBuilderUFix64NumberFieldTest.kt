@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class JsonCadenceBuilderUFix64NumberFieldTest {
-
     @Test
     fun `Test decoding of UFix64NumberField`() {
         val ufix64Field = UFix64NumberField("123.456")
@@ -45,6 +44,3 @@ class JsonCadenceBuilderUFix64NumberFieldTest {
             .isInstanceOf(NumberFormatException::class.java)
     }
 }
-
-
-
