@@ -355,10 +355,11 @@ open class CompositeField(type: String, value: CompositeValue) : Field<Composite
 open class CompositeAttribute(val name: String, val value: Field<*>) : Serializable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as CompositeAttribute
+        if (other !is CompositeAttribute) return false
+
         if (name != other.name) return false
         if (value != other.value) return false
+
         return true
     }
 
@@ -372,8 +373,14 @@ open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>)
     @Suppress("UNCHECKED_CAST")
     fun <T : Field<*>> getField(name: String): T? = fields.find { it.name == name }?.value as T?
     fun <T : Field<*>> getRequiredField(name: String): T = getField(name) ?: throw IllegalStateException("Value for $name not found")
-    @Suppress("UNCHECKED_CAST")
-    operator fun <T> get(name: String): T? = getField<Field<*>>(name)?.value as T?
+    inline operator fun <reified T : Field<*>> get(name: String): T? {
+        val field = fields.find { it.name == name }?.value
+        return if (field is T) {
+            field
+        } else {
+            null
+        }
+    }
     operator fun contains(name: String): Boolean = fields.find { it.name == name } != null
 }
 open class StructField(value: CompositeValue) : CompositeField(TYPE_STRUCT, value)
