@@ -431,17 +431,19 @@ open class DictionaryFieldEntry(val key: Field<*>, val value: Field<*>) : Serial
     constructor(pair: Pair<Field<*>, Field<*>>) : this(pair.first, pair.second)
 }
 
-open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.lowercase().startsWith("0x")) {
-    "0x$value"
-} else {
-    value
-}) {
+open class AddressField(value: String) : Field<String>(
+    TYPE_ADDRESS,
+    if (!value.lowercase().startsWith("0x")) {
+        "0x$value"
+    } else {
+        value
+    }
+) {
     constructor(bytes: ByteArray) : this(bytes.bytesToHex())
 }
 
 @kotlinx.serialization.Serializable
 open class PathValue(val domain: String, val identifier: String) : Serializable {
-
     override fun hashCode(): Int {
         return Objects.hash(domain, identifier)
     }

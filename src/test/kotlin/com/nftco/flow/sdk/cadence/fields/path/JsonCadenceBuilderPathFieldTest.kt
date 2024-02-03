@@ -35,6 +35,4 @@ class JsonCadenceBuilderPathFieldTest {
 
         assertEquals(pathValue, decodedValue)
     }
-
-
 }
