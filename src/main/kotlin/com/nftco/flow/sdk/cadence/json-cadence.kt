@@ -352,7 +352,22 @@ open class CompositeField(type: String, value: CompositeValue) : Field<Composite
     operator fun <T : Field<*>> get(name: String): T? = value?.getField(name)
     operator fun contains(name: String): Boolean = value?.getField<Field<*>>(name) != null
 }
-open class CompositeAttribute(val name: String, val value: Field<*>) : Serializable
+open class CompositeAttribute(val name: String, val value: Field<*>) : Serializable {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as CompositeAttribute
+        if (name != other.name) return false
+        if (value != other.value) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + value.hashCode()
+        return result
+    }
+}
 open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>) : Serializable {
     @Suppress("UNCHECKED_CAST")
     fun <T : Field<*>> getField(name: String): T? = fields.find { it.name == name }?.value as T?
