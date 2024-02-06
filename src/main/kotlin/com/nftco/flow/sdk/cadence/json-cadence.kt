@@ -1,7 +1,7 @@
 package com.nftco.flow.sdk.cadence
 
 // This files contains types for the JSON-Cadence Data Interchange Format
-
+import java.util.Objects
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
@@ -157,6 +157,7 @@ abstract class Field<T> constructor(
         // TODO: something better than this
         return String(Flow.encodeJsonCadence(this)) == String(Flow.encodeJsonCadence(other))
     }
+
     override fun hashCode(): Int {
         var result = type.hashCode()
         result = 31 * result + (value?.hashCode() ?: 0)
@@ -166,46 +167,130 @@ abstract class Field<T> constructor(
     @kotlin.jvm.Throws
     fun decodeToAny(): Any? {
         return when (this) {
-            is StringField -> { value }
-            is BooleanField -> { value }
-            is VoidField -> { null }
-            is OptionalField -> { value?.decodeToAny() }
-            is IntNumberField -> { toInt() }
-            is UIntNumberField -> { toUInt() }
+            is StringField -> {
+                value
+            }
 
-            is Int8NumberField -> { toInt() }
-            is UInt8NumberField -> { toUInt() }
-            is Int16NumberField -> { toInt() }
-            is UInt16NumberField -> { toUInt() }
+            is BooleanField -> {
+                value
+            }
 
-            is Int32NumberField -> { toInt() }
-            is UInt32NumberField -> { toUInt() }
-            is Int64NumberField -> { toLong() }
-            is UInt64NumberField -> { toULong() }
+            is VoidField -> {
+                null
+            }
 
-            is Int128NumberField -> { toBigInteger() }
-            is UInt128NumberField -> { toBigInteger() }
+            is OptionalField -> {
+                value?.decodeToAny()
+            }
 
-            is Int256NumberField -> { toBigInteger() }
-            is UInt256NumberField -> { toBigInteger() }
+            is IntNumberField -> {
+                toInt()
+            }
 
-            is Word8NumberField -> { toUInt() }
-            is Word16NumberField -> { toUInt() }
-            is Word32NumberField -> { toUInt() }
-            is Word64NumberField -> { toUInt() }
+            is UIntNumberField -> {
+                toUInt()
+            }
 
-            is Fix64NumberField -> { toDouble() }
-            is UFix64NumberField -> { toDouble() }
+            is Int8NumberField -> {
+                toInt()
+            }
 
-            is ArrayField -> { value?.map { it.decodeToAny() } }
-            is AddressField -> { value?.let { FlowAddress(it) } }
+            is UInt8NumberField -> {
+                toUInt()
+            }
+
+            is Int16NumberField -> {
+                toInt()
+            }
+
+            is UInt16NumberField -> {
+                toUInt()
+            }
+
+            is Int32NumberField -> {
+                toInt()
+            }
+
+            is UInt32NumberField -> {
+                toUInt()
+            }
+
+            is Int64NumberField -> {
+                toLong()
+            }
+
+            is UInt64NumberField -> {
+                toULong()
+            }
+
+            is Int128NumberField -> {
+                toBigInteger()
+            }
+
+            is UInt128NumberField -> {
+                toBigInteger()
+            }
+
+            is Int256NumberField -> {
+                toBigInteger()
+            }
+
+            is UInt256NumberField -> {
+                toBigInteger()
+            }
+
+            is Word8NumberField -> {
+                toUInt()
+            }
+
+            is Word16NumberField -> {
+                toUInt()
+            }
+
+            is Word32NumberField -> {
+                toUInt()
+            }
+
+            is Word64NumberField -> {
+                toUInt()
+            }
+
+            is Fix64NumberField -> {
+                toDouble()
+            }
+
+            is UFix64NumberField -> {
+                toDouble()
+            }
+
+            is ArrayField -> {
+                value?.map { it.decodeToAny() }
+            }
+
+            is AddressField -> {
+                value?.let { FlowAddress(it) }
+            }
 
             // CompositeValue
-            is StructField -> { value?.toMap() }
-            is EnumField -> { value?.toMap() }
-            is ResourceField -> { value?.toMap() }
-            is EventField -> { value?.toMap() }
-            is ContractField -> { value?.let { toMap(it) } }
+            is StructField -> {
+                value?.toMap()
+            }
+
+            is EnumField -> {
+                value?.toMap()
+            }
+
+            is ResourceField -> {
+                value?.toMap()
+            }
+
+            is EventField -> {
+                value?.toMap()
+            }
+
+            is ContractField -> {
+                value?.let { toMap(it) }
+            }
 
             is DictionaryField -> {
                 this.value?.associate {
@@ -213,11 +298,18 @@ abstract class Field<T> constructor(
                 }
             }
 
-            is CapabilityField -> { value?.let { toMap(it) } }
-            is PathField -> { value?.let { toMap(it) } }
+            is CapabilityField -> {
+                value?.let { toMap(it) }
+            }
+
+            is PathField -> value?.let {
+                PathValue(it.domain, it.identifier)
+            }
 
             // TODO: Handle type decode
-            is TypeField -> { value?.let { toMap(it) } }
+            is TypeField -> {
+                value?.let { toMap(it) }
+            }
 
             else -> {
                 throw Exception(" Can't find right class ")
@@ -284,6 +376,7 @@ open class NumberField(type: String, value: String) : Field<String>(type, value)
     fun toDouble(): Double? = value?.toDouble()
     fun toBigDecimal(): BigDecimal? = value?.toBigDecimal()
 }
+
 open class IntNumberField(value: String) : NumberField(TYPE_INT, value)
 open class UIntNumberField(value: String) : NumberField(TYPE_UINT, value)
 open class Int8NumberField(value: String) : NumberField(TYPE_INT8, value)
@@ -322,26 +415,64 @@ open class ArrayField(value: Array<Field<*>>) : Field<Array<Field<*>>>(TYPE_ARRA
 
 open class DictionaryField(value: Array<DictionaryFieldEntry>) : Field<Array<DictionaryFieldEntry>>(TYPE_DICTIONARY, value) {
     constructor(value: Iterable<DictionaryFieldEntry>) : this(value.toList().toTypedArray())
+
     companion object {
         fun fromPairs(value: Iterable<Pair<Field<*>, Field<*>>>): DictionaryField {
             return DictionaryField(value.map { DictionaryFieldEntry(it) }.toTypedArray())
         }
+
         fun <K, V> fromMap(value: Map<K, V>, keys: (K) -> Field<*>, values: (V) -> Field<*>): DictionaryField {
             return fromPairs(value.mapKeys { keys(it.key) }.mapValues { values(it.value) }.map { Pair(it.key, it.value) })
         }
     }
 }
+
 open class DictionaryFieldEntry(val key: Field<*>, val value: Field<*>) : Serializable {
     constructor(pair: Pair<Field<*>, Field<*>>) : this(pair.first, pair.second)
 }
 
-open class AddressField(value: String) : Field<String>(TYPE_ADDRESS, if (!value.lowercase().startsWith("0x")) { "0x$value" } else { value }) {
+open class AddressField(value: String) : Field<String>(
+    TYPE_ADDRESS,
+    if (!value.lowercase().startsWith("0x")) {
+        "0x$value"
+    } else {
+        value
+    }
+) {
     constructor(bytes: ByteArray) : this(bytes.bytesToHex())
 }
 
 @kotlinx.serialization.Serializable
-open class PathValue(val domain: String, val identifier: String) : Serializable
-open class PathField(value: PathValue) : Field<PathValue>(TYPE_PATH, value)
+open class PathValue(val domain: String, val identifier: String) : Serializable {
+    override fun hashCode(): Int {
+        return Objects.hash(domain, identifier)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PathValue
+
+        return domain == other.domain && identifier == other.identifier
+    }
+}
+
+open class PathField(value: PathValue) : Field<PathValue>(TYPE_PATH, value) {
+    override fun hashCode(): Int {
+        return Objects.hash(type, value?.domain, value?.identifier)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        if (!super.equals(other)) return false
+
+        other as PathField
+
+        return value?.domain == other.value?.domain && value?.identifier == other.value?.identifier
+    }
+}
 
 @kotlinx.serialization.Serializable
 open class CapabilityValue(val path: String, val address: String, val borrowType: String) : Serializable
@@ -352,6 +483,7 @@ open class CompositeField(type: String, value: CompositeValue) : Field<Composite
     operator fun <T : Field<*>> get(name: String): T? = value?.getField(name)
     operator fun contains(name: String): Boolean = value?.getField<Field<*>>(name) != null
 }
+
 open class CompositeAttribute(val name: String, val value: Field<*>) : Serializable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -383,6 +515,7 @@ open class CompositeValue(val id: String, val fields: Array<CompositeAttribute>)
     }
     operator fun contains(name: String): Boolean = fields.find { it.name == name } != null
 }
+
 open class StructField(value: CompositeValue) : CompositeField(TYPE_STRUCT, value)
 open class ResourceField(value: CompositeValue) : CompositeField(TYPE_RESOURCE, value)
 open class EventField(value: CompositeValue) : CompositeField(TYPE_EVENT, value)
@@ -396,10 +529,12 @@ open class InitializerType(
     val id: String,
     val type: CadenceType
 ) : Serializable
+
 open class FieldType(
     val id: String,
     val type: CadenceType
 ) : Serializable
+
 open class ParameterType(
     val label: String,
     val id: String,
@@ -508,37 +643,48 @@ class CadenceTypeDeserializer(vc: Class<*>?) : StdDeserializer<CadenceType>(vc) 
             TYPE_BLOCK -> {
                 p.codec.treeToValue(node, SimpleType::class.java)
             }
+
             TYPE_STRUCT, TYPE_RESOURCE, TYPE_EVENT, TYPE_CONTRACT, TYPE_STRUCT_INTERFACE, TYPE_RESOURCE_INTERFACE,
             TYPE_CONTRACT_INTERFACE -> {
                 p.codec.treeToValue(node, CompositeType::class.java)
             }
+
             TYPE_OPTIONAL -> {
                 p.codec.treeToValue(node, OptionalType::class.java)
             }
+
             TYPE_VARIABLE_SIZED_ARRAY -> {
                 p.codec.treeToValue(node, VariableSizedArrayType::class.java)
             }
+
             TYPE_CONSTANT_SIZED_ARRAY -> {
                 p.codec.treeToValue(node, ConstantSizedArrayType::class.java)
             }
+
             TYPE_DICTIONARY -> {
                 p.codec.treeToValue(node, DictionaryType::class.java)
             }
+
             TYPE_FUNCTION -> {
                 p.codec.treeToValue(node, FunctionType::class.java)
             }
+
             TYPE_REFERENCE -> {
                 p.codec.treeToValue(node, ReferenceType::class.java)
             }
+
             TYPE_RESTRICTION -> {
                 p.codec.treeToValue(node, RestrictionType::class.java)
             }
+
             TYPE_CAPABILITY -> {
                 p.codec.treeToValue(node, CapabilityType::class.java)
             }
+
             TYPE_ENUM -> {
                 p.codec.treeToValue(node, EnumType::class.java)
             }
+
             else -> throw MismatchedInputException.from(p, "Unknown CadenceType kind: $kind")
         }
     }
