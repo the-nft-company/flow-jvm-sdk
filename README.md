@@ -186,5 +186,5 @@ The Flow JVM SDK maintainers have included
 * [The NFT Company](https://nftco.com)
    * [@briandilley](https://github.com/briandilley)  
    * [@jereanon](https://github.com/jereanon) 
-* [Purple Dash]([https://nftco.com/](https://purpledash.dev)
+* [Purple Dash]([https://nftco.com/](https://purpledash.dev))
    * [@lealobanov](https://github.com/lealobanov)
